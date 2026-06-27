@@ -333,6 +333,10 @@
         justify-self: start;
       }
 
+      .detail-copy {
+        order: -1;
+      }
+
       .brand-link {
         grid-template-columns: 44px minmax(0, 1fr);
       }
