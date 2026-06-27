@@ -22,7 +22,7 @@ After changing `docs/data/memos.json`, run:
 node scripts/build-route-pages.mjs
 ```
 
-This refreshes `docs/404.html` and the static `docs/<slug>/index.html` route entries.
+This refreshes `docs/404.html`, the static `docs/<slug>/index.html` route entries, and per-post OGP card images under `docs/assets/ogp/`. Landscape source images are cropped to 1200x630, while portrait or square source images are cropped to 800x800.
 
 ## Slack Bot
 
