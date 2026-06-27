@@ -139,6 +139,21 @@ def get_memo(config: BotConfig, memo_id: str) -> MemoListItem:
         return _list_item(memos[index], _memo_ids(memos)[index])
 
 
+def find_title_conflict(config: BotConfig, post: MumemoSlackPost) -> MemoListItem | None:
+    title_key = _title_key(post.title)
+    with _STORE_LOCK:
+        memos = _load_memos(config.data_path)
+        ids = _memo_ids(memos)
+        for index, memo in enumerate(memos):
+            if bool(memo.get("fixed")):
+                continue
+            if _same_slack_source(memo, post):
+                continue
+            if _title_key(str(memo.get("title") or "")) == title_key:
+                return _list_item(memo, ids[index])
+    return None
+
+
 def update_memo(
     config: BotConfig,
     *,
@@ -178,6 +193,46 @@ def update_memo(
         title=title,
         image_count=len(clean_images) if clean_images else (1 if clean_image else 0),
         data_path=config.data_path,
+    )
+
+
+def overwrite_memo_with_post(
+    config: BotConfig,
+    *,
+    memo_id: str,
+    post: MumemoSlackPost,
+    preserve_existing_identity: bool,
+) -> StoreResult:
+    saved_images = download_images(
+        bot_token=config.slack_bot_token,
+        post=post,
+        asset_dir=config.asset_dir,
+        asset_url_prefix=config.asset_url_prefix,
+    )
+
+    with _STORE_LOCK:
+        memos = _load_memos(config.data_path)
+        index = _find_memo_index(memos, memo_id)
+        old_memo = dict(memos[index])
+        if bool(old_memo.get("fixed")):
+            raise ProtectedMemoError("固定メモはSlack管理画面から上書きできません")
+
+        old_memos = [dict(item) for item in memos]
+        new_memo = _memo_from_post(config, post, saved_images)
+        if preserve_existing_identity:
+            _preserve_existing_identity(old_memo, new_memo, memo_id)
+
+        memos[index] = new_memo
+        _write_memos(config.data_path, memos)
+        build_route_pages(config)
+        _cleanup_removed_memo(config, old_memos, index, old_memo, memos)
+
+    return StoreResult(
+        created=False,
+        title=post.title,
+        image_count=len(saved_images),
+        data_path=config.data_path,
+        memo_id=str(new_memo.get("id") or memo_id),
     )
 
 
@@ -335,16 +390,20 @@ def _find_existing_slack_memo(
     post: MumemoSlackPost,
 ) -> dict[str, Any] | None:
     for memo in memos:
-        source = memo.get("source")
-        if not isinstance(source, dict):
-            continue
-        if (
-            source.get("type") == "slack"
-            and source.get("channel_id") == post.channel_id
-            and source.get("message_ts") == post.message_ts
-        ):
+        if _same_slack_source(memo, post):
             return memo
     return None
+
+
+def _same_slack_source(memo: dict[str, Any], post: MumemoSlackPost) -> bool:
+    source = memo.get("source")
+    if not isinstance(source, dict):
+        return False
+    return (
+        source.get("type") == "slack"
+        and source.get("channel_id") == post.channel_id
+        and source.get("message_ts") == post.message_ts
+    )
 
 
 def _find_memo_index(memos: list[dict[str, Any]], memo_id: str) -> int:
@@ -410,6 +469,17 @@ def _new_memo_insert_index(memos: list[dict[str, Any]]) -> int:
     return index
 
 
+def _preserve_existing_identity(
+    old_memo: dict[str, Any],
+    new_memo: dict[str, Any],
+    memo_id: str,
+) -> None:
+    new_memo["id"] = str(old_memo.get("id") or memo_id)
+    for key in ("source", "postedAt", "posted_at", "createdAt", "created_at"):
+        if key in old_memo:
+            new_memo[key] = old_memo[key]
+
+
 def _image_filename(image: SlackImageFile) -> str:
     extension = Path(image.name).suffix.lower()
     if not extension:
@@ -420,6 +490,10 @@ def _image_filename(image: SlackImageFile) -> str:
 
 def _safe_filename(value: str) -> str:
     return re.sub(r"[^A-Za-z0-9._-]+", "_", value).strip("._")
+
+
+def _title_key(title: str) -> str:
+    return unicodedata.normalize("NFKC", title).strip().casefold()
 
 
 def _safe_title_folder(title: str) -> str:
@@ -455,7 +529,12 @@ def _cleanup_removed_memo(
     remaining_memos: list[dict[str, Any]],
 ) -> None:
     asset_root = config.asset_dir.resolve()
+    remaining_image_urls = {
+        image_url for memo in remaining_memos for image_url in _memo_images(memo)
+    }
     for image_url in _memo_images(removed):
+        if image_url in remaining_image_urls:
+            continue
         image_path = _local_asset_path(config, image_url)
         if image_path is None or not image_path.exists() or not image_path.is_file():
             continue
