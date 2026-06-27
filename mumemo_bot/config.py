@@ -21,6 +21,7 @@ class BotConfig:
     asset_url_prefix: str
     default_image: str
     route_build_command: list[str]
+    site_base_url: str = ""
 
     @property
     def slack_channel_label(self) -> str:
@@ -51,6 +52,7 @@ class BotConfig:
             ).rstrip("/"),
             default_image=os.getenv("MUMEMO_DEFAULT_IMAGE", "/website_icon.png"),
             route_build_command=route_build_command,
+            site_base_url=_site_base_url_env(),
         )
 
 
@@ -80,6 +82,20 @@ def _command_env(name: str, default: list[str]) -> list[str]:
     if not command:
         raise RuntimeError(f"{name} must not be empty")
     return command
+
+
+def _site_base_url_env() -> str:
+    raw_value = os.getenv("MUMEMO_SITE_BASE_URL", "").strip()
+    if not raw_value:
+        cname_path = PROJECT_ROOT / "docs" / "CNAME"
+        if cname_path.exists():
+            lines = cname_path.read_text(encoding="utf-8").splitlines()
+            raw_value = lines[0].strip() if lines else ""
+    if not raw_value:
+        return ""
+    if not raw_value.startswith(("http://", "https://")):
+        raw_value = f"https://{raw_value}"
+    return raw_value.rstrip("/")
 
 
 def mask_secret(value: str) -> str:

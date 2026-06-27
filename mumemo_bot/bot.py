@@ -9,6 +9,7 @@ from mumemo_bot.config import BotConfig, PROJECT_ROOT, mask_secret
 from mumemo_bot.site_store import (
     MemoNotFoundError,
     ProtectedMemoError,
+    StoreResult,
     delete_memo,
     download_images,
     find_title_conflict,
@@ -162,7 +163,7 @@ def create_app(config: BotConfig) -> App:
                     post=post,
                     preserve_existing_identity=False,
                 )
-                status = f"既存投稿を新しいSlack投稿として上書きしました。画像: {result.image_count}件"
+                status = _publish_status("既存投稿を新しいSlack投稿として上書きしました。", result)
             elif mode == "overwrite_existing":
                 result = overwrite_memo_with_post(
                     config,
@@ -170,13 +171,13 @@ def create_app(config: BotConfig) -> App:
                     post=post,
                     preserve_existing_identity=True,
                 )
-                status = f"既存投稿に上書きしました。画像: {result.image_count}件"
+                status = _publish_status("既存投稿に上書きしました。", result)
             else:
                 result = save_post_as_memo(config, post)
-                status = (
-                    f"公開しました。画像: {result.image_count}件"
-                    if result.created
-                    else "このSlack投稿はすでにMumemoへ保存済みです。"
+                status = _publish_status(
+                    "公開しました。" if result.created else "このSlack投稿はすでにMumemoへ保存済みです。",
+                    result,
+                    include_image_count=result.created,
                 )
         except Exception as error:
             if claimed:
@@ -218,7 +219,7 @@ def create_app(config: BotConfig) -> App:
             client=client,
             channel_id=channel_id,
             thread_ts=message_ts,
-            text=f"Mumemoに反映しました: {result.title}\n画像: {result.image_count}件",
+            text=_publish_reply_text(result),
         )
 
     @app.event("message")
@@ -855,6 +856,26 @@ def _clear_review_buttons(
         ],
     )
 
+
+def _publish_status(
+    message: str,
+    result: StoreResult,
+    *,
+    include_image_count: bool = True,
+) -> str:
+    lines = [message]
+    if include_image_count:
+        lines.append(f"画像: {result.image_count}件")
+    if result.page_url:
+        lines.append(f"URL: {result.page_url}")
+    return "\n".join(lines)
+
+
+def _publish_reply_text(result: StoreResult) -> str:
+    lines = [f"Mumemoに反映しました: {result.title}", f"画像: {result.image_count}件"]
+    if result.page_url:
+        lines.append(f"URL: {result.page_url}")
+    return "\n".join(lines)
 
 def _post_manage_response(
     *,

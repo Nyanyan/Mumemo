@@ -36,6 +36,7 @@ class StoreResult:
     image_count: int
     data_path: Path
     memo_id: str | None = None
+    page_url: str | None = None
 
 
 @dataclass(frozen=True)
@@ -70,13 +71,15 @@ def save_post_as_memo(config: BotConfig, post: MumemoSlackPost) -> StoreResult:
         memos = _load_memos(config.data_path)
         existing = _find_existing_slack_memo(memos, post)
         if existing is not None:
-            memo_id = _memo_ids(memos)[memos.index(existing)]
+            existing_index = memos.index(existing)
+            memo_id = _memo_ids(memos)[existing_index]
             return StoreResult(
                 created=False,
                 title=str(existing.get("title") or post.title),
                 image_count=_memo_image_count(existing),
                 data_path=config.data_path,
                 memo_id=memo_id,
+                page_url=_memo_page_url(config, memos, existing_index),
             )
 
     saved_images = download_images(
@@ -90,26 +93,32 @@ def save_post_as_memo(config: BotConfig, post: MumemoSlackPost) -> StoreResult:
         memos = _load_memos(config.data_path)
         existing = _find_existing_slack_memo(memos, post)
         if existing is not None:
-            memo_id = _memo_ids(memos)[memos.index(existing)]
+            existing_index = memos.index(existing)
+            memo_id = _memo_ids(memos)[existing_index]
             return StoreResult(
                 created=False,
                 title=str(existing.get("title") or post.title),
                 image_count=_memo_image_count(existing),
                 data_path=config.data_path,
                 memo_id=memo_id,
+                page_url=_memo_page_url(config, memos, existing_index),
             )
 
         memo = _memo_from_post(config, post, saved_images)
-        memos.insert(_new_memo_insert_index(memos), memo)
+        insert_index = _new_memo_insert_index(memos)
+        memos.insert(insert_index, memo)
         _write_memos(config.data_path, memos)
         build_route_pages(config)
+        memo_id = _memo_ids(memos)[insert_index]
+        page_url = _memo_page_url(config, memos, insert_index)
 
     return StoreResult(
         created=True,
         title=post.title,
         image_count=len(saved_images),
         data_path=config.data_path,
-        memo_id=str(memo.get("id")),
+        memo_id=memo_id,
+        page_url=page_url,
     )
 
 
@@ -227,13 +236,16 @@ def overwrite_memo_with_post(
         _write_memos(config.data_path, memos)
         build_route_pages(config)
         _cleanup_replaced_memo(config, old_memos, old_memo, memos)
+        memo_id = _memo_ids(memos)[index]
+        page_url = _memo_page_url(config, memos, index)
 
     return StoreResult(
         created=False,
         title=post.title,
         image_count=len(saved_images),
         data_path=config.data_path,
-        memo_id=str(new_memo.get("id") or memo_id),
+        memo_id=memo_id,
+        page_url=page_url,
     )
 
 
@@ -515,6 +527,12 @@ def _safe_title_folder(title: str) -> str:
     normalized = re.sub(r"\s+", " ", normalized).strip(" ._")
     return normalized[:96] or "memo"
 
+
+def _memo_page_url(config: BotConfig, memos: list[dict[str, Any]], index: int) -> str:
+    slug = _memo_slugs(memos)[index]
+    path = f"/{quote(slug, safe='')}"
+    base_url = config.site_base_url.strip().rstrip("/")
+    return f"{base_url}{path}" if base_url else path
 
 def _asset_url(asset_url_prefix: str, relative_path: Path) -> str:
     prefix = "/" + asset_url_prefix.strip("/")
