@@ -22,7 +22,7 @@ After changing `docs/data/memos.json`, run:
 node scripts/build-route-pages.mjs
 ```
 
-This refreshes `docs/404.html`, the static `docs/<slug>/index.html` route entries, and per-post OGP card images under `docs/assets/ogp/`. Landscape source images are cropped to 1200x630, while portrait or square source images are cropped to 800x800.
+This refreshes `docs/404.html`, the static `docs/<slug>/index.html` route entries, copies the home OGP card from root `OGP.jpg` to `docs/OGP.jpg`, and regenerates per-post OGP card images under `docs/assets/ogp/`. Landscape source images are cropped to 1200x630, while portrait or square source images are cropped to 800x800. Root `OGP.png` is kept as the large source asset.
 
 ## Slack Bot
 
@@ -74,6 +74,6 @@ Attached image files are saved under `docs/assets/slack/<title>/`. Small JPEG ti
 
 To organize existing posts from Slack, type `mumemo`, `mumemo list`, or `mumemo 整理` in the configured channel. The bot posts the current list with `編集` and `削除` buttons. Fixed memos such as `これは何？` are shown and can be edited, but cannot be deleted. Deleting a memo also removes its local Slack image files, empty image title folders, and stale generated route folders when safe. If the slash command is configured, `/mumemo` opens the same organizer as an ephemeral Slack response.
 
-In the edit modal, remove image URL lines to delete images, add URL lines to reference existing images, or use `画像を追加` to upload new image files from Slack. Uploaded files are copied into `docs/assets/slack/<title>/` and appended to the memo image list.
+In the edit modal, images are shown as public links labeled `画像1`, `画像2`, etc. Reorder or remove images by editing the number list, choose the thumbnail by number, and use the upload field to append new image files from Slack.
 
 The bot updates local files, runs `node scripts/build-route-pages.mjs`, stages `docs/`, commits approved Slack publishes as `add <title>`, commits Slack deletes as `delete <title>`, and runs `git push origin main`. Run the bot from a clean `main` checkout with push access to the repository.
