@@ -412,6 +412,45 @@ function createShareActions(entry) {
   return section;
 }
 
+function setupHomeShareButton() {
+  const button = document.querySelector(".home-share-button");
+  if (!button) {
+    return;
+  }
+
+  const label = button.querySelector(".home-share-label");
+  const defaultLabel = label?.textContent || "\u5171\u6709";
+  let resetTimer = 0;
+
+  button.addEventListener("click", async () => {
+    const shareUrl = new URL("/", window.location.origin).href;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: siteTitle,
+          text: siteTitle,
+          url: shareUrl
+        });
+        return;
+      } catch (error) {
+        if (error.name === "AbortError") {
+          return;
+        }
+      }
+    }
+
+    const copied = await copyText(shareUrl);
+    if (label) {
+      label.textContent = copied ? "\u30b3\u30d4\u30fc\u6e08\u307f" : "\u30b3\u30d4\u30fc\u4e0d\u53ef";
+      window.clearTimeout(resetTimer);
+      resetTimer = window.setTimeout(() => {
+        label.textContent = defaultLabel;
+      }, 1800);
+    }
+  });
+}
+
+
 async function copyText(text) {
   if (navigator.clipboard && window.isSecureContext) {
     try {
@@ -638,4 +677,5 @@ window.addEventListener("popstate", route);
 if (document.fonts) {
   document.fonts.ready.then(scheduleTileTextFit);
 }
+setupHomeShareButton();
 start();
