@@ -112,7 +112,7 @@ function absoluteUrl(baseUrl, urlPath) {
 }
 
 function routePath(slug) {
-  return `/${encodeURIComponent(slug)}`;
+  return `/${encodeURIComponent(slug)}/`;
 }
 
 function summarize(text, fallback) {

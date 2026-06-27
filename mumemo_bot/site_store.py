@@ -646,7 +646,7 @@ def _safe_title_folder(title: str) -> str:
 
 def _memo_page_url(config: BotConfig, memos: list[dict[str, Any]], index: int) -> str:
     slug = _memo_slugs(memos)[index]
-    path = f"/{quote(slug, safe='')}"
+    path = f"/{quote(slug, safe='')}/"
     base_url = config.site_base_url.strip().rstrip("/")
     return f"{base_url}{path}" if base_url else path
 

@@ -50,7 +50,7 @@ function addSlugs(items) {
 }
 
 function hrefFor(entry) {
-  return `/${encodeURIComponent(entry.slug)}`;
+  return `/${encodeURIComponent(entry.slug)}/`;
 }
 
 function navigateToEntry(entry) {
