@@ -244,6 +244,7 @@ function renderLoadError() {
 }
 
 function renderHome() {
+  document.body.dataset.view = "home";
   document.title = siteTitle;
   const view = homeTemplate.content.cloneNode(true);
   app.replaceChildren(view);
@@ -438,7 +439,18 @@ async function copyText(text) {
   }
 }
 
+function createDetailAuthorLink() {
+  const headerAuthorLink = document.querySelector(".site-header .author-link");
+  const link = document.createElement("a");
+  link.className = "detail-author-link";
+  link.href = headerAuthorLink?.href || "https://nyanyan.dev/";
+  link.target = "_blank";
+  link.rel = headerAuthorLink?.rel || "author noopener noreferrer";
+  link.textContent = headerAuthorLink?.textContent || "\u4f5c\u8005Web\u30b5\u30a4\u30c8";
+  return link;
+}
 function renderDetail(entry) {
+  document.body.dataset.view = "detail";
   document.title = `${entry.title} - ${siteTitle}`;
 
   const detail = document.createElement("article");
@@ -449,6 +461,10 @@ function renderDetail(entry) {
   back.href = "/";
   back.dataset.nav = "";
   back.textContent = "一覧へ戻る";
+
+  const actions = document.createElement("div");
+  actions.className = "detail-actions";
+  actions.append(back, createDetailAuthorLink());
 
   const hero = document.createElement("div");
   hero.className = "detail-hero";
@@ -471,13 +487,13 @@ function renderDetail(entry) {
   if (postedAt) {
     copy.append(postedAt);
   }
-  copy.append(createShareActions(entry));
-  hero.append(media, copy);
-  detail.append(back, hero);
+  hero.append(media, copy, createShareActions(entry));
+  detail.append(actions, hero);
   app.replaceChildren(detail);
 }
 
 function renderNotFound(slug) {
+  document.body.dataset.view = "not-found";
   document.title = `メモが見つかりません - ${siteTitle}`;
 
   const section = document.createElement("section");
