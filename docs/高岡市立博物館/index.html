@@ -34,10 +34,21 @@
       </a>
       <div class="header-actions">
         <a class="author-link" href="https://nyanyan.dev/" target="_blank" rel="author noopener noreferrer">作者Webサイト</a>
-        <button class="home-share-button" type="button" aria-label="トップページを共有">
-          <img class="home-share-icon" src="/assets/share-icon.svg" alt="">
-          <span class="home-share-label">共有</span>
-        </button>
+        <div class="home-share">
+          <button class="home-share-button" type="button" aria-label="トップページを共有" aria-expanded="false" aria-controls="homeShareMenu">
+            <img class="home-share-icon" src="/assets/share-icon.svg" alt="">
+            <span class="home-share-label">共有</span>
+          </button>
+          <div id="homeShareMenu" class="home-share-menu" hidden>
+            <button class="home-share-menu-item" type="button" data-home-share-copy>リンクをコピー</button>
+            <button class="home-share-menu-item" type="button" data-home-share-native>端末で共有</button>
+            <a class="home-share-menu-item" href="#" target="_blank" rel="noopener noreferrer" data-home-share-target="x">X</a>
+            <a class="home-share-menu-item" href="#" target="_blank" rel="noopener noreferrer" data-home-share-target="facebook">Facebook</a>
+            <a class="home-share-menu-item" href="#" target="_blank" rel="noopener noreferrer" data-home-share-target="line">LINE</a>
+            <a class="home-share-menu-item" href="#" target="_blank" rel="noopener noreferrer" data-home-share-target="bluesky">Bluesky</a>
+            <span class="home-share-status" aria-live="polite"></span>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -52,7 +63,10 @@
           <span class="visually-hidden">検索</span>
           <input id="searchInput" class="search-input" type="search" autocomplete="off" placeholder="キーワード検索">
         </label>
-        <span id="resultCount" class="result-count"></span>
+        <div class="toolbar-actions">
+          <button id="randomButton" class="random-button" type="button">ランダム</button>
+          <span id="resultCount" class="result-count"></span>
+        </div>
       </div>
       <div id="tileGrid" class="tile-grid" aria-live="polite"></div>
     </section>

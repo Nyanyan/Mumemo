@@ -13,6 +13,7 @@ const postedAtFormatter = new Intl.DateTimeFormat("ja-JP", {
 let entries = [];
 let lightbox = null;
 let tileFitFrame = 0;
+let homeRandomOrder = null;
 
 const tileFitClasses = [
   "fit-title-more",
@@ -50,6 +51,38 @@ function addSlugs(items) {
 
 function hrefFor(entry) {
   return `/${encodeURIComponent(entry.slug)}`;
+}
+
+function navigateToEntry(entry) {
+  window.history.pushState({}, "", hrefFor(entry));
+  route();
+  window.scrollTo({ top: 0, behavior: "auto" });
+}
+
+function shuffledItems(items) {
+  const shuffled = [...items];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+  return shuffled;
+}
+
+function randomPostCandidates(currentEntry = null) {
+  const currentSlugValue = currentEntry?.slug || "";
+  const candidates = entries.filter((entry) => !entry.fixed && entry.slug !== currentSlugValue);
+  if (candidates.length > 0) {
+    return candidates;
+  }
+  return entries.filter((entry) => entry.slug !== currentSlugValue);
+}
+
+function randomPostExcept(currentEntry = null) {
+  const candidates = randomPostCandidates(currentEntry);
+  if (candidates.length === 0) {
+    return null;
+  }
+  return candidates[Math.floor(Math.random() * candidates.length)];
 }
 
 function absoluteHrefFor(entry) {
@@ -264,13 +297,16 @@ function renderHome() {
   const input = document.querySelector("#searchInput");
   const grid = document.querySelector("#tileGrid");
   const resultCount = document.querySelector("#resultCount");
+  const randomButton = document.querySelector("#randomButton");
 
   const draw = () => {
     const query = input.value.trim().toLocaleLowerCase("ja");
     const fixedItems = entries.filter((entry) => entry.fixed);
     const searchableItems = entries.filter((entry) => !entry.fixed);
+    const orderedItems = homeRandomOrder || searchableItems;
+    const searchBase = homeRandomOrder ? [...fixedItems, ...orderedItems] : entries;
     const matchesQuery = (entry) => `${entry.title}\n${entry.body}\n${formatPostedAt(entry)}`.toLocaleLowerCase("ja").includes(query);
-    const matched = query ? entries.filter(matchesQuery) : searchableItems;
+    const matched = query ? searchBase.filter(matchesQuery) : orderedItems;
     const shown = query ? matched : [...fixedItems, ...matched];
 
     grid.replaceChildren(...shown.map(createTile));
@@ -282,6 +318,11 @@ function renderHome() {
     scheduleTileTextFit();
   };
 
+  randomButton?.addEventListener("click", () => {
+    homeRandomOrder = shuffledItems(entries.filter((entry) => !entry.fixed));
+    input.value = "";
+    draw();
+  });
   input.addEventListener("input", draw);
   draw();
 }
@@ -424,40 +465,82 @@ function createShareActions(entry) {
   return section;
 }
 
+function shareHrefForTarget(target, shareUrl, shareText) {
+  const params = {
+    x: () => `https://twitter.com/intent/tweet?${new URLSearchParams({ text: shareText, url: shareUrl })}`,
+    facebook: () => `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({ u: shareUrl })}`,
+    line: () => `https://social-plugins.line.me/lineit/share?${new URLSearchParams({ url: shareUrl })}`,
+    bluesky: () => `https://bsky.app/intent/compose?${new URLSearchParams({ text: `${shareText}\n${shareUrl}` })}`
+  };
+  return params[target]?.() || shareUrl;
+}
+
 function setupHomeShareButton() {
+  const share = document.querySelector(".home-share");
   const button = document.querySelector(".home-share-button");
-  if (!button) {
+  const menu = document.querySelector("#homeShareMenu");
+  if (!(share instanceof HTMLElement) || !(button instanceof HTMLButtonElement) || !(menu instanceof HTMLElement)) {
     return;
   }
 
-  const label = button.querySelector(".home-share-label");
-  const defaultLabel = label?.textContent || "\u5171\u6709";
+  const shareUrl = new URL("/", window.location.origin).href;
+  const copyButton = menu.querySelector("[data-home-share-copy]");
+  const nativeButton = menu.querySelector("[data-home-share-native]");
+  const status = menu.querySelector(".home-share-status");
   let resetTimer = 0;
 
-  button.addEventListener("click", async () => {
-    const shareUrl = new URL("/", window.location.origin).href;
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: siteTitle,
-          text: siteTitle,
-          url: shareUrl
-        });
-        return;
-      } catch (error) {
-        if (error.name === "AbortError") {
-          return;
-        }
-      }
-    }
+  menu.querySelectorAll("[data-home-share-target]").forEach((link) => {
+    const target = link.getAttribute("data-home-share-target") || "";
+    link.href = shareHrefForTarget(target, shareUrl, siteTitle);
+  });
 
+  if (nativeButton instanceof HTMLButtonElement && !navigator.share) {
+    nativeButton.hidden = true;
+  }
+
+  const setOpen = (open) => {
+    menu.hidden = !open;
+    button.setAttribute("aria-expanded", String(open));
+  };
+
+  button.addEventListener("click", () => {
+    setOpen(menu.hidden);
+  });
+
+  copyButton?.addEventListener("click", async () => {
     const copied = await copyText(shareUrl);
-    if (label) {
-      label.textContent = copied ? "\u30b3\u30d4\u30fc\u6e08\u307f" : "\u30b3\u30d4\u30fc\u4e0d\u53ef";
+    if (status) {
+      status.textContent = copied ? "コピーしました" : "コピーできませんでした";
       window.clearTimeout(resetTimer);
       resetTimer = window.setTimeout(() => {
-        label.textContent = defaultLabel;
+        status.textContent = "";
       }, 1800);
+    }
+  });
+
+  nativeButton?.addEventListener("click", async () => {
+    if (!navigator.share) {
+      return;
+    }
+    try {
+      await navigator.share({ title: siteTitle, text: siteTitle, url: shareUrl });
+      setOpen(false);
+    } catch (error) {
+      if (error.name !== "AbortError" && status) {
+        status.textContent = "共有を開けませんでした";
+      }
+    }
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!share.contains(event.target)) {
+      setOpen(false);
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      setOpen(false);
     }
   });
 }
@@ -490,15 +573,19 @@ async function copyText(text) {
   }
 }
 
-function createDetailAuthorLink() {
-  const headerAuthorLink = document.querySelector(".site-header .author-link");
-  const link = document.createElement("a");
-  link.className = "detail-author-link";
-  link.href = headerAuthorLink?.href || "https://nyanyan.dev/";
-  link.target = "_blank";
-  link.rel = headerAuthorLink?.rel || "author noopener noreferrer";
-  link.textContent = headerAuthorLink?.textContent || "\u4f5c\u8005Web\u30b5\u30a4\u30c8";
-  return link;
+function createRandomPostButton(currentEntry) {
+  const button = document.createElement("button");
+  button.className = "detail-random-button";
+  button.type = "button";
+  button.textContent = "ランダム投稿";
+  button.disabled = randomPostCandidates(currentEntry).length === 0;
+  button.addEventListener("click", () => {
+    const entry = randomPostExcept(currentEntry);
+    if (entry) {
+      navigateToEntry(entry);
+    }
+  });
+  return button;
 }
 function renderDetail(entry) {
   document.body.dataset.view = "detail";
@@ -515,7 +602,7 @@ function renderDetail(entry) {
 
   const actions = document.createElement("div");
   actions.className = "detail-actions";
-  actions.append(back, createDetailAuthorLink());
+  actions.append(back, createRandomPostButton(entry));
 
   const hero = document.createElement("div");
   hero.className = "detail-hero";
