@@ -107,6 +107,31 @@ function formatPostedAt(entry) {
   return postedAtFormatter.format(date);
 }
 
+function appendLinkedText(parent, text) {
+  const urlPattern = /https?:\/\/[^\s]+/g;
+  let lastIndex = 0;
+
+  for (const match of text.matchAll(urlPattern)) {
+    const url = match[0];
+    const index = match.index || 0;
+    if (index > lastIndex) {
+      parent.append(document.createTextNode(text.slice(lastIndex, index)));
+    }
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = url;
+    parent.append(link);
+    lastIndex = index + url.length;
+  }
+
+  if (lastIndex < text.length) {
+    parent.append(document.createTextNode(text.slice(lastIndex)));
+  }
+}
+
 function createStatusMessage(text) {
   const message = document.createElement("p");
   message.className = "empty-state";
@@ -251,7 +276,7 @@ function renderDetail(entry) {
 
   const text = document.createElement("p");
   text.className = "detail-text";
-  text.textContent = entry.body;
+  appendLinkedText(text, entry.body);
 
   copy.append(title, text);
   const postedAt = createPostedAt(entry);
