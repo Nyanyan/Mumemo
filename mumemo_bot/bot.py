@@ -820,6 +820,12 @@ def create_app(config: BotConfig) -> App:
                 image=image,
                 images=images,
             )
+            git_status = _sync_git_after_change(
+                action="update",
+                title=result.title,
+                logger=logger,
+            )
+            confirmation_text = _append_status(f"\u66f4\u65b0\u3057\u307e\u3057\u305f: {result.title}", git_status)
             if isinstance(message_ts, str) and message_ts:
                 _refresh_manage_message(
                     client=client,
@@ -827,14 +833,14 @@ def create_app(config: BotConfig) -> App:
                     channel_id=channel_id,
                     message_ts=message_ts,
                     fallback_user_id=user_id,
-                    fallback_text=f"更新しました: {result.title}",
+                    fallback_text=confirmation_text,
                 )
             else:
                 _post_ephemeral(
                     client=client,
                     channel_id=channel_id,
                     user_id=user_id,
-                    text=f"更新しました: {result.title}",
+                    text=confirmation_text,
                 )
         except Exception as error:
             logger.exception("Failed to update Mumemo memo")
