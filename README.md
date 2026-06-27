@@ -68,7 +68,7 @@ Body text line 2
 
 New top-level Slack posts are not published immediately. The bot replies in the thread with a review message and buttons. Detected URLs are shown in the review. Press `URL修正` to edit only those URLs before publishing, `承認して公開` to save it to `docs/data/memos.json`, `再読み込み` to rebuild the review from the original Slack message, or `破棄` to remove only the Slack draft review. After publishing, Slack shows the public Mumemo page URL.
 
-When a new Slack post has the same title as an existing memo, the review shows both versions. Use `上書きして投稿` to replace the existing memo with the new Slack post identity, `既存投稿に上書き` to keep the existing memo identity and replace its body/images, or `別投稿として投稿` to publish a separate memo with the same title.
+When a new Slack post has the same title as an existing memo, the review shows both versions. Use `既存投稿に追記` to append the new body/images to the existing memo, `別で投稿` to publish a separate memo while assigning the new memo a suffixed slug, or `上書き投稿` to replace the existing memo body/images while keeping its URL.
 
 Attached image files are saved under `docs/assets/slack/<title>/`. Small JPEG tile thumbnails are generated under `docs/assets/slack/<title>/thumbs/`, while every attached original image is recorded in `images` so the detail page can show the full set. Detail page images can be clicked to open a larger view. Approved posts are inserted above older non-fixed posts, while fixed entries such as `これは何？` remain first.
 

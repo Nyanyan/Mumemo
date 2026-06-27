@@ -10,6 +10,7 @@ from mumemo_bot.site_store import (
     MemoNotFoundError,
     ProtectedMemoError,
     StoreResult,
+    append_memo_with_post,
     delete_memo,
     download_images,
     find_title_conflict,
@@ -131,7 +132,7 @@ def create_app(config: BotConfig) -> App:
         try:
             post = resolve_review_post(channel_id, message_ts, client)
             target_memo_id = memo_id
-            if mode in {"overwrite_post", "overwrite_existing"} and not target_memo_id:
+            if mode in {"append_existing", "overwrite_post", "overwrite_existing"} and not target_memo_id:
                 conflict = find_title_conflict(config, post)
                 if conflict is None:
                     raise ValueError("上書き先の既存投稿が見つかりません")
@@ -156,26 +157,29 @@ def create_app(config: BotConfig) -> App:
                 return
             claimed = True
 
-            if mode == "overwrite_post":
-                result = overwrite_memo_with_post(
+            if mode == "append_existing":
+                result = append_memo_with_post(
                     config,
                     memo_id=str(target_memo_id),
                     post=post,
-                    preserve_existing_identity=False,
                 )
-                status = _publish_status("既存投稿を新しいSlack投稿として上書きしました。", result)
-            elif mode == "overwrite_existing":
+                status = _publish_status(
+                    f"既存投稿に追記しました。追加画像: {result.image_count}件",
+                    result,
+                    include_image_count=False,
+                )
+            elif mode in {"overwrite_post", "overwrite_existing"}:
                 result = overwrite_memo_with_post(
                     config,
                     memo_id=str(target_memo_id),
                     post=post,
                     preserve_existing_identity=True,
                 )
-                status = _publish_status("既存投稿に上書きしました。", result)
+                status = _publish_status("上書き投稿しました。", result)
             else:
                 result = save_post_as_memo(config, post)
                 status = _publish_status(
-                    "公開しました。" if result.created else "このSlack投稿はすでにMumemoへ保存済みです。",
+                    "別で投稿しました。" if mode == "separate" else "公開しました。" if result.created else "このSlack投稿はすでにMumemoへ保存済みです。",
                     result,
                     include_image_count=result.created,
                 )
@@ -388,7 +392,7 @@ def create_app(config: BotConfig) -> App:
         review_message_ts = str(body.get("message", {}).get("ts") or "")
         user_id = str(body.get("user", {}).get("id") or "unknown")
         print(
-            "[slack:action] overwrite as new Slack post clicked: "
+            "[slack:action] overwrite memo clicked: "
             f"user={user_id}, channel={channel_id}, message_ts={message_ts}, "
             f"memo_id={memo_id}, review_ts={review_message_ts}",
             flush=True,
@@ -400,7 +404,7 @@ def create_app(config: BotConfig) -> App:
             message_ts=message_ts,
             review_message_ts=review_message_ts,
             user_id=user_id,
-            mode="overwrite_post",
+            mode="overwrite_existing",
             memo_id=memo_id,
         )
 
@@ -420,7 +424,7 @@ def create_app(config: BotConfig) -> App:
         review_message_ts = str(body.get("message", {}).get("ts") or "")
         user_id = str(body.get("user", {}).get("id") or "unknown")
         print(
-            "[slack:action] overwrite existing memo clicked: "
+            "[slack:action] append existing memo clicked: "
             f"user={user_id}, channel={channel_id}, message_ts={message_ts}, "
             f"memo_id={memo_id}, review_ts={review_message_ts}",
             flush=True,
@@ -432,7 +436,7 @@ def create_app(config: BotConfig) -> App:
             message_ts=message_ts,
             review_message_ts=review_message_ts,
             user_id=user_id,
-            mode="overwrite_existing",
+            mode="append_existing",
             memo_id=memo_id,
         )
 

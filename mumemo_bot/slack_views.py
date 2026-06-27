@@ -124,40 +124,41 @@ def review_blocks(
                 [
                     {
                         "type": "button",
-                        "text": {"type": "plain_text", "text": "上書きして投稿"},
+                        "text": {"type": "plain_text", "text": "既存投稿に追記"},
                         "style": "primary",
-                        "action_id": OVERWRITE_REVIEW_POST_ACTION_ID,
-                        "value": value,
-                        "confirm": {
-                            "title": {"type": "plain_text", "text": "新しい投稿で置き換えますか?"},
-                            "text": {
-                                "type": "mrkdwn",
-                                "text": "既存投稿を、このSlack投稿の内容・投稿日・画像で置き換えます。",
-                            },
-                            "confirm": {"type": "plain_text", "text": "上書き"},
-                            "deny": {"type": "plain_text", "text": "戻る"},
-                        },
-                    },
-                    {
-                        "type": "button",
-                        "text": {"type": "plain_text", "text": "既存投稿に上書き"},
                         "action_id": OVERWRITE_EXISTING_MEMO_ACTION_ID,
                         "value": value,
                         "confirm": {
-                            "title": {"type": "plain_text", "text": "既存投稿に上書きしますか?"},
+                            "title": {"type": "plain_text", "text": "既存投稿に追記しますか?"},
                             "text": {
                                 "type": "mrkdwn",
-                                "text": "既存投稿のID・投稿日を保ったまま、本文と画像をこのSlack投稿で置き換えます。",
+                                "text": "既存投稿の末尾に、このSlack投稿の本文と画像を追加します。",
                             },
-                            "confirm": {"type": "plain_text", "text": "上書き"},
+                            "confirm": {"type": "plain_text", "text": "追記"},
                             "deny": {"type": "plain_text", "text": "戻る"},
                         },
                     },
                     {
                         "type": "button",
-                        "text": {"type": "plain_text", "text": "別投稿として投稿"},
+                        "text": {"type": "plain_text", "text": "別で投稿"},
                         "action_id": PUBLISH_SEPARATE_MEMO_ACTION_ID,
                         "value": value,
+                    },
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "上書き投稿"},
+                        "style": "danger",
+                        "action_id": OVERWRITE_REVIEW_POST_ACTION_ID,
+                        "value": value,
+                        "confirm": {
+                            "title": {"type": "plain_text", "text": "上書き投稿しますか?"},
+                            "text": {
+                                "type": "mrkdwn",
+                                "text": "既存投稿のURLを保ったまま、本文と画像をこのSlack投稿で置き換えます。",
+                            },
+                            "confirm": {"type": "plain_text", "text": "上書き"},
+                            "deny": {"type": "plain_text", "text": "戻る"},
+                        },
                     },
                 ]
             )

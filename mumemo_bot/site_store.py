@@ -110,6 +110,8 @@ def save_post_as_memo(config: BotConfig, post: MumemoSlackPost) -> StoreResult:
             )
 
         memo = _memo_from_post(config, post, saved_images)
+        if _has_title_conflict(memos, post):
+            memo["slug"] = _next_duplicate_slug(memos, post.title)
         insert_index = _new_memo_insert_index(memos)
         memos.insert(insert_index, memo)
         _write_memos(config.data_path, memos)
@@ -258,6 +260,63 @@ def overwrite_memo_with_post(
         page_url=page_url,
     )
 
+
+def append_memo_with_post(
+    config: BotConfig,
+    *,
+    memo_id: str,
+    post: MumemoSlackPost,
+) -> StoreResult:
+    saved_images = download_images(
+        bot_token=config.slack_bot_token,
+        post=post,
+        asset_dir=config.asset_dir,
+        asset_url_prefix=config.asset_url_prefix,
+    )
+
+    with _STORE_LOCK:
+        memos = _load_memos(config.data_path)
+        index = _find_memo_index(memos, memo_id)
+        memo = memos[index]
+        if bool(memo.get("fixed")):
+            raise ProtectedMemoError("固定メモはSlack管理画面から追記できません")
+
+        old_body = str(memo.get("body") or "")
+        memo["body"] = _append_body(old_body, post.body)
+
+        new_image_urls = [image.url for image in saved_images]
+        current_images = [
+            image_url
+            for image_url in _memo_images(memo)
+            if image_url != config.default_image
+        ]
+        merged_images = _merge_image_urls(current_images, new_image_urls)
+        if merged_images:
+            memo["images"] = merged_images
+        else:
+            memo.pop("images", None)
+
+        current_image = str(memo.get("image") or "").strip()
+        if saved_images and (not current_image or current_image == config.default_image):
+            memo["image"] = saved_images[0].url
+            memo["thumbnail"] = saved_images[0].thumbnail_url
+        elif not str(memo.get("thumbnail") or "").strip():
+            thumbnail = _thumbnail_url_for_image_url(config, current_image)
+            if thumbnail:
+                memo["thumbnail"] = thumbnail
+
+        _write_memos(config.data_path, memos)
+        build_route_pages(config)
+        page_url = _memo_page_url(config, memos, index)
+
+    return StoreResult(
+        created=False,
+        title=str(memo.get("title") or post.title),
+        image_count=len(saved_images),
+        data_path=config.data_path,
+        memo_id=_memo_ids(memos)[index],
+        page_url=page_url,
+    )
 
 def delete_memo(config: BotConfig, *, memo_id: str) -> MemoChangeResult:
     with _STORE_LOCK:
@@ -439,6 +498,44 @@ def _find_existing_slack_memo(
     return None
 
 
+def _has_title_conflict(memos: list[dict[str, Any]], post: MumemoSlackPost) -> bool:
+    title_key = _title_key(post.title)
+    return any(
+        not bool(memo.get("fixed"))
+        and not _same_slack_source(memo, post)
+        and _title_key(str(memo.get("title") or "")) == title_key
+        for memo in memos
+    )
+
+
+def _next_duplicate_slug(memos: list[dict[str, Any]], title: str) -> str:
+    base = _slug_base(title)
+    existing_slugs = set(_memo_slugs(memos))
+    suffix = 2
+    while f"{base}-{suffix}" in existing_slugs:
+        suffix += 1
+    return f"{base}-{suffix}"
+
+
+def _append_body(existing_body: str, new_body: str) -> str:
+    existing_body = existing_body.rstrip()
+    new_body = new_body.strip()
+    if existing_body and new_body:
+        return f"{existing_body}\n\n{new_body}"
+    return existing_body or new_body
+
+
+def _merge_image_urls(existing_images: list[str], new_images: list[str]) -> list[str]:
+    merged: list[str] = []
+    seen: set[str] = set()
+    for image_url in [*existing_images, *new_images]:
+        clean_image_url = image_url.strip()
+        if not clean_image_url or clean_image_url in seen:
+            continue
+        seen.add(clean_image_url)
+        merged.append(clean_image_url)
+    return merged
+
 def _same_slack_source(memo: dict[str, Any], post: MumemoSlackPost) -> bool:
     source = memo.get("source")
     if not isinstance(source, dict):
@@ -519,7 +616,7 @@ def _preserve_existing_identity(
     memo_id: str,
 ) -> None:
     new_memo["id"] = str(old_memo.get("id") or memo_id)
-    for key in ("source", "postedAt", "posted_at", "createdAt", "created_at"):
+    for key in ("slug", "source", "postedAt", "posted_at", "createdAt", "created_at"):
         if key in old_memo:
             new_memo[key] = old_memo[key]
 
