@@ -206,6 +206,8 @@
     .author-link:focus-visible,
     .home-share-button:hover,
     .home-share-button:focus-visible,
+    .share-menu-button:hover,
+    .share-menu-button:focus-visible,
     .random-button:hover,
     .random-button:focus-visible {
       border-color: var(--brand);
@@ -589,45 +591,36 @@
     }
 
     .share-actions {
-      display: grid;
-      gap: 10px;
+      position: relative;
+      display: inline-grid;
+      justify-items: start;
       min-width: 0;
       padding-top: 2px;
     }
 
-    .share-title {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      margin: 0;
-      color: var(--muted);
-      font-size: 0.92rem;
-      font-weight: 800;
-      line-height: 1.35;
+    .mobile-share-actions {
+      display: none;
     }
 
-    .share-title-icon {
-      width: 18px;
-      height: 18px;
-      flex: 0 0 auto;
+    .desktop-share-actions {
+      justify-self: end;
     }
 
-    .share-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      min-width: 0;
+    .share-menu {
+      position: relative;
+      display: inline-block;
+      max-width: 100%;
     }
 
-    .share-button {
+    .share-menu-button {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      min-height: 38px;
+      min-height: 40px;
       max-width: 100%;
-      padding: 7px 11px;
-      border: 1px solid rgba(49, 30, 77, 0.28);
+      padding: 8px 12px;
+      border: 1px solid rgba(49, 30, 77, 0.34);
       border-radius: 8px;
       background: rgba(251, 247, 255, 0.88);
       color: var(--brand-strong);
@@ -635,9 +628,55 @@
       font-size: 0.92rem;
       font-weight: 700;
       line-height: 1.25;
+      list-style: none;
       text-align: center;
+      white-space: nowrap;
+    }
+
+    .share-menu-button::-webkit-details-marker {
+      display: none;
+    }
+
+    .share-menu-panel {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      z-index: 30;
+      display: grid;
+      gap: 6px;
+      width: max-content;
+      min-width: 150px;
+      max-width: min(240px, calc(100vw - 32px));
+      padding: 8px;
+      border: 1px solid rgba(49, 30, 77, 0.22);
+      border-radius: 8px;
+      background: rgba(251, 247, 255, 0.98);
+      box-shadow: var(--shadow);
+    }
+
+    .share-menu-item {
+      display: flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 6px 8px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--brand-strong);
+      cursor: pointer;
+      font: inherit;
+      font-size: 0.9rem;
+      font-weight: 700;
+      line-height: 1.25;
+      text-align: left;
       text-decoration: none;
       white-space: nowrap;
+    }
+
+    .share-menu-item:hover,
+    .share-menu-item:focus-visible {
+      background: #f1e6fb;
+      outline: none;
     }
 
     .share-button-icon {
@@ -646,19 +685,12 @@
       flex: 0 0 auto;
     }
 
-    .share-button:hover,
-    .share-button:focus-visible {
-      border-color: var(--brand);
-      background: var(--panel);
-      outline: none;
-    }
-
     .share-status {
       min-height: 1.35em;
+      padding: 0 8px;
       color: var(--muted);
       font-size: 0.88rem;
     }
-
     .lightbox {
       position: fixed;
       inset: 0;
@@ -735,6 +767,11 @@
 
       body[data-view="home"] .header-random-button {
         display: inline-flex;
+        order: 1;
+      }
+
+      .home-share {
+        order: 2;
       }
 
       .toolbar-actions .random-button {
@@ -753,13 +790,29 @@
 
       .detail-actions {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 10px;
         justify-self: stretch;
       }
 
+      .desktop-share-actions {
+        display: none;
+      }
+
+      .mobile-share-actions {
+        display: inline-grid;
+        padding-top: 0;
+      }
+
+      .detail-actions .share-actions,
+      .detail-actions .share-menu,
+      .detail-actions .share-menu-button {
+        width: 100%;
+      }
+
       .detail-actions .back-link,
-      .detail-actions .detail-random-button {
+      .detail-actions .detail-random-button,
+      .detail-actions .share-menu-button {
         justify-content: center;
         min-width: 0;
         text-align: center;
@@ -778,9 +831,6 @@
         order: 0;
       }
 
-      .detail-side > .share-actions {
-        order: 1;
-      }
 
       .brand-link {
         grid-template-columns: 44px minmax(0, 1fr);

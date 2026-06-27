@@ -391,36 +391,26 @@ function createShareIcon(className) {
   return icon;
 }
 
-function appendShareButtonIcon(button, label) {
-  button.append(createShareIcon("share-button-icon"), document.createTextNode(label));
-}
 
-function createShareLink(label, href) {
-  const link = document.createElement("a");
-  link.className = "share-button";
-  link.href = href;
-  link.target = "_blank";
-  link.rel = "noopener noreferrer";
-  link.textContent = label;
-  return link;
-}
-
-function createShareActions(entry) {
+function createShareActions(entry, modifier = "") {
   const shareUrl = absoluteHrefFor(entry);
   const shareText = shareTextFor(entry);
   const section = document.createElement("section");
-  section.className = "share-actions";
+  section.className = modifier ? `share-actions ${modifier}` : "share-actions";
   section.setAttribute("aria-label", "\u3053\u306e\u6295\u7a3f\u3092\u5171\u6709");
 
-  const title = document.createElement("h3");
-  title.className = "share-title";
-  title.append(createShareIcon("share-title-icon"), document.createTextNode("\u5171\u6709"));
+  const details = document.createElement("details");
+  details.className = "share-menu";
 
-  const row = document.createElement("div");
-  row.className = "share-row";
+  const summary = document.createElement("summary");
+  summary.className = "share-menu-button";
+  summary.append(createShareIcon("share-button-icon"), document.createTextNode("\u5171\u6709"));
+
+  const menu = document.createElement("div");
+  menu.className = "share-menu-panel";
 
   const copyButton = document.createElement("button");
-  copyButton.className = "share-button";
+  copyButton.className = "share-menu-item";
   copyButton.type = "button";
   copyButton.textContent = "\u30ea\u30f3\u30af\u3092\u30b3\u30d4\u30fc";
 
@@ -437,13 +427,13 @@ function createShareActions(entry) {
       copyButton.textContent = "\u30ea\u30f3\u30af\u3092\u30b3\u30d4\u30fc";
     }, 1800);
   });
-  row.append(copyButton);
+  menu.append(copyButton);
 
   if (navigator.share) {
     const nativeShareButton = document.createElement("button");
-    nativeShareButton.className = "share-button";
+    nativeShareButton.className = "share-menu-item";
     nativeShareButton.type = "button";
-    appendShareButtonIcon(nativeShareButton, "\u7aef\u672b\u3067\u5171\u6709");
+    nativeShareButton.textContent = "\u7aef\u672b\u3067\u5171\u6709";
     nativeShareButton.addEventListener("click", async () => {
       try {
         await navigator.share({
@@ -451,23 +441,34 @@ function createShareActions(entry) {
           text: shareText,
           url: shareUrl
         });
+        details.open = false;
       } catch (error) {
         if (error.name !== "AbortError") {
           status.textContent = "\u5171\u6709\u3092\u958b\u3051\u307e\u305b\u3093\u3067\u3057\u305f";
         }
       }
     });
-    row.append(nativeShareButton);
+    menu.append(nativeShareButton);
   }
 
-  row.append(
-    createShareLink("X", `https://twitter.com/intent/tweet?${new URLSearchParams({ text: shareText, url: shareUrl })}`),
-    createShareLink("Facebook", `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({ u: shareUrl })}`),
-    createShareLink("LINE", `https://social-plugins.line.me/lineit/share?${new URLSearchParams({ url: shareUrl })}`),
-    createShareLink("Bluesky", `https://bsky.app/intent/compose?${new URLSearchParams({ text: `${shareText}\n${shareUrl}` })}`)
-  );
+  [
+    ["X", `https://twitter.com/intent/tweet?${new URLSearchParams({ text: shareText, url: shareUrl })}`],
+    ["Facebook", `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({ u: shareUrl })}`],
+    ["LINE", `https://social-plugins.line.me/lineit/share?${new URLSearchParams({ url: shareUrl })}`],
+    ["Bluesky", `https://bsky.app/intent/compose?${new URLSearchParams({ text: `${shareText}\n${shareUrl}` })}`]
+  ].forEach(([label, href]) => {
+    const link = document.createElement("a");
+    link.className = "share-menu-item";
+    link.href = href;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = label;
+    menu.append(link);
+  });
 
-  section.append(title, row, status);
+  menu.append(status);
+  details.append(summary, menu);
+  section.append(details);
   return section;
 }
 
@@ -479,6 +480,17 @@ function shareHrefForTarget(target, shareUrl, shareText) {
     bluesky: () => `https://bsky.app/intent/compose?${new URLSearchParams({ text: `${shareText}\n${shareUrl}` })}`
   };
   return params[target]?.() || shareUrl;
+}
+
+function closeShareMenus(event = null) {
+  document.querySelectorAll(".share-menu[open]").forEach((menu) => {
+    if (!(menu instanceof HTMLDetailsElement)) {
+      return;
+    }
+    if (!event || !menu.contains(event.target)) {
+      menu.open = false;
+    }
+  });
 }
 
 function setupHomeShareButton() {
@@ -544,6 +556,7 @@ function setupHomeShareButton() {
     }
   });
 
+
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       setOpen(false);
@@ -608,7 +621,7 @@ function renderDetail(entry) {
 
   const actions = document.createElement("div");
   actions.className = "detail-actions";
-  actions.append(back, createRandomPostButton(entry));
+  actions.append(back, createRandomPostButton(entry), createShareActions(entry, "mobile-share-actions"));
 
   const hero = document.createElement("div");
   hero.className = "detail-hero";
@@ -634,7 +647,7 @@ function renderDetail(entry) {
 
   const side = document.createElement("div");
   side.className = "detail-side";
-  side.append(copy, createShareActions(entry));
+  side.append(copy, createShareActions(entry, "desktop-share-actions"));
 
   hero.append(media, side);
   detail.append(actions, hero);
@@ -771,9 +784,13 @@ document.addEventListener("click", (event) => {
   window.scrollTo({ top: 0, behavior: "auto" });
 });
 
+document.addEventListener("click", (event) => {
+  closeShareMenus(event);
+});
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     closeImageLightbox();
+    closeShareMenus();
   }
 });
 
