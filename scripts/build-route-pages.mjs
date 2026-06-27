@@ -11,6 +11,9 @@ const fallbackPath = path.join(docsDir, "404.html");
 const ogpManifestPath = path.join(docsDir, "assets", "ogp", "manifest.json");
 const ogpGeneratorPath = path.join(repoRoot, "scripts", "generate-ogp-images.py");
 const defaultImage = "/website_icon_small.png";
+const homeOgpSourcePath = path.join(repoRoot, "OGP.jpg");
+const homeOgpDocsPath = path.join(docsDir, "OGP.jpg");
+const homeOgpImage = "/OGP.jpg";
 
 function slugBase(value) {
   const normalized = value.normalize("NFKC").trim();
@@ -47,6 +50,18 @@ function runOgpGenerator() {
   }
   if (result.status !== 0) {
     throw new Error(`OGP image generation failed with exit code ${result.status}`);
+  }
+}
+
+async function syncHomeOgpImage() {
+  try {
+    await fs.copyFile(homeOgpSourcePath, homeOgpDocsPath);
+    return true;
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      return false;
+    }
+    throw error;
   }
 }
 
@@ -178,8 +193,8 @@ function escapeAttribute(value) {
   return escapeHtml(value).replace(/"/g, "&quot;");
 }
 
-function homeMeta({ siteTitle, siteDescription, baseUrl }) {
-  const image = absoluteUrl(baseUrl, defaultImage);
+function homeMeta({ siteTitle, siteDescription, baseUrl, hasHomeOgpImage }) {
+  const image = absoluteUrl(baseUrl, hasHomeOgpImage ? homeOgpImage : defaultImage);
   return {
     siteName: siteTitle,
     title: siteTitle,
@@ -187,9 +202,9 @@ function homeMeta({ siteTitle, siteDescription, baseUrl }) {
     type: "website",
     url: absoluteUrl(baseUrl, "/"),
     image,
-    imageWidth: null,
-    imageHeight: null,
-    twitterCard: "summary"
+    imageWidth: hasHomeOgpImage ? 1200 : null,
+    imageHeight: hasHomeOgpImage ? 630 : null,
+    twitterCard: hasHomeOgpImage ? "summary_large_image" : "summary"
   };
 }
 
@@ -216,6 +231,7 @@ if (!Array.isArray(rawMemos)) {
 }
 
 runOgpGenerator();
+const hasHomeOgpImage = await syncHomeOgpImage();
 
 const memos = addSlugs(rawMemos);
 const baseUrl = await siteBaseUrl();
@@ -223,7 +239,7 @@ const ogpManifest = await readJson(ogpManifestPath, {});
 const indexHtml = await fs.readFile(indexPath, "utf8");
 const siteTitle = extractTitle(indexHtml);
 const siteDescription = extractDescription(indexHtml);
-const defaultHtml = renderHtml(indexHtml, homeMeta({ siteTitle, siteDescription, baseUrl }));
+const defaultHtml = renderHtml(indexHtml, homeMeta({ siteTitle, siteDescription, baseUrl, hasHomeOgpImage }));
 
 await fs.writeFile(indexPath, defaultHtml, "utf8");
 await fs.writeFile(fallbackPath, defaultHtml, "utf8");
