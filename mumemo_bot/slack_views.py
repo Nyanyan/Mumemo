@@ -268,13 +268,17 @@ def manage_blocks(
     items: list[Any],
     total_count: int,
     shown_count: int,
+    title: str = "Mumemo 投稿整理",
+    description: str | None = None,
+    empty_text: str = "整理できる投稿はまだありません。",
 ) -> list[dict[str, Any]]:
+    description = description or f"新しい順に {shown_count}/{total_count} 件を表示しています。"
     blocks: list[dict[str, Any]] = [
         {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": f"*Mumemo 投稿整理*\n新しい順に {shown_count}/{total_count} 件を表示しています。",
+                "text": f"*{_mrkdwn_text(title)}*\n{_mrkdwn_text(description)}",
             },
         }
     ]
@@ -283,7 +287,7 @@ def manage_blocks(
         blocks.append(
             {
                 "type": "section",
-                "text": {"type": "mrkdwn", "text": "整理できる投稿はまだありません。"},
+                "text": {"type": "mrkdwn", "text": _mrkdwn_text(empty_text)},
             }
         )
         return blocks

@@ -2,6 +2,7 @@ from threading import Lock
 from typing import Any
 import json
 import re
+import unicodedata
 
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
@@ -1011,9 +1012,11 @@ def _post_manage_response(
     command_text: str,
     ephemeral: bool,
 ) -> None:
-    command = command_text.strip().casefold()
-    if command in {"help", "ヘルプ", "?"}:
-        text = "`mumemo` または `mumemo list` で投稿整理を開けます。各投稿のボタンから編集・削除できます。"
+    command = command_text.strip()
+    normalized_command = _normalized_manage_command(command)
+
+    if _is_manage_help_command(normalized_command):
+        text = _manage_help_text()
         if ephemeral:
             _post_ephemeral(client=client, channel_id=channel_id, user_id=user_id, text=text)
         else:
@@ -1021,9 +1024,24 @@ def _post_manage_response(
         return
 
     items = list_memos(config, include_fixed=True)
-    shown = items[:MANAGE_LIST_LIMIT]
-    blocks = manage_blocks(items=shown, total_count=len(items), shown_count=len(shown))
-    text = f"Mumemo 投稿整理: {len(shown)}/{len(items)}件"
+    query = "" if _is_manage_list_command(normalized_command) else _manage_search_query(command)
+    if query:
+        matched_items = _filter_memos_by_title(items, query)
+        shown = matched_items[:MANAGE_LIST_LIMIT]
+        blocks = manage_blocks(
+            items=shown,
+            total_count=len(matched_items),
+            shown_count=len(shown),
+            title=f"Mumemo 投稿検索: {query}",
+            description=f"タイトルに一致する投稿を {len(shown)}/{len(matched_items)} 件表示しています。",
+            empty_text=f"タイトルに「{query}」を含む投稿は見つかりませんでした。",
+        )
+        text = f"Mumemo 投稿検索: {query} ({len(shown)}/{len(matched_items)}件)"
+    else:
+        shown = items[:MANAGE_LIST_LIMIT]
+        blocks = manage_blocks(items=shown, total_count=len(items), shown_count=len(shown))
+        text = f"Mumemo 投稿整理: {len(shown)}/{len(items)}件"
+
     if ephemeral:
         client.chat_postEphemeral(
             channel=channel_id,
@@ -1038,6 +1056,58 @@ def _post_manage_response(
             text=text,
             blocks=blocks,
         )
+
+
+def _normalized_manage_command(command_text: str) -> str:
+    return unicodedata.normalize("NFKC", command_text).strip().casefold()
+
+
+def _is_manage_help_command(command: str) -> bool:
+    return command in {"help", "h", "?", "ヘルプ", "使い方"}
+
+
+def _is_manage_list_command(command: str) -> bool:
+    return command in {"", "list", "ls", "一覧", "整理", "manage"}
+
+
+def _manage_search_query(command_text: str) -> str:
+    query = unicodedata.normalize("NFKC", command_text).strip()
+    lowered = query.casefold()
+    for prefix in ("edit ", "search ", "find ", "編集 ", "検索 "):
+        if lowered.startswith(prefix.casefold()):
+            return query[len(prefix) :].strip()
+    return query
+
+
+def _filter_memos_by_title(items: list[Any], query: str) -> list[Any]:
+    tokens = [token for token in _normalized_search_text(query).split(" ") if token]
+    if not tokens:
+        return items
+    return [
+        item
+        for item in items
+        if all(token in _normalized_search_text(str(item.title)) for token in tokens)
+    ]
+
+
+def _normalized_search_text(value: str) -> str:
+    normalized = unicodedata.normalize("NFKC", value).casefold()
+    normalized = re.sub(r"\s+", " ", normalized).strip()
+    return normalized
+
+
+def _manage_help_text() -> str:
+    return "\n".join(
+        [
+            "*Mumemo コマンド*",
+            "`mumemo` / `mumemo list` / `/mumemo` : 投稿一覧を表示します。",
+            "`mumemo <タイトル>` : タイトル名で投稿を検索し、編集・削除ボタンを表示します。",
+            "`mumemo edit <タイトル>` / `mumemo 検索 <タイトル>` : 同じくタイトル検索します。",
+            "`mumemo help` / `/mumemo help` : このヘルプを表示します。",
+            "",
+            "編集ボタンから、タイトル・本文・サムネイル・画像順序・画像追加を変更できます。保存後はサイトを生成し、Git commit/push します。",
+        ]
+    )
 
 
 def _refresh_manage_message(
