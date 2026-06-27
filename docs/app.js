@@ -621,7 +621,7 @@ function renderDetail(entry) {
 
   const actions = document.createElement("div");
   actions.className = "detail-actions";
-  actions.append(back, createRandomPostButton(entry), createShareActions(entry, "mobile-share-actions"));
+  actions.append(back, createRandomPostButton(entry), createShareActions(entry, "detail-share-actions"));
 
   const hero = document.createElement("div");
   hero.className = "detail-hero";
@@ -647,7 +647,7 @@ function renderDetail(entry) {
 
   const side = document.createElement("div");
   side.className = "detail-side";
-  side.append(copy, createShareActions(entry, "desktop-share-actions"));
+  side.append(copy);
 
   hero.append(media, side);
   detail.append(actions, hero);

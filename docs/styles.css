@@ -598,12 +598,8 @@
       padding-top: 2px;
     }
 
-    .mobile-share-actions {
-      display: none;
-    }
-
-    .desktop-share-actions {
-      justify-self: end;
+    .detail-share-actions {
+      padding-top: 0;
     }
 
     .share-menu {
@@ -816,15 +812,6 @@
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 10px;
         justify-self: stretch;
-      }
-
-      .desktop-share-actions {
-        display: none;
-      }
-
-      .mobile-share-actions {
-        display: inline-grid;
-        padding-top: 0;
       }
 
       .detail-actions .share-actions,
