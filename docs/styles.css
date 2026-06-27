@@ -351,12 +351,11 @@
       min-width: 0;
     }
 
-    .detail-hero > .detail-media {
-      grid-row: 1 / span 2;
-    }
-
-    .detail-hero > .share-actions {
-      grid-column: 2;
+    .detail-side {
+      display: grid;
+      gap: 16px;
+      align-content: start;
+      min-width: 0;
     }
 
     .detail-media.many {
@@ -606,17 +605,19 @@
         white-space: normal;
       }
 
+      .detail-side {
+        display: contents;
+      }
+
       .detail-copy {
         order: -1;
       }
 
       .detail-hero > .detail-media {
-        grid-row: auto;
         order: 0;
       }
 
-      .detail-hero > .share-actions {
-        grid-column: auto;
+      .detail-side > .share-actions {
         order: 1;
       }
 

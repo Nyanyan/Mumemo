@@ -487,7 +487,12 @@ function renderDetail(entry) {
   if (postedAt) {
     copy.append(postedAt);
   }
-  hero.append(media, copy, createShareActions(entry));
+
+  const side = document.createElement("div");
+  side.className = "detail-side";
+  side.append(copy, createShareActions(entry));
+
+  hero.append(media, side);
   detail.append(actions, hero);
   app.replaceChildren(detail);
 }
