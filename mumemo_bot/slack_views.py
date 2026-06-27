@@ -7,6 +7,9 @@ import json
 
 
 APPROVE_MEMO_ACTION_ID = "mumemo_approve_post"
+OVERWRITE_REVIEW_POST_ACTION_ID = "mumemo_overwrite_review_post"
+OVERWRITE_EXISTING_MEMO_ACTION_ID = "mumemo_overwrite_existing_memo"
+PUBLISH_SEPARATE_MEMO_ACTION_ID = "mumemo_publish_separate_memo"
 RELOAD_REVIEW_ACTION_ID = "mumemo_reload_review"
 DISMISS_REVIEW_ACTION_ID = "mumemo_dismiss_review"
 EDIT_REVIEW_URLS_ACTION_ID = "mumemo_edit_review_urls"
@@ -31,6 +34,7 @@ def review_blocks(
     body: str,
     image_count: int,
     urls: list[str],
+    title_conflict: Any | None,
     status_text: str | None,
     buttons_enabled: bool,
 ) -> list[dict[str, Any]]:
@@ -63,6 +67,23 @@ def review_blocks(
             }
         )
 
+    if title_conflict is not None:
+        existing_body = _truncate(str(title_conflict.body).strip() or "(本文なし)", 1000)
+        blocks.append(
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": (
+                        "*同じタイトルの既存投稿があります*\n"
+                        f"*既存投稿:* {_mrkdwn_text(title_conflict.title)}\n"
+                        f"*本文*\n```{_code_text(existing_body)}```\n"
+                        f"*画像:* {title_conflict.image_count}件"
+                    ),
+                },
+            }
+        )
+
     if status_text:
         blocks.append(
             {
@@ -77,22 +98,67 @@ def review_blocks(
         )
 
     if buttons_enabled:
-        value = json.dumps(
-            {
-                "channel_id": channel_id,
-                "message_ts": message_ts,
-            },
-            ensure_ascii=False,
-        )
-        elements: list[dict[str, Any]] = [
-            {
-                "type": "button",
-                "text": {"type": "plain_text", "text": "承認して公開"},
-                "style": "primary",
-                "action_id": APPROVE_MEMO_ACTION_ID,
-                "value": value,
-            }
-        ]
+        value_data = {
+            "channel_id": channel_id,
+            "message_ts": message_ts,
+        }
+        if title_conflict is not None:
+            value_data["memo_id"] = title_conflict.id
+        value = json.dumps(value_data, ensure_ascii=False)
+
+        elements: list[dict[str, Any]] = []
+        if title_conflict is None:
+            elements.append(
+                {
+                    "type": "button",
+                    "text": {"type": "plain_text", "text": "承認して公開"},
+                    "style": "primary",
+                    "action_id": APPROVE_MEMO_ACTION_ID,
+                    "value": value,
+                }
+            )
+        else:
+            elements.extend(
+                [
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "上書きして投稿"},
+                        "style": "primary",
+                        "action_id": OVERWRITE_REVIEW_POST_ACTION_ID,
+                        "value": value,
+                        "confirm": {
+                            "title": {"type": "plain_text", "text": "新しい投稿で置き換えますか?"},
+                            "text": {
+                                "type": "mrkdwn",
+                                "text": "既存投稿を、このSlack投稿の内容・投稿日・画像で置き換えます。",
+                            },
+                            "confirm": {"type": "plain_text", "text": "上書き"},
+                            "deny": {"type": "plain_text", "text": "戻る"},
+                        },
+                    },
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "既存投稿に上書き"},
+                        "action_id": OVERWRITE_EXISTING_MEMO_ACTION_ID,
+                        "value": value,
+                        "confirm": {
+                            "title": {"type": "plain_text", "text": "既存投稿に上書きしますか?"},
+                            "text": {
+                                "type": "mrkdwn",
+                                "text": "既存投稿のID・投稿日を保ったまま、本文と画像をこのSlack投稿で置き換えます。",
+                            },
+                            "confirm": {"type": "plain_text", "text": "上書き"},
+                            "deny": {"type": "plain_text", "text": "戻る"},
+                        },
+                    },
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "別投稿として投稿"},
+                        "action_id": PUBLISH_SEPARATE_MEMO_ACTION_ID,
+                        "value": value,
+                    },
+                ]
+            )
         if urls:
             elements.append(
                 {
@@ -128,8 +194,8 @@ def review_blocks(
                 },
             ]
         )
-        blocks.append({"type": "actions", "elements": elements})
-
+        for chunk in _chunks(elements, 5):
+            blocks.append({"type": "actions", "elements": chunk})
     return blocks
 
 
@@ -332,6 +398,10 @@ def decode_action_value(action: dict[str, Any]) -> dict[str, Any]:
 def _url_list_text(urls: list[str]) -> str:
     lines = [f"{index + 1}. <{_mrkdwn_text(url)}>" for index, url in enumerate(urls)]
     return _truncate("\n".join(lines), 1800)
+
+
+def _chunks(items: list[dict[str, Any]], size: int) -> list[list[dict[str, Any]]]:
+    return [items[index : index + size] for index in range(0, len(items), size)]
 
 
 def _truncate(text: str, limit: int) -> str:

@@ -10,8 +10,10 @@ from mumemo_bot.site_store import (
     MemoNotFoundError,
     ProtectedMemoError,
     delete_memo,
+    find_title_conflict,
     get_memo,
     list_memos,
+    overwrite_memo_with_post,
     save_post_as_memo,
     update_memo,
 )
@@ -19,6 +21,9 @@ from mumemo_bot.slack_post import MumemoSlackPost
 from mumemo_bot.slack_views import (
     APPROVE_MEMO_ACTION_ID,
     BODY_BLOCK_ID,
+    OVERWRITE_EXISTING_MEMO_ACTION_ID,
+    OVERWRITE_REVIEW_POST_ACTION_ID,
+    PUBLISH_SEPARATE_MEMO_ACTION_ID,
     DELETE_MEMO_ACTION_ID,
     DISMISS_REVIEW_ACTION_ID,
     EDIT_MEMO_ACTION_ID,
@@ -100,6 +105,119 @@ def create_app(config: BotConfig) -> App:
         remember_review_post(post)
         return post
 
+    def publish_review_post(
+        *,
+        client: Any,
+        logger: Any,
+        channel_id: str,
+        message_ts: str,
+        review_message_ts: str,
+        user_id: str,
+        mode: str,
+        memo_id: str | None = None,
+    ) -> None:
+        key = (channel_id, message_ts)
+        review_key = (channel_id, review_message_ts)
+        if not claim_review_message(review_key):
+            print(f"[slack:action] duplicate review action ignored: {review_key}", flush=True)
+            return
+
+        post: MumemoSlackPost | None = None
+        claimed = False
+        try:
+            post = resolve_review_post(channel_id, message_ts, client)
+            target_memo_id = memo_id
+            if mode in {"overwrite_post", "overwrite_existing"} and not target_memo_id:
+                conflict = find_title_conflict(config, post)
+                if conflict is None:
+                    raise ValueError("上書き先の既存投稿が見つかりません")
+                target_memo_id = conflict.id
+
+            _update_review_status(
+                client=client,
+                channel_id=channel_id,
+                review_message_ts=review_message_ts,
+                post=post,
+                status_text="保存中です...",
+            )
+
+            if not claim_post(key):
+                _update_review_status(
+                    client=client,
+                    channel_id=channel_id,
+                    review_message_ts=review_message_ts,
+                    post=post,
+                    status_text="この投稿はすでに処理中、または保存済みです。",
+                )
+                return
+            claimed = True
+
+            if mode == "overwrite_post":
+                result = overwrite_memo_with_post(
+                    config,
+                    memo_id=str(target_memo_id),
+                    post=post,
+                    preserve_existing_identity=False,
+                )
+                status = f"既存投稿を新しいSlack投稿として上書きしました。画像: {result.image_count}件"
+            elif mode == "overwrite_existing":
+                result = overwrite_memo_with_post(
+                    config,
+                    memo_id=str(target_memo_id),
+                    post=post,
+                    preserve_existing_identity=True,
+                )
+                status = f"既存投稿に上書きしました。画像: {result.image_count}件"
+            else:
+                result = save_post_as_memo(config, post)
+                status = (
+                    f"公開しました。画像: {result.image_count}件"
+                    if result.created
+                    else "このSlack投稿はすでにMumemoへ保存済みです。"
+                )
+        except Exception as error:
+            if claimed:
+                release_post(key)
+            logger.exception("Failed to publish Slack post as Mumemo memo")
+            print(f"[mumemo] publish failed: {error}", flush=True)
+            if post is not None:
+                _update_review_status(
+                    client=client,
+                    channel_id=channel_id,
+                    review_message_ts=review_message_ts,
+                    post=post,
+                    status_text=_short_status(f"保存に失敗しました: {error}"),
+                )
+            else:
+                _clear_review_buttons(
+                    client=client,
+                    channel_id=channel_id,
+                    review_message_ts=review_message_ts,
+                    status_text=_short_status(f"保存に失敗しました: {error}"),
+                )
+            _reply(
+                client=client,
+                channel_id=channel_id,
+                thread_ts=message_ts,
+                text=_short_status(f"Mumemoへの保存に失敗しました: {error}"),
+            )
+            return
+
+        _update_review_status(
+            client=client,
+            channel_id=channel_id,
+            review_message_ts=review_message_ts,
+            post=post,
+            status_text=status,
+        )
+        forget_review_post(channel_id, message_ts)
+        _reply(
+            client=client,
+            channel_id=channel_id,
+            thread_ts=message_ts,
+            text=f"Mumemoに反映しました: {result.title}\n画像: {result.image_count}件",
+        )
+
     @app.event("message")
     def handle_message_event(
         event: dict[str, Any],
@@ -151,6 +269,7 @@ def create_app(config: BotConfig) -> App:
         remember_review_post(post)
         _post_review_for_post(
             client=client,
+            config=config,
             channel_id=config.slack_channel_id,
             post=post,
         )
@@ -202,93 +321,116 @@ def create_app(config: BotConfig) -> App:
         channel_id = str(value["channel_id"])
         message_ts = str(value["message_ts"])
         review_message_ts = str(body.get("message", {}).get("ts") or "")
-        user_id = body.get("user", {}).get("id", "unknown")
-        key = (channel_id, message_ts)
-        review_key = (channel_id, review_message_ts)
-
+        user_id = str(body.get("user", {}).get("id") or "unknown")
         print(
             "[slack:action] approve clicked: "
             f"user={user_id}, channel={channel_id}, message_ts={message_ts}, "
             f"review_ts={review_message_ts}",
             flush=True,
         )
-
-        if not claim_review_message(review_key):
-            print(f"[slack:action] duplicate review action ignored: {review_key}", flush=True)
-            return
-
-        post: MumemoSlackPost | None = None
-        claimed = False
-        try:
-            post = resolve_review_post(channel_id, message_ts, client)
-            _update_review_status(
-                client=client,
-                channel_id=channel_id,
-                review_message_ts=review_message_ts,
-                post=post,
-                status_text="保存中です...",
-            )
-
-            if not claim_post(key):
-                _update_review_status(
-                    client=client,
-                    channel_id=channel_id,
-                    review_message_ts=review_message_ts,
-                    post=post,
-                    status_text="この投稿はすでに処理中、または保存済みです。",
-                )
-                return
-            claimed = True
-
-            result = save_post_as_memo(config, post)
-        except Exception as error:
-            if claimed:
-                release_post(key)
-            logger.exception("Failed to approve Slack post as Mumemo memo")
-            print(f"[mumemo] approve failed: {error}", flush=True)
-            if post is not None:
-                _update_review_status(
-                    client=client,
-                    channel_id=channel_id,
-                    review_message_ts=review_message_ts,
-                    post=post,
-                    status_text=_short_status(f"保存に失敗しました: {error}"),
-                )
-            else:
-                _clear_review_buttons(
-                    client=client,
-                    channel_id=channel_id,
-                    review_message_ts=review_message_ts,
-                    status_text=_short_status(f"保存に失敗しました: {error}"),
-                )
-            _reply(
-                client=client,
-                channel_id=channel_id,
-                thread_ts=message_ts,
-                text=_short_status(f"Mumemoへの保存に失敗しました: {error}"),
-            )
-            return
-
-        status = (
-            f"公開しました。画像: {result.image_count}件"
-            if result.created
-            else "このSlack投稿はすでにMumemoへ保存済みです。"
-        )
-        _update_review_status(
+        publish_review_post(
             client=client,
+            logger=logger,
             channel_id=channel_id,
+            message_ts=message_ts,
             review_message_ts=review_message_ts,
-            post=post,
-            status_text=status,
-        )
-        forget_review_post(channel_id, message_ts)
-        _reply(
-            client=client,
-            channel_id=channel_id,
-            thread_ts=message_ts,
-            text=f"Mumemoに反映しました: {result.title}\n画像: {result.image_count}件",
+            user_id=user_id,
+            mode="approve",
         )
 
+    @app.action(PUBLISH_SEPARATE_MEMO_ACTION_ID)
+    def handle_publish_separate_memo(
+        ack: Any,
+        body: dict[str, Any],
+        client: Any,
+        logger: Any,
+    ) -> None:
+        ack()
+        action = body["actions"][0]
+        value = decode_action_value(action)
+        channel_id = str(value["channel_id"])
+        message_ts = str(value["message_ts"])
+        review_message_ts = str(body.get("message", {}).get("ts") or "")
+        user_id = str(body.get("user", {}).get("id") or "unknown")
+        print(
+            "[slack:action] publish separate clicked: "
+            f"user={user_id}, channel={channel_id}, message_ts={message_ts}, "
+            f"review_ts={review_message_ts}",
+            flush=True,
+        )
+        publish_review_post(
+            client=client,
+            logger=logger,
+            channel_id=channel_id,
+            message_ts=message_ts,
+            review_message_ts=review_message_ts,
+            user_id=user_id,
+            mode="separate",
+        )
+
+    @app.action(OVERWRITE_REVIEW_POST_ACTION_ID)
+    def handle_overwrite_review_post(
+        ack: Any,
+        body: dict[str, Any],
+        client: Any,
+        logger: Any,
+    ) -> None:
+        ack()
+        action = body["actions"][0]
+        value = decode_action_value(action)
+        channel_id = str(value["channel_id"])
+        message_ts = str(value["message_ts"])
+        memo_id = str(value.get("memo_id") or "")
+        review_message_ts = str(body.get("message", {}).get("ts") or "")
+        user_id = str(body.get("user", {}).get("id") or "unknown")
+        print(
+            "[slack:action] overwrite as new Slack post clicked: "
+            f"user={user_id}, channel={channel_id}, message_ts={message_ts}, "
+            f"memo_id={memo_id}, review_ts={review_message_ts}",
+            flush=True,
+        )
+        publish_review_post(
+            client=client,
+            logger=logger,
+            channel_id=channel_id,
+            message_ts=message_ts,
+            review_message_ts=review_message_ts,
+            user_id=user_id,
+            mode="overwrite_post",
+            memo_id=memo_id,
+        )
+
+    @app.action(OVERWRITE_EXISTING_MEMO_ACTION_ID)
+    def handle_overwrite_existing_memo(
+        ack: Any,
+        body: dict[str, Any],
+        client: Any,
+        logger: Any,
+    ) -> None:
+        ack()
+        action = body["actions"][0]
+        value = decode_action_value(action)
+        channel_id = str(value["channel_id"])
+        message_ts = str(value["message_ts"])
+        memo_id = str(value.get("memo_id") or "")
+        review_message_ts = str(body.get("message", {}).get("ts") or "")
+        user_id = str(body.get("user", {}).get("id") or "unknown")
+        print(
+            "[slack:action] overwrite existing memo clicked: "
+            f"user={user_id}, channel={channel_id}, message_ts={message_ts}, "
+            f"memo_id={memo_id}, review_ts={review_message_ts}",
+            flush=True,
+        )
+        publish_review_post(
+            client=client,
+            logger=logger,
+            channel_id=channel_id,
+            message_ts=message_ts,
+            review_message_ts=review_message_ts,
+            user_id=user_id,
+            mode="overwrite_existing",
+            memo_id=memo_id,
+        )
     @app.action(EDIT_REVIEW_URLS_ACTION_ID)
     def handle_edit_review_urls(
         ack: Any,
@@ -366,6 +508,7 @@ def create_app(config: BotConfig) -> App:
                 post=updated_post,
                 status_text="URLを反映しました。承認前に確認してください。",
                 buttons_enabled=True,
+                title_conflict=find_title_conflict(config, updated_post),
             )
         except Exception as error:
             logger.exception("Failed to update Mumemo URL review")
@@ -406,7 +549,7 @@ def create_app(config: BotConfig) -> App:
             message = _fetch_original_message(client, channel_id, message_ts)
             post = MumemoSlackPost.from_message(channel_id=channel_id, message=message)
             remember_review_post(post)
-            _post_review_for_post(client=client, channel_id=channel_id, post=post)
+            _post_review_for_post(client=client, config=config, channel_id=channel_id, post=post)
             _update_review_status(
                 client=client,
                 channel_id=channel_id,
@@ -602,7 +745,13 @@ def main() -> None:
     SocketModeHandler(app, config.slack_app_token).start()
 
 
-def _post_review_for_post(client: Any, channel_id: str, post: MumemoSlackPost) -> None:
+def _post_review_for_post(
+    client: Any,
+    config: BotConfig,
+    channel_id: str,
+    post: MumemoSlackPost,
+) -> None:
+    title_conflict = find_title_conflict(config, post)
     response = client.chat_postMessage(
         channel=channel_id,
         thread_ts=post.message_ts,
@@ -614,6 +763,7 @@ def _post_review_for_post(client: Any, channel_id: str, post: MumemoSlackPost) -
             body=post.body,
             image_count=len(post.images),
             urls=post.urls,
+            title_conflict=title_conflict,
             status_text=None,
             buttons_enabled=True,
         ),
@@ -633,6 +783,7 @@ def _update_review_status(
     post: MumemoSlackPost,
     status_text: str,
     buttons_enabled: bool = False,
+    title_conflict: Any | None = None,
 ) -> None:
     client.chat_update(
         channel=channel_id,
@@ -645,6 +796,7 @@ def _update_review_status(
             body=post.body,
             image_count=len(post.images),
             urls=post.urls,
+            title_conflict=title_conflict,
             status_text=_short_status(status_text),
             buttons_enabled=buttons_enabled,
         ),
