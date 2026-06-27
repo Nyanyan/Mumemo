@@ -10,7 +10,7 @@ Memo content is stored in `docs/data/memos.json`. Each item supports:
 - `body`: detail text and search text
 - `image`: public thumbnail image path, such as `/assets/example.jpg`
 - `images`: optional detail image paths; all are shown on the detail page
-- `postedAt`: optional post timestamp in ISO 8601 format; shown at the end of the detail page
+- `postedAt`: optional post date, such as `2026-06-27`; shown at the end of the detail page
 - `slug`: optional stable URL slug; when omitted, the title is normalized
 - `fixed`: optional; show before other items on the default top page
 - `iconImage`: optional; render image with icon-style padding

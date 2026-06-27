@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from threading import Lock
 from typing import Any
@@ -289,7 +289,7 @@ def _memo_from_post(
             "user_id": post.user_id,
         },
     }
-    posted_at = _slack_ts_to_iso(post.message_ts)
+    posted_at = _slack_ts_to_date(post.message_ts)
     if posted_at:
         memo["postedAt"] = posted_at
     if saved_images:
@@ -377,16 +377,15 @@ def _slack_memo_id(channel_id: str, message_ts: str) -> str:
     return _safe_id(f"slack-{channel_id}-{message_ts}")
 
 
-def _slack_ts_to_iso(message_ts: str) -> str | None:
+def _slack_ts_to_date(message_ts: str) -> str | None:
     try:
         timestamp = float(message_ts)
     except ValueError:
         return None
-    return (
-        datetime.fromtimestamp(timestamp, timezone.utc)
-        .isoformat()
-        .replace("+00:00", "Z")
-    )
+    return datetime.fromtimestamp(
+        timestamp,
+        timezone(timedelta(hours=9)),
+    ).date().isoformat()
 
 
 def _safe_id(value: str) -> str:

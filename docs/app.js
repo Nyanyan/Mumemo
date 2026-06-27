@@ -7,10 +7,7 @@ const postedAtFormatter = new Intl.DateTimeFormat("ja-JP", {
   timeZone: "Asia/Tokyo",
   year: "numeric",
   month: "2-digit",
-  day: "2-digit",
-  hour: "2-digit",
-  minute: "2-digit",
-  hour12: false
+  day: "2-digit"
 });
 let entries = [];
 let lightbox = null;
@@ -224,7 +221,7 @@ function createPostedAt(entry) {
 
   const meta = document.createElement("p");
   meta.className = "detail-posted-at";
-  meta.textContent = `投稿日時: ${postedAt}`;
+  meta.textContent = `投稿日: ${postedAt}`;
   return meta;
 }
 
