@@ -50,6 +50,16 @@ function summarize(text) {
   return text.replace(/\s+/g, " ").trim();
 }
 
+function imagesFor(entry) {
+  const images = Array.isArray(entry.images) ? entry.images : [];
+  const candidates = [...images, entry.image].filter((image) => typeof image === "string" && image.trim());
+  return [...new Set(candidates)];
+}
+
+function thumbnailFor(entry) {
+  return entry.image || imagesFor(entry)[0] || "/website_icon.png";
+}
+
 function createStatusMessage(text) {
   const message = document.createElement("p");
   message.className = "empty-state";
@@ -65,7 +75,7 @@ function createTile(entry) {
 
   const image = document.createElement("img");
   image.className = "tile-thumb";
-  image.src = entry.image;
+  image.src = thumbnailFor(entry);
   image.alt = "";
   image.loading = entry.fixed ? "eager" : "lazy";
 
@@ -123,6 +133,31 @@ function renderHome() {
   draw();
 }
 
+function createDetailMedia(entry) {
+  const images = imagesFor(entry);
+  const media = document.createElement("div");
+  media.className = `detail-media${images.length > 1 ? " many" : ""}`;
+
+  for (const imageUrl of images) {
+    const image = document.createElement("img");
+    image.className = `detail-image${entry.iconImage ? " icon-image" : ""}`;
+    image.src = imageUrl;
+    image.alt = "";
+    image.loading = "lazy";
+    media.append(image);
+  }
+
+  if (images.length === 0) {
+    const image = document.createElement("img");
+    image.className = "detail-image icon-image";
+    image.src = "/website_icon.png";
+    image.alt = "";
+    media.append(image);
+  }
+
+  return media;
+}
+
 function renderDetail(entry) {
   document.title = `${entry.title} - ${siteTitle}`;
 
@@ -138,10 +173,7 @@ function renderDetail(entry) {
   const hero = document.createElement("div");
   hero.className = "detail-hero";
 
-  const image = document.createElement("img");
-  image.className = `detail-image${entry.iconImage ? " icon-image" : ""}`;
-  image.src = entry.image;
-  image.alt = "";
+  const media = createDetailMedia(entry);
 
   const copy = document.createElement("div");
   copy.className = "detail-copy";
@@ -155,7 +187,7 @@ function renderDetail(entry) {
   text.textContent = entry.body;
 
   copy.append(title, text);
-  hero.append(image, copy);
+  hero.append(media, copy);
   detail.append(back, hero);
   app.replaceChildren(detail);
 }
