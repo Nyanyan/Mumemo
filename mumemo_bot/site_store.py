@@ -3,10 +3,13 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from threading import Lock
 from typing import Any
+from urllib.parse import quote, unquote, urlparse
 import json
 import mimetypes
 import re
+import shutil
 import subprocess
+import unicodedata
 
 import requests
 
@@ -15,6 +18,7 @@ from mumemo_bot.slack_post import MumemoSlackPost, SlackImageFile
 
 
 _STORE_LOCK = Lock()
+PROTECTED_ROUTE_DIRS = {"assets", "data"}
 
 
 @dataclass(frozen=True)
@@ -185,9 +189,11 @@ def delete_memo(config: BotConfig, *, memo_id: str) -> MemoChangeResult:
         if bool(memo.get("fixed")):
             raise ProtectedMemoError("固定メモはSlack管理画面から削除できません")
 
+        old_memos = [dict(item) for item in memos]
         removed = memos.pop(index)
         _write_memos(config.data_path, memos)
         build_route_pages(config)
+        _cleanup_removed_memo(config, old_memos, index, removed, memos)
 
     return MemoChangeResult(
         title=str(removed.get("title") or memo_id),
@@ -205,13 +211,14 @@ def download_images(
     if not post.images:
         return []
 
-    asset_dir.mkdir(parents=True, exist_ok=True)
+    memo_asset_dir = asset_dir / _safe_title_folder(post.title)
+    memo_asset_dir.mkdir(parents=True, exist_ok=True)
     session = requests.Session()
     session.headers.update({"Authorization": f"Bearer {bot_token}"})
     saved_images: list[SavedImage] = []
 
     for image in post.images:
-        saved_path = asset_dir / _image_filename(post.title, image)
+        saved_path = memo_asset_dir / _image_filename(image)
         response = session.get(image.download_url, stream=True, timeout=60)
         try:
             response.raise_for_status()
@@ -231,7 +238,7 @@ def download_images(
                 file_id=image.file_id,
                 source_name=image.name,
                 path=saved_path,
-                url=f"{asset_url_prefix}/{saved_path.name}",
+                url=_asset_url(asset_url_prefix, saved_path.relative_to(asset_dir)),
             )
         )
 
@@ -403,17 +410,29 @@ def _new_memo_insert_index(memos: list[dict[str, Any]]) -> int:
     return index
 
 
-def _image_filename(title: str, image: SlackImageFile) -> str:
+def _image_filename(image: SlackImageFile) -> str:
     extension = Path(image.name).suffix.lower()
     if not extension:
         extension = mimetypes.guess_extension(image.mimetype) or ".image"
-    title_part = _safe_filename(title)[:48] or "memo"
     file_id = _safe_filename(image.file_id) or "file"
-    return f"{title_part}-{file_id}{extension}"
+    return f"{file_id}{extension}"
 
 
 def _safe_filename(value: str) -> str:
     return re.sub(r"[^A-Za-z0-9._-]+", "_", value).strip("._")
+
+
+def _safe_title_folder(title: str) -> str:
+    normalized = unicodedata.normalize("NFKC", title).strip()
+    normalized = re.sub(r"[<>:\"/\\|?*\x00-\x1F]+", "_", normalized)
+    normalized = re.sub(r"\s+", " ", normalized).strip(" ._")
+    return normalized[:96] or "memo"
+
+
+def _asset_url(asset_url_prefix: str, relative_path: Path) -> str:
+    prefix = "/" + asset_url_prefix.strip("/")
+    encoded_parts = [quote(part) for part in relative_path.parts]
+    return f"{prefix}/{'/'.join(encoded_parts)}"
 
 
 def _clean_image_list(images: list[str]) -> list[str]:
@@ -426,3 +445,93 @@ def _clean_image_list(images: list[str]) -> list[str]:
         seen.add(clean_image)
         clean_images.append(clean_image)
     return clean_images
+
+
+def _cleanup_removed_memo(
+    config: BotConfig,
+    old_memos: list[dict[str, Any]],
+    removed_index: int,
+    removed: dict[str, Any],
+    remaining_memos: list[dict[str, Any]],
+) -> None:
+    asset_root = config.asset_dir.resolve()
+    for image_url in _memo_images(removed):
+        image_path = _local_asset_path(config, image_url)
+        if image_path is None or not image_path.exists() or not image_path.is_file():
+            continue
+        image_path.unlink()
+        _remove_empty_asset_parents(image_path.parent, asset_root)
+
+    old_slugs = _memo_slugs(old_memos)
+    if removed_index >= len(old_slugs):
+        return
+    removed_slug = old_slugs[removed_index]
+    if removed_slug in set(_memo_slugs(remaining_memos)):
+        return
+    if removed_slug in PROTECTED_ROUTE_DIRS:
+        return
+
+    docs_dir = (PROJECT_ROOT / "docs").resolve()
+    route_dir = (docs_dir / removed_slug).resolve()
+    if route_dir == docs_dir or not _is_relative_to(route_dir, docs_dir):
+        return
+    if route_dir.exists() and route_dir.is_dir():
+        shutil.rmtree(route_dir)
+
+
+def _local_asset_path(config: BotConfig, image_url: str) -> Path | None:
+    parsed = urlparse(image_url)
+    if parsed.scheme or parsed.netloc:
+        return None
+
+    prefix = "/" + config.asset_url_prefix.strip("/")
+    path = unquote(parsed.path)
+    if not path.startswith(prefix + "/"):
+        return None
+
+    relative_url = path[len(prefix) + 1 :]
+    if not relative_url:
+        return None
+    relative_path = Path(*relative_url.split("/"))
+    asset_root = config.asset_dir.resolve()
+    candidate = (asset_root / relative_path).resolve()
+    if not _is_relative_to(candidate, asset_root):
+        return None
+    return candidate
+
+
+def _remove_empty_asset_parents(path: Path, asset_root: Path) -> None:
+    current = path.resolve()
+    while current != asset_root and _is_relative_to(current, asset_root):
+        try:
+            current.rmdir()
+        except OSError:
+            break
+        current = current.parent
+
+
+def _memo_slugs(memos: list[dict[str, Any]]) -> list[str]:
+    seen: dict[str, int] = {}
+    slugs: list[str] = []
+    for memo in memos:
+        base = _slug_base(str(memo.get("slug") or memo.get("title") or ""))
+        count = seen.get(base, 0)
+        seen[base] = count + 1
+        slugs.append(base if count == 0 else f"{base}-{count + 1}")
+    return slugs
+
+
+def _slug_base(value: str) -> str:
+    normalized = unicodedata.normalize("NFKC", value).strip()
+    normalized = re.sub(r"[\\/#?%&=+]+", " ", normalized)
+    normalized = re.sub(r"\s+", "-", normalized)
+    normalized = re.sub(r"-+", "-", normalized).strip("-")
+    return normalized or "memo"
+
+
+def _is_relative_to(path: Path, parent: Path) -> bool:
+    try:
+        path.relative_to(parent)
+    except ValueError:
+        return False
+    return True
