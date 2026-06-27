@@ -41,6 +41,7 @@ Required Slack settings:
 - `SLACK_APP_TOKEN`: Socket Mode app token, usually `xapp-...`
 - `SLACK_CHANNEL_ID`: channel to accept top-level posts from
 - `SLACK_CHANNEL_NAME`: optional display name for startup logs
+- `MUMEMO_SITE_BASE_URL`: optional public site URL used in publish-complete Slack messages; defaults to `docs/CNAME` when present
 
 Useful Slack app permissions/events:
 
@@ -64,7 +65,7 @@ Body text line 1
 Body text line 2
 ```
 
-New top-level Slack posts are not published immediately. The bot replies in the thread with a review message and buttons. Detected URLs are shown in the review. Press `URL修正` to edit only those URLs before publishing, `承認して公開` to save it to `docs/data/memos.json`, `再読み込み` to rebuild the review from the original Slack message, or `破棄` to remove only the Slack draft review.
+New top-level Slack posts are not published immediately. The bot replies in the thread with a review message and buttons. Detected URLs are shown in the review. Press `URL修正` to edit only those URLs before publishing, `承認して公開` to save it to `docs/data/memos.json`, `再読み込み` to rebuild the review from the original Slack message, or `破棄` to remove only the Slack draft review. After publishing, Slack shows the public Mumemo page URL.
 
 When a new Slack post has the same title as an existing memo, the review shows both versions. Use `上書きして投稿` to replace the existing memo with the new Slack post identity, `既存投稿に上書き` to keep the existing memo identity and replace its body/images, or `別投稿として投稿` to publish a separate memo with the same title.
 
