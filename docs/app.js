@@ -12,6 +12,17 @@ const postedAtFormatter = new Intl.DateTimeFormat("ja-JP", {
 });
 let entries = [];
 let lightbox = null;
+let tileFitFrame = 0;
+
+const tileFitClasses = [
+  "fit-title-more",
+  "fit-summary-two",
+  "fit-summary-one",
+  "fit-summary-none",
+  "fit-title-small",
+  "fit-title-tiny",
+  "fit-title-ellipsis"
+];
 
 function slugBase(value) {
   const normalized = value.normalize("NFKC").trim();
@@ -179,6 +190,50 @@ function createTile(entry) {
   return tile;
 }
 
+function scheduleTileTextFit() {
+  window.cancelAnimationFrame(tileFitFrame);
+  tileFitFrame = window.requestAnimationFrame(fitVisibleTileText);
+}
+
+function fitVisibleTileText() {
+  document.querySelectorAll(".tile").forEach(fitTileText);
+}
+
+function fitTileText(tile) {
+  const body = tile.querySelector(".tile-body");
+  const title = tile.querySelector(".tile-title");
+  if (!(body instanceof HTMLElement) || !(title instanceof HTMLElement)) {
+    return;
+  }
+
+  const steps = [
+    ["fit-title-more", "fit-summary-two"],
+    ["fit-title-more", "fit-summary-one"],
+    ["fit-title-more", "fit-summary-none"],
+    ["fit-title-small", "fit-summary-none"],
+    ["fit-title-tiny", "fit-summary-none"],
+    ["fit-title-ellipsis", "fit-summary-none"]
+  ];
+
+  tile.classList.remove(...tileFitClasses);
+  if (!tileTextOverflows(body, title)) {
+    return;
+  }
+
+  for (const step of steps) {
+    tile.classList.remove(...tileFitClasses);
+    tile.classList.add(...step);
+    if (!tileTextOverflows(body, title)) {
+      return;
+    }
+  }
+}
+
+function tileTextOverflows(body, title) {
+  const tolerance = 1;
+  return body.scrollHeight > body.clientHeight + tolerance || title.scrollHeight > title.clientHeight + tolerance;
+}
+
 function renderLoading() {
   app.replaceChildren(createStatusMessage("読み込み中です。"));
 }
@@ -211,6 +266,7 @@ function renderHome() {
     if (matched.length === 0 && query) {
       grid.append(createStatusMessage("該当するメモはありません。"));
     }
+    scheduleTileTextFit();
   };
 
   input.addEventListener("input", draw);
@@ -556,5 +612,9 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
+window.addEventListener("resize", scheduleTileTextFit);
 window.addEventListener("popstate", route);
+if (document.fonts) {
+  document.fonts.ready.then(scheduleTileTextFit);
+}
 start();
