@@ -2,9 +2,10 @@
   {
     "title": "これは何？",
     "body": "にゃにゃん(山名琢翔)が趣味で訪問した各地の博物館。史跡などについて、自分用メモも兼ねて感想や写真を公開するものです。\n\n\"Mumemo\"という名前は\"Museum Memo\"を短縮したものです。「みゅーめも」とか「むーめも」とか「むめも」などとお読みください。\n\nにゃにゃんって誰？という方はこちらを参照してください: https://nyanyan.dev/ja/",
-    "image": "/website_icon.png",
+    "image": "/website_icon_small.png",
     "fixed": true,
-    "iconImage": true
+    "iconImage": true,
+    "thumbnail": "/website_icon_small.png"
   },
   {
     "id": "slack-C0BDC3P774J-1782534451.565389",
@@ -25,7 +26,8 @@
       "/assets/slack/%E7%91%9E%E9%BE%8D%E5%AF%BA/F0BDHFFQUUW.jpg",
       "/assets/slack/%E7%91%9E%E9%BE%8D%E5%AF%BA/F0BDKJ26K5G.jpg",
       "/assets/slack/%E7%91%9E%E9%BE%8D%E5%AF%BA/F0BEDSCCF0Q.jpg"
-    ]
+    ],
+    "thumbnail": "/assets/slack/%E7%91%9E%E9%BE%8D%E5%AF%BA/thumbs/F0BDD7XJQ7M-thumb.jpg"
   },
   {
     "id": "slack-C0BDC3P774J-1782534237.911039",
@@ -50,7 +52,8 @@
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E7%AB%8B%E5%8D%9A%E7%89%A9%E9%A4%A8/F0BDHF8UX7Y.jpg",
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E7%AB%8B%E5%8D%9A%E7%89%A9%E9%A4%A8/F0BDKHVAX4J.jpg",
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E7%AB%8B%E5%8D%9A%E7%89%A9%E9%A4%A8/F0BDD7T0AM9.jpg"
-    ]
+    ],
+    "thumbnail": "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E7%AB%8B%E5%8D%9A%E7%89%A9%E9%A4%A8/thumbs/F0BDMDBUBAM-thumb.jpg"
   },
   {
     "id": "slack-C0BDC3P774J-1782534018.879459",
@@ -70,7 +73,8 @@
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%B8%87%E8%91%89%E6%AD%B4%E5%8F%B2%E9%A4%A8/F0BDKHFGH18.jpg",
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%B8%87%E8%91%89%E6%AD%B4%E5%8F%B2%E9%A4%A8/F0BDKHFJSMQ.jpg",
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%B8%87%E8%91%89%E6%AD%B4%E5%8F%B2%E9%A4%A8/F0BEDRWKN1W.jpg"
-    ]
+    ],
+    "thumbnail": "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%B8%87%E8%91%89%E6%AD%B4%E5%8F%B2%E9%A4%A8/thumbs/F0BDMD0SM2M-thumb.jpg"
   },
   {
     "id": "slack-C0BDC3P774J-1782533717.679379",
@@ -87,7 +91,8 @@
     "images": [
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%BC%8F%E6%9C%A8%E3%82%B3%E3%83%9F%E3%83%A5%E3%83%8B%E3%83%86%E3%82%A3%E3%82%BB%E3%83%B3%E3%82%BF%E3%83%BC/F0BDKH8G4FL.jpg",
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%BC%8F%E6%9C%A8%E3%82%B3%E3%83%9F%E3%83%A5%E3%83%8B%E3%83%86%E3%82%A3%E3%82%BB%E3%83%B3%E3%82%BF%E3%83%BC/F0BDHENCET0.jpg"
-    ]
+    ],
+    "thumbnail": "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%BC%8F%E6%9C%A8%E3%82%B3%E3%83%9F%E3%83%A5%E3%83%8B%E3%83%86%E3%82%A3%E3%82%BB%E3%83%B3%E3%82%BF%E3%83%BC/thumbs/F0BDKH8G4FL-thumb.jpg"
   },
   {
     "id": "slack-C0BDC3P774J-1782533276.372259",
@@ -111,7 +116,8 @@
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%BC%8F%E6%9C%A8%E5%8C%97%E5%89%8D%E8%88%B9%E8%B3%87%E6%96%99%E9%A4%A8%28%E6%97%A7%E7%A7%8B%E5%85%83%E5%AE%B6%E4%BD%8F%E5%AE%85%29/F0BDMC9KNKB.jpg",
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%BC%8F%E6%9C%A8%E5%8C%97%E5%89%8D%E8%88%B9%E8%B3%87%E6%96%99%E9%A4%A8%28%E6%97%A7%E7%A7%8B%E5%85%83%E5%AE%B6%E4%BD%8F%E5%AE%85%29/F0BDD6MS7PV.jpg",
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%BC%8F%E6%9C%A8%E5%8C%97%E5%89%8D%E8%88%B9%E8%B3%87%E6%96%99%E9%A4%A8%28%E6%97%A7%E7%A7%8B%E5%85%83%E5%AE%B6%E4%BD%8F%E5%AE%85%29/F0BD42X4B0F.jpg"
-    ]
+    ],
+    "thumbnail": "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%BC%8F%E6%9C%A8%E5%8C%97%E5%89%8D%E8%88%B9%E8%B3%87%E6%96%99%E9%A4%A8%28%E6%97%A7%E7%A7%8B%E5%85%83%E5%AE%B6%E4%BD%8F%E5%AE%85%29/thumbs/F0BDP620UFN-thumb.jpg"
   },
   {
     "id": "slack-C0BDC3P774J-1782532990.751939",
@@ -136,7 +142,8 @@
       "/assets/slack/%E5%8B%9D%E8%88%88%E5%AF%BA/F0BD42K2EVD.jpg",
       "/assets/slack/%E5%8B%9D%E8%88%88%E5%AF%BA/F0BDHDS5EBG.jpg",
       "/assets/slack/%E5%8B%9D%E8%88%88%E5%AF%BA/F0BDD69UY1H.jpg"
-    ]
+    ],
+    "thumbnail": "/assets/slack/%E5%8B%9D%E8%88%88%E5%AF%BA/thumbs/F0BDHDLDZ7Y-thumb.jpg"
   },
   {
     "id": "slack-C0BDC3P774J-1782532115.928609",
@@ -159,7 +166,8 @@
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%BC%8F%E6%9C%A8%E6%B0%97%E8%B1%A1%E8%B3%87%E6%96%99%E9%A4%A8/F0BDD4SQUCT.jpg",
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%BC%8F%E6%9C%A8%E6%B0%97%E8%B1%A1%E8%B3%87%E6%96%99%E9%A4%A8/F0BDMAFHAKB.jpg",
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%BC%8F%E6%9C%A8%E6%B0%97%E8%B1%A1%E8%B3%87%E6%96%99%E9%A4%A8/F0BEDP55W9E.jpg"
-    ]
+    ],
+    "thumbnail": "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%BC%8F%E6%9C%A8%E6%B0%97%E8%B1%A1%E8%B3%87%E6%96%99%E9%A4%A8/thumbs/F0BDP48MKBN-thumb.jpg"
   },
   {
     "id": "slack-C0BDC3P774J-1782531175.117119",
@@ -179,7 +187,8 @@
       "/assets/slack/%E8%B6%8A%E4%B8%AD%E7%A6%8F%E5%B2%A1%E3%81%AE%E8%8F%85%E7%AC%A0%E8%A3%BD%E4%BD%9C%E6%8A%80%E8%A1%93%E4%BF%9D%E5%AD%98%E4%BC%9A/F0BD3SUK0RM.jpg",
       "/assets/slack/%E8%B6%8A%E4%B8%AD%E7%A6%8F%E5%B2%A1%E3%81%AE%E8%8F%85%E7%AC%A0%E8%A3%BD%E4%BD%9C%E6%8A%80%E8%A1%93%E4%BF%9D%E5%AD%98%E4%BC%9A/F0BDKB70Q1Y.jpg",
       "/assets/slack/%E8%B6%8A%E4%B8%AD%E7%A6%8F%E5%B2%A1%E3%81%AE%E8%8F%85%E7%AC%A0%E8%A3%BD%E4%BD%9C%E6%8A%80%E8%A1%93%E4%BF%9D%E5%AD%98%E4%BC%9A/F0BEDKG6L7J.jpg"
-    ]
+    ],
+    "thumbnail": "/assets/slack/%E8%B6%8A%E4%B8%AD%E7%A6%8F%E5%B2%A1%E3%81%AE%E8%8F%85%E7%AC%A0%E8%A3%BD%E4%BD%9C%E6%8A%80%E8%A1%93%E4%BF%9D%E5%AD%98%E4%BC%9A/thumbs/F0BDH8JV5DL-thumb.jpg"
   },
   {
     "id": "slack-C0BDC3P774J-1782528433.947209",
@@ -200,6 +209,7 @@
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E7%A6%8F%E5%B2%A1%E6%AD%B4%E5%8F%B2%E6%B0%91%E4%BF%97%E8%B3%87%E6%96%99%E9%A4%A8/memo-F0BEDK884MN.jpg",
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E7%A6%8F%E5%B2%A1%E6%AD%B4%E5%8F%B2%E6%B0%91%E4%BF%97%E8%B3%87%E6%96%99%E9%A4%A8/memo-F0BEDK8BSAC.jpg",
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E7%A6%8F%E5%B2%A1%E6%AD%B4%E5%8F%B2%E6%B0%91%E4%BF%97%E8%B3%87%E6%96%99%E9%A4%A8/memo-F0BDFUTC22H.jpg"
-    ]
+    ],
+    "thumbnail": "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E7%A6%8F%E5%B2%A1%E6%AD%B4%E5%8F%B2%E6%B0%91%E4%BF%97%E8%B3%87%E6%96%99%E9%A4%A8/thumbs/memo-F0BDKAY3MH8-thumb.jpg"
   }
 ]
