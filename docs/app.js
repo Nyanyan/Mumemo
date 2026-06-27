@@ -1,7 +1,9 @@
+const siteTitle = "Mumemo - にゃにゃんの博物館メモ";
+
 const rawEntries = [
       {
         title: "これは何？",
-        body: "にゃにゃんが訪れた博物館のメモを並べた小さな棚です。\n\nタイトルと本文を検索できます。",
+        body: "にゃにゃん(山名琢翔)が趣味で訪問した各地の博物館。史跡などについて、自分用メモも兼ねて感想や写真を公開するものです。\n\n\"Mumemo\"という名前は\"Museum Memo\"と短縮したものです。「みゅーめも」とか「むーめも」とか「むめも」などとお読みください。\n\nにゃにゃんって誰？という方はこちらを参照してください: https://nyanyan.dev/ja/",
         image: "/website_icon.png",
         fixed: true,
         iconImage: true
@@ -96,7 +98,7 @@ const rawEntries = [
     }
 
     function renderHome() {
-      document.title = "にゃにゃんの博物館メモ";
+      document.title = siteTitle;
       const view = homeTemplate.content.cloneNode(true);
       app.replaceChildren(view);
 
@@ -108,10 +110,9 @@ const rawEntries = [
         const query = input.value.trim().toLocaleLowerCase("ja");
         const fixedItems = entries.filter((entry) => entry.fixed);
         const searchableItems = entries.filter((entry) => !entry.fixed);
-        const matched = query
-          ? searchableItems.filter((entry) => `${entry.title}\n${entry.body}`.toLocaleLowerCase("ja").includes(query))
-          : searchableItems;
-        const shown = [...fixedItems, ...matched];
+        const matchesQuery = (entry) => `${entry.title}\n${entry.body}`.toLocaleLowerCase("ja").includes(query);
+        const matched = query ? entries.filter(matchesQuery) : searchableItems;
+        const shown = query ? matched : [...fixedItems, ...matched];
 
         grid.replaceChildren(...shown.map(createTile));
         resultCount.textContent = `${matched.length}件`;
@@ -129,7 +130,7 @@ const rawEntries = [
     }
 
     function renderDetail(entry) {
-      document.title = `${entry.title} - にゃにゃんの博物館メモ`;
+      document.title = `${entry.title} - ${siteTitle}`;
 
       const detail = document.createElement("article");
       detail.className = "detail";
@@ -166,7 +167,7 @@ const rawEntries = [
     }
 
     function renderNotFound(slug) {
-      document.title = "メモが見つかりません - にゃにゃんの博物館メモ";
+      document.title = `メモが見つかりません - ${siteTitle}`;
 
       const section = document.createElement("section");
       section.className = "detail";
