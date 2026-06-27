@@ -1,5 +1,6 @@
 const siteTitle = "Mumemo - にゃにゃんの博物館メモ";
 const memosUrl = "/data/memos.json";
+const shareIconUrl = "/assets/share-icon.svg";
 
 const app = document.querySelector("#app");
 const homeTemplate = document.querySelector("#home-template");
@@ -265,6 +266,19 @@ function shareTextFor(entry) {
   return `${entry.title} - ${siteTitle}`;
 }
 
+function createShareIcon(className) {
+  const icon = document.createElement("img");
+  icon.className = className;
+  icon.src = shareIconUrl;
+  icon.alt = "";
+  icon.loading = "lazy";
+  return icon;
+}
+
+function appendShareButtonIcon(button, label) {
+  button.append(createShareIcon("share-button-icon"), document.createTextNode(label));
+}
+
 function createShareLink(label, href) {
   const link = document.createElement("a");
   link.className = "share-button";
@@ -284,7 +298,7 @@ function createShareActions(entry) {
 
   const title = document.createElement("h3");
   title.className = "share-title";
-  title.textContent = "\u5171\u6709";
+  title.append(createShareIcon("share-title-icon"), document.createTextNode("\u5171\u6709"));
 
   const row = document.createElement("div");
   row.className = "share-row";
@@ -313,7 +327,7 @@ function createShareActions(entry) {
     const nativeShareButton = document.createElement("button");
     nativeShareButton.className = "share-button";
     nativeShareButton.type = "button";
-    nativeShareButton.textContent = "\u7aef\u672b\u3067\u5171\u6709";
+    appendShareButtonIcon(nativeShareButton, "\u7aef\u672b\u3067\u5171\u6709");
     nativeShareButton.addEventListener("click", async () => {
       try {
         await navigator.share({
