@@ -1,21 +1,51 @@
 from threading import Lock
 from typing import Any
+import json
 
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 
 from mumemo_bot.config import BotConfig, PROJECT_ROOT, mask_secret
-from mumemo_bot.site_store import save_post_as_memo
+from mumemo_bot.site_store import (
+    MemoNotFoundError,
+    ProtectedMemoError,
+    delete_memo,
+    get_memo,
+    list_memos,
+    save_post_as_memo,
+    update_memo,
+)
 from mumemo_bot.slack_post import MumemoSlackPost
+from mumemo_bot.slack_views import (
+    APPROVE_MEMO_ACTION_ID,
+    BODY_BLOCK_ID,
+    DELETE_MEMO_ACTION_ID,
+    DISMISS_REVIEW_ACTION_ID,
+    EDIT_MEMO_ACTION_ID,
+    IMAGE_BLOCK_ID,
+    IMAGES_BLOCK_ID,
+    MEMO_EDIT_CALLBACK_ID,
+    RELOAD_REVIEW_ACTION_ID,
+    TITLE_BLOCK_ID,
+    decode_action_value,
+    edit_modal_view,
+    manage_blocks,
+    modal_value,
+    review_blocks,
+)
 
 
 ALLOWED_TOP_LEVEL_SUBTYPES = {None, "file_share"}
+MANAGE_COMMAND = "mumemo"
+MANAGE_LIST_LIMIT = 15
 
 
 def create_app(config: BotConfig) -> App:
     app = App(token=config.slack_bot_token)
     state_lock = Lock()
     seen_event_ids: set[str] = set()
+    accepted_post_keys: set[tuple[str, str]] = set()
+    handled_review_message_keys: set[tuple[str, str]] = set()
 
     def claim_event(event_id: str) -> bool:
         if not event_id:
@@ -24,6 +54,24 @@ def create_app(config: BotConfig) -> App:
             if event_id in seen_event_ids:
                 return False
             seen_event_ids.add(event_id)
+            return True
+
+    def claim_post(key: tuple[str, str]) -> bool:
+        with state_lock:
+            if key in accepted_post_keys:
+                return False
+            accepted_post_keys.add(key)
+            return True
+
+    def release_post(key: tuple[str, str]) -> None:
+        with state_lock:
+            accepted_post_keys.discard(key)
+
+    def claim_review_message(key: tuple[str, str]) -> bool:
+        with state_lock:
+            if key in handled_review_message_keys:
+                return False
+            handled_review_message_keys.add(key)
             return True
 
     @app.event("message")
@@ -44,6 +92,20 @@ def create_app(config: BotConfig) -> App:
             print(f"[slack:event] skipped: {skip_reason}", flush=True)
             return
 
+        command_text = _manage_command_text(event)
+        if command_text is not None:
+            print(f"[slack:manage] command received: {command_text!r}", flush=True)
+            _post_manage_response(
+                client=client,
+                config=config,
+                channel_id=config.slack_channel_id,
+                thread_ts=str(event.get("ts") or ""),
+                user_id=str(event.get("user") or ""),
+                command_text=command_text,
+                ephemeral=False,
+            )
+            return
+
         try:
             post = MumemoSlackPost.from_message(
                 channel_id=config.slack_channel_id,
@@ -55,39 +117,358 @@ def create_app(config: BotConfig) -> App:
             return
 
         print(
-            "[slack:event] accepted: "
+            "[slack:event] accepted for review: "
             f"title={post.title!r}, body_chars={len(post.body)}, "
             f"images={len(post.images)}",
             flush=True,
         )
+        _post_review_for_post(
+            client=client,
+            channel_id=config.slack_channel_id,
+            post=post,
+        )
 
-        try:
-            result = save_post_as_memo(config, post)
-        except Exception as error:
-            logger.exception("Failed to save Slack post as Mumemo memo")
-            print(f"[mumemo] failed: {error}", flush=True)
-            _reply(
+    @app.command("/mumemo")
+    def handle_slash_command(
+        ack: Any,
+        body: dict[str, Any],
+        client: Any,
+        logger: Any,
+    ) -> None:
+        ack()
+        channel_id = str(body.get("channel_id") or "")
+        user_id = str(body.get("user_id") or "")
+        command_text = str(body.get("text") or "").strip()
+        print(
+            f"[slack:manage] slash command channel={channel_id!r}, text={command_text!r}",
+            flush=True,
+        )
+        if channel_id != config.slack_channel_id:
+            _post_ephemeral(
                 client=client,
-                channel_id=config.slack_channel_id,
-                thread_ts=post.message_ts,
-                text=f"Mumemoへの保存に失敗しました: {_short_status(str(error))}",
+                channel_id=channel_id,
+                user_id=user_id,
+                text=f"Mumemoの整理は {config.slack_channel_label} で使ってください。",
             )
             return
 
-        if result.created:
-            text = (
-                f"Mumemoに保存しました: {result.title}\n"
-                f"画像: {result.image_count}件\n"
-                "必要なら内容を確認して commit / push してください。"
+        _post_manage_response(
+            client=client,
+            config=config,
+            channel_id=channel_id,
+            thread_ts=None,
+            user_id=user_id,
+            command_text=command_text,
+            ephemeral=True,
+        )
+
+    @app.action(APPROVE_MEMO_ACTION_ID)
+    def handle_approve_memo(
+        ack: Any,
+        body: dict[str, Any],
+        client: Any,
+        logger: Any,
+    ) -> None:
+        ack()
+        action = body["actions"][0]
+        value = decode_action_value(action)
+        channel_id = str(value["channel_id"])
+        message_ts = str(value["message_ts"])
+        review_message_ts = str(body.get("message", {}).get("ts") or "")
+        user_id = body.get("user", {}).get("id", "unknown")
+        key = (channel_id, message_ts)
+        review_key = (channel_id, review_message_ts)
+
+        print(
+            "[slack:action] approve clicked: "
+            f"user={user_id}, channel={channel_id}, message_ts={message_ts}, "
+            f"review_ts={review_message_ts}",
+            flush=True,
+        )
+
+        if not claim_review_message(review_key):
+            print(f"[slack:action] duplicate review action ignored: {review_key}", flush=True)
+            return
+
+        post: MumemoSlackPost | None = None
+        claimed = False
+        try:
+            message = _fetch_original_message(client, channel_id, message_ts)
+            post = MumemoSlackPost.from_message(channel_id=channel_id, message=message)
+            _update_review_status(
+                client=client,
+                channel_id=channel_id,
+                review_message_ts=review_message_ts,
+                post=post,
+                status_text="保存中です...",
             )
-        else:
-            text = f"このSlack投稿はすでにMumemoへ保存済みです: {result.title}"
+
+            if not claim_post(key):
+                _update_review_status(
+                    client=client,
+                    channel_id=channel_id,
+                    review_message_ts=review_message_ts,
+                    post=post,
+                    status_text="この投稿はすでに処理中、または保存済みです。",
+                )
+                return
+            claimed = True
+
+            result = save_post_as_memo(config, post)
+        except Exception as error:
+            if claimed:
+                release_post(key)
+            logger.exception("Failed to approve Slack post as Mumemo memo")
+            print(f"[mumemo] approve failed: {error}", flush=True)
+            if post is not None:
+                _update_review_status(
+                    client=client,
+                    channel_id=channel_id,
+                    review_message_ts=review_message_ts,
+                    post=post,
+                    status_text=_short_status(f"保存に失敗しました: {error}"),
+                )
+            else:
+                _clear_review_buttons(
+                    client=client,
+                    channel_id=channel_id,
+                    review_message_ts=review_message_ts,
+                    status_text=_short_status(f"保存に失敗しました: {error}"),
+                )
+            _reply(
+                client=client,
+                channel_id=channel_id,
+                thread_ts=message_ts,
+                text=_short_status(f"Mumemoへの保存に失敗しました: {error}"),
+            )
+            return
+
+        status = (
+            f"公開しました。画像: {result.image_count}件"
+            if result.created
+            else "このSlack投稿はすでにMumemoへ保存済みです。"
+        )
+        _update_review_status(
+            client=client,
+            channel_id=channel_id,
+            review_message_ts=review_message_ts,
+            post=post,
+            status_text=status,
+        )
         _reply(
             client=client,
-            channel_id=config.slack_channel_id,
-            thread_ts=post.message_ts,
-            text=text,
+            channel_id=channel_id,
+            thread_ts=message_ts,
+            text=f"Mumemoに反映しました: {result.title}\n画像: {result.image_count}件",
         )
+
+    @app.action(RELOAD_REVIEW_ACTION_ID)
+    def handle_reload_review(
+        ack: Any,
+        body: dict[str, Any],
+        client: Any,
+        logger: Any,
+    ) -> None:
+        ack()
+        action = body["actions"][0]
+        value = decode_action_value(action)
+        channel_id = str(value["channel_id"])
+        message_ts = str(value["message_ts"])
+        review_message_ts = str(body.get("message", {}).get("ts") or "")
+        review_key = (channel_id, review_message_ts)
+
+        print(
+            "[slack:action] reload clicked: "
+            f"channel={channel_id}, message_ts={message_ts}, review_ts={review_message_ts}",
+            flush=True,
+        )
+
+        if not claim_review_message(review_key):
+            print(f"[slack:action] duplicate review action ignored: {review_key}", flush=True)
+            return
+
+        post: MumemoSlackPost | None = None
+        try:
+            message = _fetch_original_message(client, channel_id, message_ts)
+            post = MumemoSlackPost.from_message(channel_id=channel_id, message=message)
+            _post_review_for_post(client=client, channel_id=channel_id, post=post)
+            _update_review_status(
+                client=client,
+                channel_id=channel_id,
+                review_message_ts=review_message_ts,
+                post=post,
+                status_text="再読み込みしました。新しい下書きを使ってください。",
+            )
+        except Exception as error:
+            logger.exception("Failed to reload Slack post for Mumemo review")
+            print(f"[slack:action] reload failed: {error}", flush=True)
+            if post is not None:
+                _update_review_status(
+                    client=client,
+                    channel_id=channel_id,
+                    review_message_ts=review_message_ts,
+                    post=post,
+                    status_text=_short_status(f"再読み込みに失敗しました: {error}"),
+                )
+            else:
+                _clear_review_buttons(
+                    client=client,
+                    channel_id=channel_id,
+                    review_message_ts=review_message_ts,
+                    status_text=_short_status(f"再読み込みに失敗しました: {error}"),
+                )
+
+    @app.action(DISMISS_REVIEW_ACTION_ID)
+    def handle_dismiss_review(
+        ack: Any,
+        body: dict[str, Any],
+        client: Any,
+    ) -> None:
+        ack()
+        action = body["actions"][0]
+        value = decode_action_value(action)
+        channel_id = str(value["channel_id"])
+        review_message_ts = str(body.get("message", {}).get("ts") or "")
+        review_key = (channel_id, review_message_ts)
+        if not claim_review_message(review_key):
+            return
+        _clear_review_buttons(
+            client=client,
+            channel_id=channel_id,
+            review_message_ts=review_message_ts,
+            status_text="Mumemo下書きを破棄しました。",
+        )
+
+    @app.action(EDIT_MEMO_ACTION_ID)
+    def handle_edit_memo(
+        ack: Any,
+        body: dict[str, Any],
+        client: Any,
+        logger: Any,
+    ) -> None:
+        ack()
+        action = body["actions"][0]
+        value = decode_action_value(action)
+        memo_id = str(value["memo_id"])
+        channel_id = str(body.get("channel", {}).get("id") or config.slack_channel_id)
+        message_ts = str(body.get("message", {}).get("ts") or "") or None
+
+        try:
+            memo = get_memo(config, memo_id)
+            client.views_open(
+                trigger_id=body["trigger_id"],
+                view=edit_modal_view(
+                    memo=memo,
+                    channel_id=channel_id,
+                    message_ts=message_ts,
+                ),
+            )
+        except Exception as error:
+            logger.exception("Failed to open Mumemo edit modal")
+            _post_ephemeral(
+                client=client,
+                channel_id=channel_id,
+                user_id=str(body.get("user", {}).get("id") or ""),
+                text=_short_status(f"編集画面を開けませんでした: {error}"),
+            )
+
+    @app.action(DELETE_MEMO_ACTION_ID)
+    def handle_delete_memo(
+        ack: Any,
+        body: dict[str, Any],
+        client: Any,
+        logger: Any,
+    ) -> None:
+        ack()
+        action = body["actions"][0]
+        value = decode_action_value(action)
+        memo_id = str(value["memo_id"])
+        channel_id = str(body.get("channel", {}).get("id") or config.slack_channel_id)
+        message_ts = str(body.get("message", {}).get("ts") or "")
+        user_id = str(body.get("user", {}).get("id") or "")
+
+        try:
+            result = delete_memo(config, memo_id=memo_id)
+            _refresh_manage_message(
+                client=client,
+                config=config,
+                channel_id=channel_id,
+                message_ts=message_ts,
+                fallback_user_id=user_id,
+                fallback_text=f"削除しました: {result.title}",
+            )
+        except (MemoNotFoundError, ProtectedMemoError, ValueError) as error:
+            _post_ephemeral(
+                client=client,
+                channel_id=channel_id,
+                user_id=user_id,
+                text=str(error),
+            )
+        except Exception as error:
+            logger.exception("Failed to delete Mumemo memo")
+            _post_ephemeral(
+                client=client,
+                channel_id=channel_id,
+                user_id=user_id,
+                text=_short_status(f"削除に失敗しました: {error}"),
+            )
+
+    @app.view(MEMO_EDIT_CALLBACK_ID)
+    def handle_edit_modal_submission(
+        ack: Any,
+        body: dict[str, Any],
+        view: dict[str, Any],
+        client: Any,
+        logger: Any,
+    ) -> None:
+        title = modal_value(view, TITLE_BLOCK_ID).strip()
+        if not title:
+            ack(response_action="errors", errors={TITLE_BLOCK_ID: "タイトルを入力してください"})
+            return
+        ack()
+
+        metadata = json.loads(str(view.get("private_metadata") or "{}"))
+        memo_id = str(metadata.get("memo_id") or "")
+        channel_id = str(metadata.get("channel_id") or config.slack_channel_id)
+        message_ts = metadata.get("message_ts")
+        user_id = str(body.get("user", {}).get("id") or "")
+        body_text = modal_value(view, BODY_BLOCK_ID)
+        image = modal_value(view, IMAGE_BLOCK_ID)
+        images = [line.strip() for line in modal_value(view, IMAGES_BLOCK_ID).splitlines()]
+
+        try:
+            result = update_memo(
+                config,
+                memo_id=memo_id,
+                title=title,
+                body=body_text,
+                image=image,
+                images=images,
+            )
+            if isinstance(message_ts, str) and message_ts:
+                _refresh_manage_message(
+                    client=client,
+                    config=config,
+                    channel_id=channel_id,
+                    message_ts=message_ts,
+                    fallback_user_id=user_id,
+                    fallback_text=f"更新しました: {result.title}",
+                )
+            else:
+                _post_ephemeral(
+                    client=client,
+                    channel_id=channel_id,
+                    user_id=user_id,
+                    text=f"更新しました: {result.title}",
+                )
+        except Exception as error:
+            logger.exception("Failed to update Mumemo memo")
+            _post_ephemeral(
+                client=client,
+                channel_id=channel_id,
+                user_id=user_id,
+                text=_short_status(f"更新に失敗しました: {error}"),
+            )
 
     return app
 
@@ -102,6 +483,155 @@ def main() -> None:
     )
     print("[socket-mode] starting SocketModeHandler", flush=True)
     SocketModeHandler(app, config.slack_app_token).start()
+
+
+def _post_review_for_post(client: Any, channel_id: str, post: MumemoSlackPost) -> None:
+    response = client.chat_postMessage(
+        channel=channel_id,
+        thread_ts=post.message_ts,
+        text=f"Mumemo下書き: {post.title}",
+        blocks=review_blocks(
+            channel_id=channel_id,
+            message_ts=post.message_ts,
+            title=post.title,
+            body=post.body,
+            image_count=len(post.images),
+            status_text=None,
+            buttons_enabled=True,
+        ),
+    )
+    print(
+        "[slack:review] posted review buttons: "
+        f"thread_ts={post.message_ts}, review_ts={response.get('ts')}",
+        flush=True,
+    )
+
+
+def _update_review_status(
+    *,
+    client: Any,
+    channel_id: str,
+    review_message_ts: str,
+    post: MumemoSlackPost,
+    status_text: str,
+) -> None:
+    client.chat_update(
+        channel=channel_id,
+        ts=review_message_ts,
+        text=f"Mumemo下書き: {post.title} - {status_text}",
+        blocks=review_blocks(
+            channel_id=channel_id,
+            message_ts=post.message_ts,
+            title=post.title,
+            body=post.body,
+            image_count=len(post.images),
+            status_text=_short_status(status_text),
+            buttons_enabled=False,
+        ),
+    )
+
+
+def _clear_review_buttons(
+    *,
+    client: Any,
+    channel_id: str,
+    review_message_ts: str,
+    status_text: str,
+) -> None:
+    client.chat_update(
+        channel=channel_id,
+        ts=review_message_ts,
+        text=_short_status(status_text),
+        blocks=[
+            {
+                "type": "section",
+                "text": {"type": "mrkdwn", "text": _short_status(status_text)},
+            }
+        ],
+    )
+
+
+def _post_manage_response(
+    *,
+    client: Any,
+    config: BotConfig,
+    channel_id: str,
+    thread_ts: str | None,
+    user_id: str,
+    command_text: str,
+    ephemeral: bool,
+) -> None:
+    command = command_text.strip().casefold()
+    if command in {"help", "ヘルプ", "?"}:
+        text = "`mumemo` または `mumemo list` で投稿整理を開けます。各投稿のボタンから編集・削除できます。"
+        if ephemeral:
+            _post_ephemeral(client=client, channel_id=channel_id, user_id=user_id, text=text)
+        else:
+            _reply(client=client, channel_id=channel_id, thread_ts=thread_ts or "", text=text)
+        return
+
+    items = list_memos(config, include_fixed=False)
+    shown = items[:MANAGE_LIST_LIMIT]
+    blocks = manage_blocks(items=shown, total_count=len(items), shown_count=len(shown))
+    text = f"Mumemo 投稿整理: {len(shown)}/{len(items)}件"
+    if ephemeral:
+        client.chat_postEphemeral(
+            channel=channel_id,
+            user=user_id,
+            text=text,
+            blocks=blocks,
+        )
+    else:
+        client.chat_postMessage(
+            channel=channel_id,
+            thread_ts=thread_ts,
+            text=text,
+            blocks=blocks,
+        )
+
+
+def _refresh_manage_message(
+    *,
+    client: Any,
+    config: BotConfig,
+    channel_id: str,
+    message_ts: str,
+    fallback_user_id: str,
+    fallback_text: str,
+) -> None:
+    items = list_memos(config, include_fixed=False)
+    shown = items[:MANAGE_LIST_LIMIT]
+    try:
+        client.chat_update(
+            channel=channel_id,
+            ts=message_ts,
+            text=f"Mumemo 投稿整理: {len(shown)}/{len(items)}件",
+            blocks=manage_blocks(items=shown, total_count=len(items), shown_count=len(shown)),
+        )
+    except Exception as error:
+        print(f"[slack:manage] failed to refresh list message: {error}", flush=True)
+        _post_ephemeral(
+            client=client,
+            channel_id=channel_id,
+            user_id=fallback_user_id,
+            text=fallback_text,
+        )
+
+
+def _fetch_original_message(client: Any, channel_id: str, message_ts: str) -> dict[str, Any]:
+    response = client.conversations_replies(
+        channel=channel_id,
+        ts=message_ts,
+        limit=1,
+        inclusive=True,
+    )
+    messages = response.get("messages", [])
+    if not isinstance(messages, list) or not messages:
+        raise RuntimeError("Slack投稿が見つかりません")
+    message = messages[0]
+    if not isinstance(message, dict):
+        raise RuntimeError("Slack投稿の形式が不正です")
+    return message
 
 
 def _message_skip_reason(event: dict[str, Any], target_channel_id: str) -> str | None:
@@ -120,6 +650,19 @@ def _message_skip_reason(event: dict[str, Any], target_channel_id: str) -> str |
     if thread_ts and thread_ts != ts:
         return f"thread reply: ts={ts!r}, thread_ts={thread_ts!r}"
 
+    return None
+
+
+def _manage_command_text(event: dict[str, Any]) -> str | None:
+    text = str(event.get("text") or "").strip()
+    if not text:
+        return None
+    lowered = text.casefold()
+    if lowered == MANAGE_COMMAND:
+        return ""
+    prefix = f"{MANAGE_COMMAND} "
+    if lowered.startswith(prefix):
+        return text[len(prefix) :].strip()
     return None
 
 
@@ -144,6 +687,16 @@ def _reply(client: Any, channel_id: str, thread_ts: str, text: str) -> None:
         client.chat_postMessage(channel=channel_id, thread_ts=thread_ts, text=text)
     except Exception as error:
         print(f"[slack:reply] failed: {error}", flush=True)
+
+
+def _post_ephemeral(client: Any, channel_id: str, user_id: str, text: str) -> None:
+    if not user_id:
+        print(f"[slack:ephemeral] skipped without user: {text}", flush=True)
+        return
+    try:
+        client.chat_postEphemeral(channel=channel_id, user=user_id, text=text)
+    except Exception as error:
+        print(f"[slack:ephemeral] failed: {error}", flush=True)
 
 
 def _print_startup_diagnostics(config: BotConfig) -> None:
