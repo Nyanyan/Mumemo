@@ -27,6 +27,10 @@
       line-height: 1.65;
     }
 
+    body.lightbox-open {
+      overflow: hidden;
+    }
+
     a {
       color: inherit;
     }
@@ -303,6 +307,24 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .detail-image-button {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      padding: 0;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: inherit;
+      cursor: zoom-in;
+      text-align: inherit;
+    }
+
+    .detail-image-button:focus-visible {
+      outline: 3px solid rgba(49, 30, 77, 0.32);
+      outline-offset: 4px;
+    }
+
     .detail-image {
       display: block;
       width: 100%;
@@ -313,11 +335,11 @@
       object-fit: cover;
     }
 
-    .detail-media.many .detail-image:first-child {
+    .detail-media.many .detail-image-button:first-child {
       grid-column: 1 / -1;
     }
 
-    .detail-media.many .detail-image:not(:first-child) {
+    .detail-media.many .detail-image-button:not(:first-child) .detail-image {
       aspect-ratio: 1 / 1;
       max-height: none;
     }
@@ -354,6 +376,67 @@
       font-size: 1rem;
       white-space: pre-wrap;
       overflow-wrap: anywhere;
+    }
+
+    .detail-posted-at {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      text-align: right;
+    }
+
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      background: rgba(49, 30, 77, 0.86);
+    }
+
+    .lightbox-panel {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: min(100%, 1120px);
+      max-height: calc(100vh - 40px);
+    }
+
+    .lightbox-image {
+      display: block;
+      max-width: 100%;
+      max-height: calc(100vh - 64px);
+      border-radius: 8px;
+      background: #e8d7f8;
+      box-shadow: 0 24px 70px rgba(16, 8, 29, 0.48);
+      object-fit: contain;
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border: 1px solid rgba(49, 30, 77, 0.24);
+      border-radius: 50%;
+      background: rgba(251, 247, 255, 0.94);
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 1.45rem;
+      font-weight: 700;
+      line-height: 1;
+      box-shadow: 0 12px 28px rgba(16, 8, 29, 0.26);
+    }
+
+    .lightbox-close:hover,
+    .lightbox-close:focus-visible {
+      background: var(--panel);
+      outline: 3px solid rgba(251, 247, 255, 0.55);
     }
 
     @media (max-width: 760px) {

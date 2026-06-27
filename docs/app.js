@@ -3,7 +3,17 @@ const memosUrl = "/data/memos.json";
 
 const app = document.querySelector("#app");
 const homeTemplate = document.querySelector("#home-template");
+const postedAtFormatter = new Intl.DateTimeFormat("ja-JP", {
+  timeZone: "Asia/Tokyo",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false
+});
 let entries = [];
+let lightbox = null;
 
 function slugBase(value) {
   const normalized = value.normalize("NFKC").trim();
@@ -58,6 +68,46 @@ function imagesFor(entry) {
 
 function thumbnailFor(entry) {
   return entry.image || imagesFor(entry)[0] || "/website_icon.png";
+}
+
+function postedAtValue(entry) {
+  const direct = entry.postedAt || entry.posted_at || entry.createdAt || entry.created_at;
+  if (typeof direct === "string" && direct.trim()) {
+    return direct;
+  }
+  if (typeof direct === "number" && Number.isFinite(direct)) {
+    return new Date(direct).toISOString();
+  }
+
+  const source = entry.source;
+  if (!source || typeof source !== "object") {
+    return "";
+  }
+
+  const messageTs = source.message_ts || source.messageTs;
+  if (typeof messageTs !== "string" && typeof messageTs !== "number") {
+    return "";
+  }
+
+  const timestamp = Number.parseFloat(messageTs);
+  if (!Number.isFinite(timestamp)) {
+    return "";
+  }
+  return new Date(timestamp * 1000).toISOString();
+}
+
+function formatPostedAt(entry) {
+  const rawValue = postedAtValue(entry);
+  if (!rawValue) {
+    return "";
+  }
+
+  const date = new Date(rawValue);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return postedAtFormatter.format(date);
 }
 
 function createStatusMessage(text) {
@@ -117,7 +167,7 @@ function renderHome() {
     const query = input.value.trim().toLocaleLowerCase("ja");
     const fixedItems = entries.filter((entry) => entry.fixed);
     const searchableItems = entries.filter((entry) => !entry.fixed);
-    const matchesQuery = (entry) => `${entry.title}\n${entry.body}`.toLocaleLowerCase("ja").includes(query);
+    const matchesQuery = (entry) => `${entry.title}\n${entry.body}\n${formatPostedAt(entry)}`.toLocaleLowerCase("ja").includes(query);
     const matched = query ? entries.filter(matchesQuery) : searchableItems;
     const shown = query ? matched : [...fixedItems, ...matched];
 
@@ -133,29 +183,49 @@ function renderHome() {
   draw();
 }
 
+function createDetailImageButton(entry, imageUrl, index) {
+  const button = document.createElement("button");
+  button.className = "detail-image-button";
+  button.type = "button";
+  button.setAttribute("aria-label", `${entry.title}の画像${index + 1}を拡大`);
+
+  const image = document.createElement("img");
+  image.className = `detail-image${entry.iconImage ? " icon-image" : ""}`;
+  image.src = imageUrl;
+  image.alt = "";
+  image.loading = index === 0 ? "eager" : "lazy";
+
+  button.append(image);
+  button.addEventListener("click", () => openImageLightbox(imageUrl, entry.title));
+  return button;
+}
+
 function createDetailMedia(entry) {
   const images = imagesFor(entry);
   const media = document.createElement("div");
   media.className = `detail-media${images.length > 1 ? " many" : ""}`;
 
-  for (const imageUrl of images) {
-    const image = document.createElement("img");
-    image.className = `detail-image${entry.iconImage ? " icon-image" : ""}`;
-    image.src = imageUrl;
-    image.alt = "";
-    image.loading = "lazy";
-    media.append(image);
+  for (const [index, imageUrl] of images.entries()) {
+    media.append(createDetailImageButton(entry, imageUrl, index));
   }
 
   if (images.length === 0) {
-    const image = document.createElement("img");
-    image.className = "detail-image icon-image";
-    image.src = "/website_icon.png";
-    image.alt = "";
-    media.append(image);
+    media.append(createDetailImageButton({ ...entry, iconImage: true }, "/website_icon.png", 0));
   }
 
   return media;
+}
+
+function createPostedAt(entry) {
+  const postedAt = formatPostedAt(entry);
+  if (!postedAt) {
+    return null;
+  }
+
+  const meta = document.createElement("p");
+  meta.className = "detail-posted-at";
+  meta.textContent = `投稿日時: ${postedAt}`;
+  return meta;
 }
 
 function renderDetail(entry) {
@@ -187,6 +257,10 @@ function renderDetail(entry) {
   text.textContent = entry.body;
 
   copy.append(title, text);
+  const postedAt = createPostedAt(entry);
+  if (postedAt) {
+    copy.append(postedAt);
+  }
   hero.append(media, copy);
   detail.append(back, hero);
   app.replaceChildren(detail);
@@ -211,6 +285,7 @@ function renderNotFound(slug) {
 }
 
 function route() {
+  closeImageLightbox({ restoreFocus: false });
   const slug = currentSlug();
 
   if (!slug) {
@@ -225,6 +300,61 @@ function route() {
   }
 
   renderNotFound(slug);
+}
+
+function openImageLightbox(imageUrl, title) {
+  closeImageLightbox({ restoreFocus: false });
+  const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+  const overlay = document.createElement("div");
+  overlay.className = "lightbox";
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-modal", "true");
+  overlay.setAttribute("aria-label", `${title}の画像`);
+
+  const panel = document.createElement("div");
+  panel.className = "lightbox-panel";
+
+  const close = document.createElement("button");
+  close.className = "lightbox-close";
+  close.type = "button";
+  close.setAttribute("aria-label", "閉じる");
+  close.textContent = "×";
+
+  const image = document.createElement("img");
+  image.className = "lightbox-image";
+  image.src = imageUrl;
+  image.alt = "";
+
+  close.addEventListener("click", () => closeImageLightbox());
+  overlay.addEventListener("click", (event) => {
+    if (event.target === overlay) {
+      closeImageLightbox();
+    }
+  });
+
+  panel.append(close, image);
+  overlay.append(panel);
+  document.body.append(overlay);
+  document.body.classList.add("lightbox-open");
+  lightbox = { overlay, previousFocus };
+  close.focus({ preventScroll: true });
+}
+
+function closeImageLightbox(options = {}) {
+  if (!lightbox) {
+    return;
+  }
+
+  const { overlay, previousFocus } = lightbox;
+  overlay.remove();
+  document.body.classList.remove("lightbox-open");
+  lightbox = null;
+
+  if (options.restoreFocus === false || !previousFocus) {
+    return;
+  }
+  previousFocus.focus({ preventScroll: true });
 }
 
 async function loadEntries() {
@@ -263,6 +393,12 @@ document.addEventListener("click", (event) => {
   window.history.pushState({}, "", link.href);
   route();
   window.scrollTo({ top: 0, behavior: "auto" });
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    closeImageLightbox();
+  }
 });
 
 window.addEventListener("popstate", route);
