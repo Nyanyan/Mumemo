@@ -3,7 +3,10 @@ from typing import Any
 import re
 
 
-URL_PATTERN = re.compile(r"https?://[^\s<>\"'|]+", re.IGNORECASE)
+URL_PATTERN = re.compile(
+    r"<(https?://[^\s<>|]+)(?:\|([^<>]*))?>|(https?://[^\s<>\"'|]+)",
+    re.IGNORECASE,
+)
 TRAILING_URL_PUNCTUATION = ".,、。)）]］}>」』"
 
 
@@ -102,7 +105,8 @@ def _image_files(message: dict[str, Any]) -> list[SlackImageFile]:
 def _urls_in_text(text: str) -> list[str]:
     urls: list[str] = []
     for match in URL_PATTERN.finditer(text):
-        url = _strip_trailing_punctuation(match.group(0))
+        raw_url = _matched_url(match)
+        url = _strip_trailing_punctuation(raw_url)
         if url:
             urls.append(url)
     return urls
@@ -114,19 +118,41 @@ def _replace_urls_in_text(text: str, urls: list[str], start_index: int) -> tuple
     url_index = start_index
 
     for match in URL_PATTERN.finditer(text):
-        raw_url = match.group(0)
+        raw_url = _matched_url(match)
         stripped_url = _strip_trailing_punctuation(raw_url)
         if not stripped_url:
             continue
-        trim_length = len(raw_url) - len(stripped_url)
-        match_end = match.end() - trim_length
-        output.append(text[last_index : match.start()])
-        output.append(urls[url_index])
-        last_index = match_end
+
+        replace_start, replace_end = _matched_url_span(match)
+        if match.group(3):
+            trim_length = len(raw_url) - len(stripped_url)
+            replace_end -= trim_length
+
+        replacement_url = urls[url_index]
+        output.append(text[last_index:replace_start])
+        output.append(replacement_url)
+        last_index = replace_end
+
+        label = match.group(2)
+        if label == raw_url:
+            output.append(text[last_index : match.start(2)])
+            output.append(replacement_url)
+            last_index = match.end(2)
+
         url_index += 1
 
     output.append(text[last_index:])
     return "".join(output), url_index
+
+
+def _matched_url(match: re.Match[str]) -> str:
+    return match.group(1) or match.group(3) or ""
+
+
+def _matched_url_span(match: re.Match[str]) -> tuple[int, int]:
+    if match.group(1):
+        return match.start(1), match.end(1)
+    return match.start(3), match.end(3)
 
 
 def _strip_trailing_punctuation(url: str) -> str:
