@@ -1,6 +1,7 @@
 from threading import Lock
 from typing import Any
 import json
+import re
 
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
@@ -684,6 +685,7 @@ def create_app(config: BotConfig) -> App:
                     memo=memo,
                     channel_id=channel_id,
                     message_ts=message_ts,
+                    site_base_url=config.site_base_url,
                 ),
             )
         except Exception as error:
@@ -768,17 +770,26 @@ def create_app(config: BotConfig) -> App:
         message_ts = metadata.get("message_ts")
         user_id = str(body.get("user", {}).get("id") or "")
         body_text = modal_value(view, BODY_BLOCK_ID)
-        image = modal_value(view, IMAGE_BLOCK_ID).strip()
-        images = [line.strip() for line in modal_value(view, IMAGES_BLOCK_ID).splitlines()]
+        primary_image_ref = modal_value(view, IMAGE_BLOCK_ID).strip()
+        image_order_lines = [line.strip() for line in modal_value(view, IMAGES_BLOCK_ID).splitlines()]
 
         try:
             current_memo = get_memo(config, memo_id)
-            clean_images = [item for item in images if item]
-            if (
-                image == current_memo.image
-                and current_memo.image in current_memo.images
-                and image not in clean_images
-            ):
+            images = _images_from_order_lines(
+                image_order_lines,
+                current_memo.images,
+                config.site_base_url,
+            )
+            image = (
+                _image_ref_from_modal_line(
+                    primary_image_ref,
+                    current_memo.images,
+                    config.site_base_url,
+                )
+                if primary_image_ref
+                else ""
+            )
+            if image and image not in images:
                 image = ""
 
             uploaded_files = _uploaded_image_files_from_modal(
@@ -1110,6 +1121,60 @@ def _fetch_slack_file(client: Any, file_id: str) -> dict[str, Any] | None:
     response = client.files_info(file=file_id)
     file_data = response.get("file")
     return file_data if isinstance(file_data, dict) else None
+
+
+_FULL_WIDTH_DIGITS = str.maketrans("\uff10\uff11\uff12\uff13\uff14\uff15\uff16\uff17\uff18\uff19", "0123456789")
+
+
+def _images_from_order_lines(
+    lines: list[str],
+    current_images: list[str],
+    site_base_url: str,
+) -> list[str]:
+    ordered_images: list[str] = []
+    for line in lines:
+        image_ref = _image_ref_from_modal_line(line, current_images, site_base_url)
+        if image_ref:
+            ordered_images.append(image_ref)
+    return _append_unique([], ordered_images)
+
+
+def _image_ref_from_modal_line(
+    line: str,
+    current_images: list[str],
+    site_base_url: str,
+) -> str:
+    clean_line = _clean_modal_image_reference(line)
+    if not clean_line:
+        return ""
+
+    normalized_line = clean_line.translate(_FULL_WIDTH_DIGITS)
+    if not any(marker in normalized_line for marker in ("/", ".", ":")):
+        match = re.fullmatch(r"\D*([0-9]+)\D*", normalized_line)
+        if match:
+            index = int(match.group(1)) - 1
+            if 0 <= index < len(current_images):
+                return current_images[index]
+            raise ValueError(f"Image number out of range: {clean_line}")
+
+    return _local_image_ref_from_public_url(clean_line, site_base_url)
+
+
+def _clean_modal_image_reference(value: str) -> str:
+    clean_value = value.strip()
+    slack_link_match = re.fullmatch(r"<([^>|]+)(?:\|[^>]*)?>", clean_value)
+    if slack_link_match:
+        return slack_link_match.group(1).strip()
+    return clean_value
+
+
+def _local_image_ref_from_public_url(value: str, site_base_url: str) -> str:
+    clean_value = value.strip()
+    base_url = str(site_base_url or "").strip().rstrip("/")
+    if base_url and clean_value.startswith(f"{base_url}/"):
+        clean_value = clean_value[len(base_url) :]
+    return clean_value
+
 
 
 def _append_unique(values: list[str], additions: list[str]) -> list[str]:

@@ -340,7 +340,13 @@ def manage_blocks(
     return blocks[:50]
 
 
-def edit_modal_view(*, memo: Any, channel_id: str, message_ts: str | None) -> dict[str, Any]:
+def edit_modal_view(
+    *,
+    memo: Any,
+    channel_id: str,
+    message_ts: str | None,
+    site_base_url: str = "",
+) -> dict[str, Any]:
     metadata = json.dumps(
         {
             "memo_id": memo.id,
@@ -349,7 +355,84 @@ def edit_modal_view(*, memo: Any, channel_id: str, message_ts: str | None) -> di
         },
         ensure_ascii=False,
     )
-    images_text = "\n".join(memo.images)
+    image_reference = _image_reference_text(memo.images, site_base_url)
+    order_initial = _image_order_initial(memo.images)
+    primary_initial = _primary_image_initial(memo.image, memo.images)
+
+    blocks: list[dict[str, Any]] = [
+        {
+            "type": "input",
+            "block_id": TITLE_BLOCK_ID,
+            "label": {"type": "plain_text", "text": "タイトル"},
+            "element": {
+                "type": "plain_text_input",
+                "action_id": VALUE_ACTION_ID,
+                "initial_value": _input_initial(memo.title, 150),
+            },
+        },
+        {
+            "type": "input",
+            "block_id": BODY_BLOCK_ID,
+            "label": {"type": "plain_text", "text": "本文"},
+            "element": {
+                "type": "plain_text_input",
+                "action_id": VALUE_ACTION_ID,
+                "multiline": True,
+                "initial_value": _input_initial(memo.body, 2900),
+            },
+        },
+    ]
+
+    if image_reference:
+        blocks.append(
+            {
+                "type": "section",
+                "text": {"type": "mrkdwn", "text": image_reference},
+            }
+        )
+
+    blocks.extend(
+        [
+            {
+                "type": "input",
+                "block_id": IMAGE_BLOCK_ID,
+                "optional": True,
+                "label": {"type": "plain_text", "text": "サムネイル画像番号"},
+                "hint": {"type": "plain_text", "text": "画像1、画像2の番号で指定します。空欄なら画像順の先頭を使います。"},
+                "element": {
+                    "type": "plain_text_input",
+                    "action_id": VALUE_ACTION_ID,
+                    "initial_value": _input_initial(primary_initial, 30),
+                },
+            },
+            {
+                "type": "input",
+                "block_id": IMAGES_BLOCK_ID,
+                "optional": True,
+                "label": {"type": "plain_text", "text": "画像の順序"},
+                "hint": {"type": "plain_text", "text": "1行に1つずつ画像番号を並べます。行を入れ替えると表示順が変わり、行を消すと画像を外します。"},
+                "element": {
+                    "type": "plain_text_input",
+                    "action_id": VALUE_ACTION_ID,
+                    "multiline": True,
+                    "initial_value": _input_initial(order_initial, 2900),
+                },
+            },
+            {
+                "type": "input",
+                "block_id": UPLOAD_IMAGES_BLOCK_ID,
+                "optional": True,
+                "label": {"type": "plain_text", "text": "画像を追加"},
+                "hint": {"type": "plain_text", "text": "ここで選んだ画像は、画像の順序の末尾に追加されます。"},
+                "element": {
+                    "type": "file_input",
+                    "action_id": UPLOAD_IMAGES_ACTION_ID,
+                    "filetypes": ["jpg", "jpeg", "png", "gif", "webp"],
+                    "max_files": 10,
+                },
+            },
+        ]
+    )
 
     return {
         "type": "modal",
@@ -358,65 +441,7 @@ def edit_modal_view(*, memo: Any, channel_id: str, message_ts: str | None) -> di
         "title": {"type": "plain_text", "text": "Mumemo編集"},
         "submit": {"type": "plain_text", "text": "保存"},
         "close": {"type": "plain_text", "text": "閉じる"},
-        "blocks": [
-            {
-                "type": "input",
-                "block_id": TITLE_BLOCK_ID,
-                "label": {"type": "plain_text", "text": "タイトル"},
-                "element": {
-                    "type": "plain_text_input",
-                    "action_id": VALUE_ACTION_ID,
-                    "initial_value": _input_initial(memo.title, 150),
-                },
-            },
-            {
-                "type": "input",
-                "block_id": BODY_BLOCK_ID,
-                "label": {"type": "plain_text", "text": "本文"},
-                "element": {
-                    "type": "plain_text_input",
-                    "action_id": VALUE_ACTION_ID,
-                    "multiline": True,
-                    "initial_value": _input_initial(memo.body, 2900),
-                },
-            },
-            {
-                "type": "input",
-                "block_id": IMAGE_BLOCK_ID,
-                "label": {"type": "plain_text", "text": "サムネイル画像URL"},
-                "element": {
-                    "type": "plain_text_input",
-                    "action_id": VALUE_ACTION_ID,
-                    "initial_value": _input_initial(memo.image, 300),
-                },
-            },
-            {
-                "type": "input",
-                "block_id": IMAGES_BLOCK_ID,
-                "optional": True,
-                "label": {"type": "plain_text", "text": "画像URL一覧"},
-                "hint": {"type": "plain_text", "text": "削除する画像は行を消し、追加する画像URLは行を追加してください。"},
-                "element": {
-                    "type": "plain_text_input",
-                    "action_id": VALUE_ACTION_ID,
-                    "multiline": True,
-                    "initial_value": _input_initial(images_text, 2900),
-                },
-            },
-            {
-                "type": "input",
-                "block_id": UPLOAD_IMAGES_BLOCK_ID,
-                "optional": True,
-                "label": {"type": "plain_text", "text": "画像を追加"},
-                "hint": {"type": "plain_text", "text": "ここで選んだ画像は、画像URL一覧の末尾に追加されます。"},
-                "element": {
-                    "type": "file_input",
-                    "action_id": UPLOAD_IMAGES_ACTION_ID,
-                    "filetypes": ["jpg", "jpeg", "png", "gif", "webp"],
-                    "max_files": 10,
-                },
-            },
-        ],
+        "blocks": blocks,
     }
 
 
@@ -480,6 +505,49 @@ def _thumbnail_label(image: Any, index: int) -> str:
 
 def _image_file_id(image: Any) -> str:
     return str(getattr(image, "file_id", "") or "").strip()
+
+
+def _image_reference_text(images: list[str], site_base_url: str) -> str:
+    if not images:
+        return ""
+    lines = ["*\u753b\u50cf\u4e00\u89a7*"]
+    for index, image_url in enumerate(images, start=1):
+        public_url = _public_site_url(site_base_url, image_url)
+        lines.append(f"<{_mrkdwn_url(public_url)}|\u753b\u50cf{index}>")
+    return _truncate("\n".join(lines), 2900)
+
+
+def _image_order_initial(images: list[str]) -> str:
+    return "\n".join(str(index) for index in range(1, len(images) + 1))
+
+
+def _primary_image_initial(image: str, images: list[str]) -> str:
+    try:
+        return str(images.index(image) + 1)
+    except ValueError:
+        return "1" if images else ""
+
+
+def _public_site_url(site_base_url: str, image_url: str) -> str:
+    clean_url = str(image_url or "").strip()
+    if not clean_url:
+        return ""
+    if clean_url.startswith(("http://", "https://")):
+        return clean_url
+    if not clean_url.startswith("/"):
+        clean_url = f"/{clean_url}"
+    base_url = str(site_base_url or "").strip().rstrip("/")
+    return f"{base_url}{clean_url}" if base_url else clean_url
+
+
+def _mrkdwn_url(url: str) -> str:
+    return (
+        str(url)
+        .replace("\\", "%5C")
+        .replace(" ", "%20")
+        .replace("<", "%3C")
+        .replace(">", "%3E")
+    )
 
 def _url_list_text(urls: list[str]) -> str:
     lines = [f"{index + 1}. <{_mrkdwn_text(url)}>" for index, url in enumerate(urls)]
