@@ -6,6 +6,7 @@ from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 
 from mumemo_bot.config import BotConfig, PROJECT_ROOT, mask_secret
+from mumemo_bot.git_sync import GitSyncError, GitSyncResult, commit_and_push_site_changes
 from mumemo_bot.site_store import (
     MemoNotFoundError,
     ProtectedMemoError,
@@ -211,6 +212,10 @@ def create_app(config: BotConfig) -> App:
             )
             return
 
+        git_status = _sync_git_after_publish(mode=mode, result=result, logger=logger)
+        if git_status:
+            status = _append_status(status, git_status)
+
         _update_review_status(
             client=client,
             channel_id=channel_id,
@@ -219,11 +224,14 @@ def create_app(config: BotConfig) -> App:
             status_text=status,
         )
         forget_review_post(channel_id, message_ts)
+        reply_text = _publish_reply_text(result)
+        if git_status:
+            reply_text = _append_status(reply_text, git_status)
         _reply(
             client=client,
             channel_id=channel_id,
             thread_ts=message_ts,
-            text=_publish_reply_text(result),
+            text=reply_text,
         )
 
     @app.event("message")
@@ -658,13 +666,25 @@ def create_app(config: BotConfig) -> App:
 
         try:
             result = delete_memo(config, memo_id=memo_id)
+            git_status = _sync_git_after_change(
+                action="delete",
+                title=result.title,
+                logger=logger,
+            )
+            confirmation_text = _append_status(f"削除しました: {result.title}", git_status)
             _refresh_manage_message(
                 client=client,
                 config=config,
                 channel_id=channel_id,
                 message_ts=message_ts,
                 fallback_user_id=user_id,
-                fallback_text=f"削除しました: {result.title}",
+                fallback_text=confirmation_text,
+            )
+            _post_ephemeral(
+                client=client,
+                channel_id=channel_id,
+                user_id=user_id,
+                text=confirmation_text,
             )
         except (MemoNotFoundError, ProtectedMemoError, ValueError) as error:
             _post_ephemeral(
@@ -860,6 +880,41 @@ def _clear_review_buttons(
         ],
     )
 
+
+def _sync_git_after_publish(*, mode: str, result: StoreResult, logger: Any) -> str:
+    should_sync = result.created or mode in {
+        "append_existing",
+        "overwrite_post",
+        "overwrite_existing",
+        "separate",
+    }
+    if not should_sync:
+        return ""
+    return _sync_git_after_change(action="add", title=result.title, logger=logger)
+
+
+def _sync_git_after_change(*, action: str, title: str, logger: Any) -> str:
+    try:
+        git_result = commit_and_push_site_changes(action, title)
+    except GitSyncError as error:
+        logger.exception("Failed to commit and push Mumemo site changes")
+        return _short_status(f"Git commit/push に失敗しました: {error}")
+    return _git_sync_status(git_result)
+
+
+def _git_sync_status(result: GitSyncResult) -> str:
+    if result.committed:
+        commit_hash = result.commit_hash or "unknown"
+        return f"Git: `{result.commit_message}` ({commit_hash}) をcommitし、origin/mainへpushしました。"
+    return f"Git: `{result.commit_message}` のコミット対象差分はありませんでした。"
+
+
+def _append_status(text: str, extra: str) -> str:
+    if not extra:
+        return text
+    if not text:
+        return extra
+    return f"{text}\n{extra}"
 
 def _publish_status(
     message: str,

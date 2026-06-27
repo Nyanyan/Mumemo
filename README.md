@@ -76,4 +76,4 @@ To organize existing posts from Slack, type `mumemo`, `mumemo list`, or `mumemo 
 
 In the edit modal, remove image URL lines to delete images, add URL lines to reference existing images, or use `画像を追加` to upload new image files from Slack. Uploaded files are copied into `docs/assets/slack/<title>/` and appended to the memo image list.
 
-The bot updates local files and runs `node scripts/build-route-pages.mjs`. It does not commit or push changes; review the generated files and commit them when ready.
+The bot updates local files, runs `node scripts/build-route-pages.mjs`, stages `docs/`, commits approved Slack publishes as `add <title>`, commits Slack deletes as `delete <title>`, and runs `git push origin main`. Run the bot from a clean `main` checkout with push access to the repository.
