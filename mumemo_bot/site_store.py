@@ -721,19 +721,41 @@ def _cleanup_replaced_memo(
     remaining_memos: list[dict[str, Any]],
 ) -> None:
     asset_root = config.asset_dir.resolve()
-    remaining_image_urls = {
-        image_url for memo in remaining_memos for image_url in _memo_referenced_images(memo)
+    remaining_asset_paths = {
+        asset_path
+        for memo in remaining_memos
+        for asset_path in _memo_referenced_asset_paths(config, memo)
     }
-    for image_url in _memo_referenced_images(removed):
-        if image_url in remaining_image_urls:
+    for asset_path in _memo_referenced_asset_paths(config, removed):
+        if asset_path in remaining_asset_paths:
             continue
-        image_path = _local_asset_path(config, image_url)
-        if image_path is None or not image_path.exists() or not image_path.is_file():
+        if not asset_path.exists() or not asset_path.is_file():
             continue
-        image_path.unlink()
-        _remove_empty_asset_parents(image_path.parent, asset_root)
+        asset_path.unlink()
+        _remove_empty_asset_parents(asset_path.parent, asset_root)
 
     _cleanup_stale_route_pages(old_memos, remaining_memos)
+
+
+def _memo_referenced_asset_paths(config: BotConfig, memo: dict[str, Any]) -> list[Path]:
+    asset_paths: list[Path] = []
+    seen: set[Path] = set()
+    for image_url in _memo_referenced_images(memo):
+        image_path = _local_asset_path(config, image_url)
+        if image_path is None:
+            continue
+        for asset_path in _image_asset_paths(image_path):
+            if asset_path in seen:
+                continue
+            seen.add(asset_path)
+            asset_paths.append(asset_path)
+    return asset_paths
+
+
+def _image_asset_paths(image_path: Path) -> list[Path]:
+    if image_path.parent.name == "thumbs":
+        return [image_path]
+    return [image_path, _thumbnail_path_for_image_path(image_path)]
 
 
 def _cleanup_stale_route_pages(
