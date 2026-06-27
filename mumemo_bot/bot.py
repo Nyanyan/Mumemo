@@ -10,6 +10,7 @@ from mumemo_bot.site_store import (
     MemoNotFoundError,
     ProtectedMemoError,
     delete_memo,
+    download_images,
     find_title_conflict,
     get_memo,
     list_memos,
@@ -17,7 +18,7 @@ from mumemo_bot.site_store import (
     save_post_as_memo,
     update_memo,
 )
-from mumemo_bot.slack_post import MumemoSlackPost
+from mumemo_bot.slack_post import MumemoSlackPost, SlackImageFile
 from mumemo_bot.slack_views import (
     APPROVE_MEMO_ACTION_ID,
     BODY_BLOCK_ID,
@@ -34,10 +35,12 @@ from mumemo_bot.slack_views import (
     MEMO_REVIEW_URLS_CALLBACK_ID,
     RELOAD_REVIEW_ACTION_ID,
     TITLE_BLOCK_ID,
+    UPLOAD_IMAGES_BLOCK_ID,
     URLS_BLOCK_ID,
     decode_action_value,
     edit_modal_view,
     manage_blocks,
+    modal_file_values,
     modal_value,
     review_blocks,
     review_urls_modal_view,
@@ -431,6 +434,7 @@ def create_app(config: BotConfig) -> App:
             mode="overwrite_existing",
             memo_id=memo_id,
         )
+
     @app.action(EDIT_REVIEW_URLS_ACTION_ID)
     def handle_edit_review_urls(
         ack: Any,
@@ -693,10 +697,39 @@ def create_app(config: BotConfig) -> App:
         message_ts = metadata.get("message_ts")
         user_id = str(body.get("user", {}).get("id") or "")
         body_text = modal_value(view, BODY_BLOCK_ID)
-        image = modal_value(view, IMAGE_BLOCK_ID)
+        image = modal_value(view, IMAGE_BLOCK_ID).strip()
         images = [line.strip() for line in modal_value(view, IMAGES_BLOCK_ID).splitlines()]
 
         try:
+            current_memo = get_memo(config, memo_id)
+            clean_images = [item for item in images if item]
+            if (
+                image == current_memo.image
+                and current_memo.image in current_memo.images
+                and image not in clean_images
+            ):
+                image = ""
+
+            uploaded_files = _uploaded_image_files_from_modal(
+                client,
+                modal_file_values(view, UPLOAD_IMAGES_BLOCK_ID),
+            )
+            if uploaded_files:
+                saved_images = download_images(
+                    bot_token=config.slack_bot_token,
+                    post=MumemoSlackPost(
+                        channel_id=channel_id,
+                        message_ts=str(message_ts or "edit"),
+                        user_id=user_id or "unknown",
+                        title=title,
+                        body=body_text,
+                        images=uploaded_files,
+                    ),
+                    asset_dir=config.asset_dir,
+                    asset_url_prefix=config.asset_url_prefix,
+                )
+                images = _append_unique(images, [saved_image.url for saved_image in saved_images])
+
             result = update_memo(
                 config,
                 memo_id=memo_id,
@@ -842,7 +875,7 @@ def _post_manage_response(
             _reply(client=client, channel_id=channel_id, thread_ts=thread_ts or "", text=text)
         return
 
-    items = list_memos(config, include_fixed=False)
+    items = list_memos(config, include_fixed=True)
     shown = items[:MANAGE_LIST_LIMIT]
     blocks = manage_blocks(items=shown, total_count=len(items), shown_count=len(shown))
     text = f"Mumemo 投稿整理: {len(shown)}/{len(items)}件"
@@ -871,7 +904,7 @@ def _refresh_manage_message(
     fallback_user_id: str,
     fallback_text: str,
 ) -> None:
-    items = list_memos(config, include_fixed=False)
+    items = list_memos(config, include_fixed=True)
     shown = items[:MANAGE_LIST_LIMIT]
     try:
         client.chat_update(
@@ -904,6 +937,63 @@ def _fetch_original_message(client: Any, channel_id: str, message_ts: str) -> di
     if not isinstance(message, dict):
         raise RuntimeError("Slack投稿の形式が不正です")
     return message
+
+
+def _uploaded_image_files_from_modal(
+    client: Any,
+    file_values: list[Any],
+) -> list[SlackImageFile]:
+    images: list[SlackImageFile] = []
+    for file_value in file_values:
+        file_data = _resolve_modal_file(client, file_value)
+        if file_data is None:
+            continue
+        mimetype = str(file_data.get("mimetype") or "")
+        if not mimetype.startswith("image/"):
+            continue
+        download_url = file_data.get("url_private_download") or file_data.get("url_private")
+        if not isinstance(download_url, str) or not download_url:
+            continue
+        file_id = str(file_data.get("id") or "file")
+        name = str(file_data.get("name") or f"{file_id}.image")
+        images.append(
+            SlackImageFile(
+                file_id=file_id,
+                name=name,
+                mimetype=mimetype,
+                download_url=download_url,
+            )
+        )
+    return images
+
+
+def _resolve_modal_file(client: Any, file_value: Any) -> dict[str, Any] | None:
+    if isinstance(file_value, str):
+        return _fetch_slack_file(client, file_value)
+    if not isinstance(file_value, dict):
+        return None
+    if file_value.get("url_private_download") or file_value.get("url_private"):
+        return file_value
+    file_id = str(file_value.get("id") or "")
+    return _fetch_slack_file(client, file_id) if file_id else None
+
+
+def _fetch_slack_file(client: Any, file_id: str) -> dict[str, Any] | None:
+    response = client.files_info(file=file_id)
+    file_data = response.get("file")
+    return file_data if isinstance(file_data, dict) else None
+
+
+def _append_unique(values: list[str], additions: list[str]) -> list[str]:
+    output: list[str] = []
+    seen: set[str] = set()
+    for value in [*values, *additions]:
+        clean_value = value.strip()
+        if not clean_value or clean_value in seen:
+            continue
+        seen.add(clean_value)
+        output.append(clean_value)
+    return output
 
 
 def _message_skip_reason(event: dict[str, Any], target_channel_id: str) -> str | None:

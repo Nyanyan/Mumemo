@@ -22,6 +22,8 @@ TITLE_BLOCK_ID = "title"
 BODY_BLOCK_ID = "body"
 IMAGE_BLOCK_ID = "image"
 IMAGES_BLOCK_ID = "images"
+UPLOAD_IMAGES_BLOCK_ID = "upload_images"
+UPLOAD_IMAGES_ACTION_ID = "upload_images"
 URLS_BLOCK_ID = "urls"
 VALUE_ACTION_ID = "value"
 
@@ -268,6 +270,34 @@ def manage_blocks(
         if not body_preview:
             body_preview = "本文なし"
         value = json.dumps({"memo_id": item.id}, ensure_ascii=False)
+        title_label = f"{item.title} (固定)" if item.fixed else item.title
+        elements: list[dict[str, Any]] = [
+            {
+                "type": "button",
+                "text": {"type": "plain_text", "text": "編集"},
+                "action_id": EDIT_MEMO_ACTION_ID,
+                "value": value,
+            }
+        ]
+        if not item.fixed:
+            elements.append(
+                {
+                    "type": "button",
+                    "text": {"type": "plain_text", "text": "削除"},
+                    "style": "danger",
+                    "action_id": DELETE_MEMO_ACTION_ID,
+                    "value": value,
+                    "confirm": {
+                        "title": {"type": "plain_text", "text": "削除しますか?"},
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": f"*{_mrkdwn_text(item.title)}* をMumemoの一覧から削除します。関連するローカル画像とページフォルダも削除します。",
+                        },
+                        "confirm": {"type": "plain_text", "text": "削除"},
+                        "deny": {"type": "plain_text", "text": "戻る"},
+                    },
+                }
+            )
         blocks.extend(
             [
                 {
@@ -275,42 +305,15 @@ def manage_blocks(
                     "text": {
                         "type": "mrkdwn",
                         "text": (
-                            f"*{_mrkdwn_text(item.title)}*\n"
+                            f"*{_mrkdwn_text(title_label)}*\n"
                             f"{_mrkdwn_text(body_preview)}\n"
                             f"画像: {item.image_count}件"
                         ),
                     },
                 },
-                {
-                    "type": "actions",
-                    "elements": [
-                        {
-                            "type": "button",
-                            "text": {"type": "plain_text", "text": "編集"},
-                            "action_id": EDIT_MEMO_ACTION_ID,
-                            "value": value,
-                        },
-                        {
-                            "type": "button",
-                            "text": {"type": "plain_text", "text": "削除"},
-                            "style": "danger",
-                            "action_id": DELETE_MEMO_ACTION_ID,
-                            "value": value,
-                            "confirm": {
-                                "title": {"type": "plain_text", "text": "削除しますか?"},
-                                "text": {
-                                    "type": "mrkdwn",
-                                    "text": f"*{_mrkdwn_text(item.title)}* をMumemoの一覧から削除します。関連するローカル画像とページフォルダも削除します。",
-                                },
-                                "confirm": {"type": "plain_text", "text": "削除"},
-                                "deny": {"type": "plain_text", "text": "戻る"},
-                            },
-                        },
-                    ],
-                },
+                {"type": "actions", "elements": elements},
             ]
         )
-
     return blocks[:50]
 
 
@@ -368,12 +371,26 @@ def edit_modal_view(*, memo: Any, channel_id: str, message_ts: str | None) -> di
                 "type": "input",
                 "block_id": IMAGES_BLOCK_ID,
                 "optional": True,
-                "label": {"type": "plain_text", "text": "詳細画像URL"},
+                "label": {"type": "plain_text", "text": "画像URL一覧"},
+                "hint": {"type": "plain_text", "text": "削除する画像は行を消し、追加する画像URLは行を追加してください。"},
                 "element": {
                     "type": "plain_text_input",
                     "action_id": VALUE_ACTION_ID,
                     "multiline": True,
                     "initial_value": _input_initial(images_text, 2900),
+                },
+            },
+            {
+                "type": "input",
+                "block_id": UPLOAD_IMAGES_BLOCK_ID,
+                "optional": True,
+                "label": {"type": "plain_text", "text": "画像を追加"},
+                "hint": {"type": "plain_text", "text": "ここで選んだ画像は、画像URL一覧の末尾に追加されます。"},
+                "element": {
+                    "type": "file_input",
+                    "action_id": UPLOAD_IMAGES_ACTION_ID,
+                    "filetypes": ["jpg", "jpeg", "png", "gif", "webp"],
+                    "max_files": 10,
                 },
             },
         ],
@@ -385,6 +402,14 @@ def modal_value(view: dict[str, Any], block_id: str) -> str:
     block = values.get(block_id, {})
     action = block.get(VALUE_ACTION_ID, {})
     return str(action.get("value") or "")
+
+
+def modal_file_values(view: dict[str, Any], block_id: str) -> list[Any]:
+    values = view.get("state", {}).get("values", {})
+    block = values.get(block_id, {})
+    action = block.get(UPLOAD_IMAGES_ACTION_ID, {})
+    files = action.get("files") or action.get("selected_files") or []
+    return files if isinstance(files, list) else []
 
 
 def decode_action_value(action: dict[str, Any]) -> dict[str, Any]:
