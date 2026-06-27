@@ -196,7 +196,19 @@ function scheduleTileTextFit() {
 }
 
 function fitVisibleTileText() {
+  document.querySelectorAll(".tile-grid").forEach(updateTileGridColumnState);
   document.querySelectorAll(".tile").forEach(fitTileText);
+}
+
+function updateTileGridColumnState(grid) {
+  if (!(grid instanceof HTMLElement)) {
+    return;
+  }
+
+  const columns = window.getComputedStyle(grid).gridTemplateColumns
+    .split(/\s+/)
+    .filter((column) => column && column !== "none");
+  grid.classList.toggle("single-column", columns.length <= 1);
 }
 
 function fitTileText(tile) {

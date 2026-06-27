@@ -294,6 +294,19 @@
       -webkit-line-clamp: 3;
     }
 
+    .tile-grid.single-column .tile.fixed {
+      grid-template-rows: auto;
+      aspect-ratio: auto;
+    }
+
+    .tile-grid.single-column .tile.fixed .tile-thumb {
+      display: none;
+    }
+
+    .tile-grid.single-column .tile.fixed .tile-body {
+      grid-row: 1;
+    }
+
     .tile.fit-title-more .tile-title {
       -webkit-line-clamp: 3;
     }
