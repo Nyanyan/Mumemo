@@ -297,7 +297,7 @@ function renderHome() {
   const input = document.querySelector("#searchInput");
   const grid = document.querySelector("#tileGrid");
   const resultCount = document.querySelector("#resultCount");
-  const randomButton = document.querySelector("#randomButton");
+  const randomButtons = document.querySelectorAll("[data-random-home]");
 
   const draw = () => {
     const query = input.value.trim().toLocaleLowerCase("ja");
@@ -318,10 +318,16 @@ function renderHome() {
     scheduleTileTextFit();
   };
 
-  randomButton?.addEventListener("click", () => {
+  const shuffleHome = () => {
     homeRandomOrder = shuffledItems(entries.filter((entry) => !entry.fixed));
     input.value = "";
     draw();
+  };
+
+  randomButtons.forEach((button) => {
+    if (button instanceof HTMLButtonElement) {
+      button.onclick = shuffleHome;
+    }
   });
   input.addEventListener("input", draw);
   draw();

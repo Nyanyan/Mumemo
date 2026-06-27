@@ -245,6 +245,10 @@
       white-space: nowrap;
     }
 
+    .header-random-button {
+      display: none;
+    }
+
     .search-wrap {
       position: relative;
     }
@@ -727,6 +731,14 @@
 
       .toolbar-actions {
         justify-content: flex-start;
+      }
+
+      body[data-view="home"] .header-random-button {
+        display: inline-flex;
+      }
+
+      .toolbar-actions .random-button {
+        display: none;
       }
 
       .home-share-menu {
