@@ -173,9 +173,9 @@ def update_memo(
     with _STORE_LOCK:
         memos = _load_memos(config.data_path)
         index = _find_memo_index(memos, memo_id)
+        old_memos = [dict(item) for item in memos]
+        old_memo = dict(memos[index])
         memo = memos[index]
-        if bool(memo.get("fixed")):
-            raise ProtectedMemoError("固定メモはSlack管理画面から編集できません")
 
         memo["id"] = str(memo.get("id") or memo_id)
         memo["title"] = title
@@ -188,6 +188,7 @@ def update_memo(
 
         _write_memos(config.data_path, memos)
         build_route_pages(config)
+        _cleanup_replaced_memo(config, old_memos, old_memo, memos)
 
     return MemoChangeResult(
         title=title,
@@ -225,7 +226,7 @@ def overwrite_memo_with_post(
         memos[index] = new_memo
         _write_memos(config.data_path, memos)
         build_route_pages(config)
-        _cleanup_removed_memo(config, old_memos, index, old_memo, memos)
+        _cleanup_replaced_memo(config, old_memos, old_memo, memos)
 
     return StoreResult(
         created=False,
@@ -248,7 +249,7 @@ def delete_memo(config: BotConfig, *, memo_id: str) -> MemoChangeResult:
         removed = memos.pop(index)
         _write_memos(config.data_path, memos)
         build_route_pages(config)
-        _cleanup_removed_memo(config, old_memos, index, removed, memos)
+        _cleanup_replaced_memo(config, old_memos, removed, memos)
 
     return MemoChangeResult(
         title=str(removed.get("title") or memo_id),
@@ -379,6 +380,18 @@ def _memo_images(memo: dict[str, Any]) -> list[str]:
         return [str(image) for image in images if str(image).strip()]
     image = str(memo.get("image") or "").strip()
     return [image] if image else []
+
+
+def _memo_referenced_images(memo: dict[str, Any]) -> list[str]:
+    images: list[str] = []
+    seen: set[str] = set()
+    for image in [str(memo.get("image") or ""), *_memo_images(memo)]:
+        clean_image = image.strip()
+        if not clean_image or clean_image in seen:
+            continue
+        seen.add(clean_image)
+        images.append(clean_image)
+    return images
 
 
 def _memo_image_count(memo: dict[str, Any]) -> int:
@@ -521,18 +534,17 @@ def _clean_image_list(images: list[str]) -> list[str]:
     return clean_images
 
 
-def _cleanup_removed_memo(
+def _cleanup_replaced_memo(
     config: BotConfig,
     old_memos: list[dict[str, Any]],
-    removed_index: int,
     removed: dict[str, Any],
     remaining_memos: list[dict[str, Any]],
 ) -> None:
     asset_root = config.asset_dir.resolve()
     remaining_image_urls = {
-        image_url for memo in remaining_memos for image_url in _memo_images(memo)
+        image_url for memo in remaining_memos for image_url in _memo_referenced_images(memo)
     }
-    for image_url in _memo_images(removed):
+    for image_url in _memo_referenced_images(removed):
         if image_url in remaining_image_urls:
             continue
         image_path = _local_asset_path(config, image_url)
@@ -541,17 +553,26 @@ def _cleanup_removed_memo(
         image_path.unlink()
         _remove_empty_asset_parents(image_path.parent, asset_root)
 
-    old_slugs = _memo_slugs(old_memos)
-    if removed_index >= len(old_slugs):
-        return
-    removed_slug = old_slugs[removed_index]
-    if removed_slug in set(_memo_slugs(remaining_memos)):
-        return
-    if removed_slug in PROTECTED_ROUTE_DIRS:
+    _cleanup_stale_route_pages(old_memos, remaining_memos)
+
+
+def _cleanup_stale_route_pages(
+    old_memos: list[dict[str, Any]],
+    current_memos: list[dict[str, Any]],
+) -> None:
+    current_slugs = set(_memo_slugs(current_memos))
+    for slug in _memo_slugs(old_memos):
+        if slug in current_slugs:
+            continue
+        _remove_route_dir(slug)
+
+
+def _remove_route_dir(slug: str) -> None:
+    if slug in PROTECTED_ROUTE_DIRS:
         return
 
     docs_dir = (PROJECT_ROOT / "docs").resolve()
-    route_dir = (docs_dir / removed_slug).resolve()
+    route_dir = (docs_dir / slug).resolve()
     if route_dir == docs_dir or not _is_relative_to(route_dir, docs_dir):
         return
     if route_dir.exists() and route_dir.is_dir():
