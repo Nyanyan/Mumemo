@@ -73,6 +73,30 @@ class MumemoSlackPost:
             images=self.images,
         )
 
+    def with_thumbnail_image(self, file_id: str) -> "MumemoSlackPost":
+        clean_file_id = str(file_id).strip()
+        if not clean_file_id:
+            raise ValueError("サムネイル画像を選択してください")
+
+        selected = next(
+            (image for image in self.images if image.file_id == clean_file_id),
+            None,
+        )
+        if selected is None:
+            raise ValueError("選択された画像が見つかりません")
+
+        return MumemoSlackPost(
+            channel_id=self.channel_id,
+            message_ts=self.message_ts,
+            user_id=self.user_id,
+            title=self.title,
+            body=self.body,
+            images=[
+                selected,
+                *[image for image in self.images if image.file_id != clean_file_id],
+            ],
+        )
+
 
 def _image_files(message: dict[str, Any]) -> list[SlackImageFile]:
     images: list[SlackImageFile] = []

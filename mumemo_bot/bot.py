@@ -37,10 +37,12 @@ from mumemo_bot.slack_views import (
     MEMO_EDIT_CALLBACK_ID,
     MEMO_REVIEW_URLS_CALLBACK_ID,
     RELOAD_REVIEW_ACTION_ID,
+    SELECT_REVIEW_THUMBNAIL_ACTION_ID,
     TITLE_BLOCK_ID,
     UPLOAD_IMAGES_BLOCK_ID,
     URLS_BLOCK_ID,
     decode_action_value,
+    decode_thumbnail_select_value,
     edit_modal_view,
     manage_blocks,
     modal_file_values,
@@ -536,6 +538,50 @@ def create_app(config: BotConfig) -> App:
                 text=_short_status(f"URL修正の反映に失敗しました: {error}"),
             )
 
+    @app.action(SELECT_REVIEW_THUMBNAIL_ACTION_ID)
+    def handle_select_review_thumbnail(
+        ack: Any,
+        body: dict[str, Any],
+        client: Any,
+        logger: Any,
+    ) -> None:
+        ack()
+        action = body["actions"][0]
+        selected_option = action.get("selected_option") or {}
+        channel_id = str(body.get("channel", {}).get("id") or config.slack_channel_id)
+        review_message_ts = str(
+            body.get("message", {}).get("ts")
+            or body.get("container", {}).get("message_ts")
+            or ""
+        )
+        user_id = str(body.get("user", {}).get("id") or "")
+
+        try:
+            message_ts, file_id = decode_thumbnail_select_value(
+                str(selected_option.get("value") or "")
+            )
+            post = resolve_review_post(channel_id, message_ts, client)
+            updated_post = post.with_thumbnail_image(file_id)
+            remember_review_post(updated_post)
+            selected_name = updated_post.images[0].name if updated_post.images else ""
+            _update_review_status(
+                client=client,
+                channel_id=channel_id,
+                review_message_ts=review_message_ts,
+                post=updated_post,
+                status_text=f"サムネイルを変更しました: {selected_name}",
+                buttons_enabled=True,
+                title_conflict=find_title_conflict(config, updated_post),
+            )
+        except Exception as error:
+            logger.exception("Failed to update Mumemo thumbnail review")
+            _post_ephemeral(
+                client=client,
+                channel_id=channel_id,
+                user_id=user_id,
+                text=_short_status(f"サムネイル変更に失敗しました: {error}"),
+            )
+
     @app.action(RELOAD_REVIEW_ACTION_ID)
     def handle_reload_review(
         ack: Any,
@@ -824,6 +870,7 @@ def _post_review_for_post(
             title_conflict=title_conflict,
             status_text=None,
             buttons_enabled=True,
+            images=post.images,
         ),
     )
     print(
@@ -857,6 +904,7 @@ def _update_review_status(
             title_conflict=title_conflict,
             status_text=_short_status(status_text),
             buttons_enabled=buttons_enabled,
+            images=post.images,
         ),
     )
 

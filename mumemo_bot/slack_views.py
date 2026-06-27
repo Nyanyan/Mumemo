@@ -13,6 +13,7 @@ PUBLISH_SEPARATE_MEMO_ACTION_ID = "mumemo_publish_separate_memo"
 RELOAD_REVIEW_ACTION_ID = "mumemo_reload_review"
 DISMISS_REVIEW_ACTION_ID = "mumemo_dismiss_review"
 EDIT_REVIEW_URLS_ACTION_ID = "mumemo_edit_review_urls"
+SELECT_REVIEW_THUMBNAIL_ACTION_ID = "mumemo_select_review_thumbnail"
 EDIT_MEMO_ACTION_ID = "mumemo_edit_memo"
 DELETE_MEMO_ACTION_ID = "mumemo_delete_memo"
 MEMO_EDIT_CALLBACK_ID = "mumemo_edit_modal"
@@ -26,6 +27,7 @@ UPLOAD_IMAGES_BLOCK_ID = "upload_images"
 UPLOAD_IMAGES_ACTION_ID = "upload_images"
 URLS_BLOCK_ID = "urls"
 VALUE_ACTION_ID = "value"
+THUMBNAIL_SELECT_SEPARATOR = "|"
 
 
 def review_blocks(
@@ -39,9 +41,17 @@ def review_blocks(
     title_conflict: Any | None,
     status_text: str | None,
     buttons_enabled: bool,
+    images: list[Any] | None = None,
 ) -> list[dict[str, Any]]:
+    images = images or []
     body_preview = body.strip() or "(本文なし)"
     body_preview = _truncate(body_preview, 1800)
+    thumbnail_label = _thumbnail_label(images[0], 0) if images else ""
+    thumbnail_line = (
+        f"\n*サムネイル:* {_mrkdwn_text(thumbnail_label)}"
+        if thumbnail_label
+        else ""
+    )
 
     blocks: list[dict[str, Any]] = [
         {
@@ -53,6 +63,7 @@ def review_blocks(
                     f"*タイトル:* {_mrkdwn_text(title)}\n"
                     f"*本文:*\n```{_code_text(body_preview)}```\n"
                     f"*添付画像:* {image_count}件"
+                    f"{thumbnail_line}"
                 ),
             },
         }
@@ -161,6 +172,17 @@ def review_blocks(
                         },
                     },
                 ]
+            )
+        thumbnail_options = _thumbnail_select_options(message_ts, images)
+        if len(thumbnail_options) > 1:
+            elements.append(
+                {
+                    "type": "static_select",
+                    "placeholder": {"type": "plain_text", "text": "サムネを選択"},
+                    "action_id": SELECT_REVIEW_THUMBNAIL_ACTION_ID,
+                    "options": thumbnail_options,
+                    "initial_option": thumbnail_options[0],
+                }
             )
         if urls:
             elements.append(
@@ -413,6 +435,12 @@ def modal_file_values(view: dict[str, Any], block_id: str) -> list[Any]:
     return files if isinstance(files, list) else []
 
 
+def decode_thumbnail_select_value(value: str) -> tuple[str, str]:
+    message_ts, separator, file_id = str(value).partition(THUMBNAIL_SELECT_SEPARATOR)
+    if not separator or not message_ts or not file_id:
+        raise ValueError("Slack thumbnail selection value must contain message_ts and file_id")
+    return message_ts, file_id
+
 def decode_action_value(action: dict[str, Any]) -> dict[str, Any]:
     raw_value = str(action.get("value") or "{}")
     value = json.loads(raw_value)
@@ -420,6 +448,38 @@ def decode_action_value(action: dict[str, Any]) -> dict[str, Any]:
         raise ValueError("Slack action value must be an object")
     return value
 
+
+def _thumbnail_select_options(message_ts: str, images: list[Any]) -> list[dict[str, Any]]:
+    options: list[dict[str, Any]] = []
+    for index, image in enumerate(images[:100]):
+        file_id = _image_file_id(image)
+        if not file_id:
+            continue
+        options.append(
+            {
+                "text": {
+                    "type": "plain_text",
+                    "text": _truncate(_thumbnail_label(image, index), 75),
+                },
+                "value": _thumbnail_select_value(message_ts, file_id),
+            }
+        )
+    return options
+
+
+def _thumbnail_select_value(message_ts: str, file_id: str) -> str:
+    return f"{message_ts}{THUMBNAIL_SELECT_SEPARATOR}{file_id}"
+
+
+def _thumbnail_label(image: Any, index: int) -> str:
+    name = str(getattr(image, "name", "") or "").strip()
+    file_id = _image_file_id(image)
+    label = name or file_id or "image"
+    return f"{index + 1}. {label}"
+
+
+def _image_file_id(image: Any) -> str:
+    return str(getattr(image, "file_id", "") or "").strip()
 
 def _url_list_text(urls: list[str]) -> str:
     lines = [f"{index + 1}. <{_mrkdwn_text(url)}>" for index, url in enumerate(urls)]
