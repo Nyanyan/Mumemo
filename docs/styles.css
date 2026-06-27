@@ -465,7 +465,7 @@
 
     .detail-random-button {
       cursor: pointer;
-      font: inherit;
+      font-family: inherit;
     }
 
     .detail-random-button:disabled {
