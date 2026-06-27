@@ -178,7 +178,7 @@
 
     .tile {
       display: grid;
-      grid-template-rows: minmax(0, 58%) minmax(0, 42%);
+      grid-template-rows: minmax(0, 7fr) minmax(0, 5fr);
       aspect-ratio: 1 / 1;
       min-height: 0;
       overflow: hidden;
@@ -199,6 +199,9 @@
     }
 
     .tile-thumb {
+      display: block;
+      grid-column: 1;
+      grid-row: 1;
       width: 100%;
       height: 100%;
       min-height: 0;
@@ -214,11 +217,15 @@
 
     .tile-body {
       display: grid;
+      grid-column: 1;
+      grid-row: 2;
       align-content: start;
       gap: 6px;
+      min-width: 0;
       min-height: 0;
       overflow: hidden;
       padding: 14px;
+      background: var(--panel);
     }
 
     .tile-title {
