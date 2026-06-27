@@ -9,14 +9,17 @@ import json
 APPROVE_MEMO_ACTION_ID = "mumemo_approve_post"
 RELOAD_REVIEW_ACTION_ID = "mumemo_reload_review"
 DISMISS_REVIEW_ACTION_ID = "mumemo_dismiss_review"
+EDIT_REVIEW_URLS_ACTION_ID = "mumemo_edit_review_urls"
 EDIT_MEMO_ACTION_ID = "mumemo_edit_memo"
 DELETE_MEMO_ACTION_ID = "mumemo_delete_memo"
 MEMO_EDIT_CALLBACK_ID = "mumemo_edit_modal"
+MEMO_REVIEW_URLS_CALLBACK_ID = "mumemo_review_urls_modal"
 
 TITLE_BLOCK_ID = "title"
 BODY_BLOCK_ID = "body"
 IMAGE_BLOCK_ID = "image"
 IMAGES_BLOCK_ID = "images"
+URLS_BLOCK_ID = "urls"
 VALUE_ACTION_ID = "value"
 
 
@@ -27,6 +30,7 @@ def review_blocks(
     title: str,
     body: str,
     image_count: int,
+    urls: list[str],
     status_text: str | None,
     buttons_enabled: bool,
 ) -> list[dict[str, Any]]:
@@ -47,6 +51,17 @@ def review_blocks(
             },
         }
     ]
+
+    if urls:
+        blocks.append(
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "*検出URL*\n" + _url_list_text(urls),
+                },
+            }
+        )
 
     if status_text:
         blocks.append(
@@ -69,44 +84,92 @@ def review_blocks(
             },
             ensure_ascii=False,
         )
-        blocks.append(
+        elements: list[dict[str, Any]] = [
             {
-                "type": "actions",
-                "elements": [
-                    {
-                        "type": "button",
-                        "text": {"type": "plain_text", "text": "承認して公開"},
-                        "style": "primary",
-                        "action_id": APPROVE_MEMO_ACTION_ID,
-                        "value": value,
-                    },
-                    {
-                        "type": "button",
-                        "text": {"type": "plain_text", "text": "再読み込み"},
-                        "action_id": RELOAD_REVIEW_ACTION_ID,
-                        "value": value,
-                    },
-                    {
-                        "type": "button",
-                        "text": {"type": "plain_text", "text": "破棄"},
-                        "style": "danger",
-                        "action_id": DISMISS_REVIEW_ACTION_ID,
-                        "value": value,
-                        "confirm": {
-                            "title": {"type": "plain_text", "text": "下書きを破棄しますか?"},
-                            "text": {
-                                "type": "mrkdwn",
-                                "text": "このSlack上の下書きだけを破棄します。元投稿とWebサイトは変更しません。",
-                            },
-                            "confirm": {"type": "plain_text", "text": "破棄"},
-                            "deny": {"type": "plain_text", "text": "戻る"},
-                        },
-                    },
-                ],
+                "type": "button",
+                "text": {"type": "plain_text", "text": "承認して公開"},
+                "style": "primary",
+                "action_id": APPROVE_MEMO_ACTION_ID,
+                "value": value,
             }
+        ]
+        if urls:
+            elements.append(
+                {
+                    "type": "button",
+                    "text": {"type": "plain_text", "text": "URL修正"},
+                    "action_id": EDIT_REVIEW_URLS_ACTION_ID,
+                    "value": value,
+                }
+            )
+        elements.extend(
+            [
+                {
+                    "type": "button",
+                    "text": {"type": "plain_text", "text": "再読み込み"},
+                    "action_id": RELOAD_REVIEW_ACTION_ID,
+                    "value": value,
+                },
+                {
+                    "type": "button",
+                    "text": {"type": "plain_text", "text": "破棄"},
+                    "style": "danger",
+                    "action_id": DISMISS_REVIEW_ACTION_ID,
+                    "value": value,
+                    "confirm": {
+                        "title": {"type": "plain_text", "text": "下書きを破棄しますか?"},
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "このSlack上の下書きだけを破棄します。元投稿とWebサイトは変更しません。",
+                        },
+                        "confirm": {"type": "plain_text", "text": "破棄"},
+                        "deny": {"type": "plain_text", "text": "戻る"},
+                    },
+                },
+            ]
         )
+        blocks.append({"type": "actions", "elements": elements})
 
     return blocks
+
+
+def review_urls_modal_view(
+    *,
+    post: Any,
+    channel_id: str,
+    message_ts: str,
+    review_message_ts: str,
+) -> dict[str, Any]:
+    metadata = json.dumps(
+        {
+            "channel_id": channel_id,
+            "message_ts": message_ts,
+            "review_message_ts": review_message_ts,
+        },
+        ensure_ascii=False,
+    )
+    return {
+        "type": "modal",
+        "callback_id": MEMO_REVIEW_URLS_CALLBACK_ID,
+        "private_metadata": metadata,
+        "title": {"type": "plain_text", "text": "URL修正"},
+        "submit": {"type": "plain_text", "text": "反映"},
+        "close": {"type": "plain_text", "text": "閉じる"},
+        "blocks": [
+            {
+                "type": "input",
+                "block_id": URLS_BLOCK_ID,
+                "label": {"type": "plain_text", "text": "URL"},
+                "hint": {"type": "plain_text", "text": "1行につき1つ、表示順のまま修正してください。"},
+                "element": {
+                    "type": "plain_text_input",
+                    "action_id": VALUE_ACTION_ID,
+                    "multiline": True,
+                    "initial_value": _input_initial("\n".join(post.urls), 2900),
+                },
+            }
+        ],
+    }
 
 
 def manage_blocks(
@@ -171,7 +234,7 @@ def manage_blocks(
                                 "title": {"type": "plain_text", "text": "削除しますか?"},
                                 "text": {
                                     "type": "mrkdwn",
-                                    "text": f"*{_mrkdwn_text(item.title)}* をMumemoの一覧から削除します。",
+                                    "text": f"*{_mrkdwn_text(item.title)}* をMumemoの一覧から削除します。関連するローカル画像とページフォルダも削除します。",
                                 },
                                 "confirm": {"type": "plain_text", "text": "削除"},
                                 "deny": {"type": "plain_text", "text": "戻る"},
@@ -264,6 +327,11 @@ def decode_action_value(action: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError("Slack action value must be an object")
     return value
+
+
+def _url_list_text(urls: list[str]) -> str:
+    lines = [f"{index + 1}. <{_mrkdwn_text(url)}>" for index, url in enumerate(urls)]
+    return _truncate("\n".join(lines), 1800)
 
 
 def _truncate(text: str, limit: int) -> str:

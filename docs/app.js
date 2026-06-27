@@ -108,11 +108,15 @@ function formatPostedAt(entry) {
 }
 
 function appendLinkedText(parent, text) {
-  const urlPattern = /https?:\/\/[^\s]+/g;
+  const urlPattern = /<((?:https?:\/\/)[^\s<>|]+)(?:\|([^<>]*))?>|(https?:\/\/[^\s<>]+)/g;
+  const trailingPunctuation = /[.,\u3001\u3002)\uFF09\]\uFF3D}>\u300D\u300F]+$/;
   let lastIndex = 0;
 
   for (const match of text.matchAll(urlPattern)) {
-    const url = match[0];
+    const slackUrl = match[1];
+    const rawUrl = slackUrl || match[3];
+    const url = slackUrl ? rawUrl : rawUrl.replace(trailingPunctuation, "");
+    const trailing = slackUrl ? "" : rawUrl.slice(url.length);
     const index = match.index || 0;
     if (index > lastIndex) {
       parent.append(document.createTextNode(text.slice(lastIndex, index)));
@@ -122,9 +126,12 @@ function appendLinkedText(parent, text) {
     link.href = url;
     link.target = "_blank";
     link.rel = "noopener noreferrer";
-    link.textContent = url;
+    link.textContent = slackUrl && match[2] ? match[2] : url;
     parent.append(link);
-    lastIndex = index + url.length;
+    if (trailing) {
+      parent.append(document.createTextNode(trailing));
+    }
+    lastIndex = index + match[0].length;
   }
 
   if (lastIndex < text.length) {

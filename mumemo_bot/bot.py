@@ -22,16 +22,20 @@ from mumemo_bot.slack_views import (
     DELETE_MEMO_ACTION_ID,
     DISMISS_REVIEW_ACTION_ID,
     EDIT_MEMO_ACTION_ID,
+    EDIT_REVIEW_URLS_ACTION_ID,
     IMAGE_BLOCK_ID,
     IMAGES_BLOCK_ID,
     MEMO_EDIT_CALLBACK_ID,
+    MEMO_REVIEW_URLS_CALLBACK_ID,
     RELOAD_REVIEW_ACTION_ID,
     TITLE_BLOCK_ID,
+    URLS_BLOCK_ID,
     decode_action_value,
     edit_modal_view,
     manage_blocks,
     modal_value,
     review_blocks,
+    review_urls_modal_view,
 )
 
 
@@ -46,6 +50,7 @@ def create_app(config: BotConfig) -> App:
     seen_event_ids: set[str] = set()
     accepted_post_keys: set[tuple[str, str]] = set()
     handled_review_message_keys: set[tuple[str, str]] = set()
+    review_posts: dict[tuple[str, str], MumemoSlackPost] = {}
 
     def claim_event(event_id: str) -> bool:
         if not event_id:
@@ -73,6 +78,27 @@ def create_app(config: BotConfig) -> App:
                 return False
             handled_review_message_keys.add(key)
             return True
+
+    def remember_review_post(post: MumemoSlackPost) -> None:
+        with state_lock:
+            review_posts[(post.channel_id, post.message_ts)] = post
+
+    def get_review_post(channel_id: str, message_ts: str) -> MumemoSlackPost | None:
+        with state_lock:
+            return review_posts.get((channel_id, message_ts))
+
+    def forget_review_post(channel_id: str, message_ts: str) -> None:
+        with state_lock:
+            review_posts.pop((channel_id, message_ts), None)
+
+    def resolve_review_post(channel_id: str, message_ts: str, client: Any) -> MumemoSlackPost:
+        post = get_review_post(channel_id, message_ts)
+        if post is not None:
+            return post
+        message = _fetch_original_message(client, channel_id, message_ts)
+        post = MumemoSlackPost.from_message(channel_id=channel_id, message=message)
+        remember_review_post(post)
+        return post
 
     @app.event("message")
     def handle_message_event(
@@ -119,9 +145,10 @@ def create_app(config: BotConfig) -> App:
         print(
             "[slack:event] accepted for review: "
             f"title={post.title!r}, body_chars={len(post.body)}, "
-            f"images={len(post.images)}",
+            f"images={len(post.images)}, urls={len(post.urls)}",
             flush=True,
         )
+        remember_review_post(post)
         _post_review_for_post(
             client=client,
             channel_id=config.slack_channel_id,
@@ -193,8 +220,7 @@ def create_app(config: BotConfig) -> App:
         post: MumemoSlackPost | None = None
         claimed = False
         try:
-            message = _fetch_original_message(client, channel_id, message_ts)
-            post = MumemoSlackPost.from_message(channel_id=channel_id, message=message)
+            post = resolve_review_post(channel_id, message_ts, client)
             _update_review_status(
                 client=client,
                 channel_id=channel_id,
@@ -255,12 +281,100 @@ def create_app(config: BotConfig) -> App:
             post=post,
             status_text=status,
         )
+        forget_review_post(channel_id, message_ts)
         _reply(
             client=client,
             channel_id=channel_id,
             thread_ts=message_ts,
             text=f"Mumemoに反映しました: {result.title}\n画像: {result.image_count}件",
         )
+
+    @app.action(EDIT_REVIEW_URLS_ACTION_ID)
+    def handle_edit_review_urls(
+        ack: Any,
+        body: dict[str, Any],
+        client: Any,
+        logger: Any,
+    ) -> None:
+        ack()
+        action = body["actions"][0]
+        value = decode_action_value(action)
+        channel_id = str(value["channel_id"])
+        message_ts = str(value["message_ts"])
+        review_message_ts = str(body.get("message", {}).get("ts") or "")
+        user_id = str(body.get("user", {}).get("id") or "")
+
+        try:
+            post = resolve_review_post(channel_id, message_ts, client)
+            if not post.urls:
+                _post_ephemeral(
+                    client=client,
+                    channel_id=channel_id,
+                    user_id=user_id,
+                    text="この下書きにはURLがありません。",
+                )
+                return
+            client.views_open(
+                trigger_id=body["trigger_id"],
+                view=review_urls_modal_view(
+                    post=post,
+                    channel_id=channel_id,
+                    message_ts=message_ts,
+                    review_message_ts=review_message_ts,
+                ),
+            )
+        except Exception as error:
+            logger.exception("Failed to open Mumemo URL edit modal")
+            _post_ephemeral(
+                client=client,
+                channel_id=channel_id,
+                user_id=user_id,
+                text=_short_status(f"URL修正画面を開けませんでした: {error}"),
+            )
+
+    @app.view(MEMO_REVIEW_URLS_CALLBACK_ID)
+    def handle_review_urls_submission(
+        ack: Any,
+        body: dict[str, Any],
+        view: dict[str, Any],
+        client: Any,
+        logger: Any,
+    ) -> None:
+        metadata = json.loads(str(view.get("private_metadata") or "{}"))
+        channel_id = str(metadata.get("channel_id") or config.slack_channel_id)
+        message_ts = str(metadata.get("message_ts") or "")
+        review_message_ts = str(metadata.get("review_message_ts") or "")
+        urls = [line.strip() for line in modal_value(view, URLS_BLOCK_ID).splitlines() if line.strip()]
+        post = get_review_post(channel_id, message_ts)
+        if post is None:
+            ack(response_action="errors", errors={URLS_BLOCK_ID: "下書きを再読み込みしてください"})
+            return
+
+        try:
+            updated_post = post.with_urls(urls)
+        except ValueError as error:
+            ack(response_action="errors", errors={URLS_BLOCK_ID: str(error)})
+            return
+
+        ack()
+        try:
+            remember_review_post(updated_post)
+            _update_review_status(
+                client=client,
+                channel_id=channel_id,
+                review_message_ts=review_message_ts,
+                post=updated_post,
+                status_text="URLを反映しました。承認前に確認してください。",
+                buttons_enabled=True,
+            )
+        except Exception as error:
+            logger.exception("Failed to update Mumemo URL review")
+            _post_ephemeral(
+                client=client,
+                channel_id=channel_id,
+                user_id=str(body.get("user", {}).get("id") or ""),
+                text=_short_status(f"URL修正の反映に失敗しました: {error}"),
+            )
 
     @app.action(RELOAD_REVIEW_ACTION_ID)
     def handle_reload_review(
@@ -291,6 +405,7 @@ def create_app(config: BotConfig) -> App:
         try:
             message = _fetch_original_message(client, channel_id, message_ts)
             post = MumemoSlackPost.from_message(channel_id=channel_id, message=message)
+            remember_review_post(post)
             _post_review_for_post(client=client, channel_id=channel_id, post=post)
             _update_review_status(
                 client=client,
@@ -328,10 +443,12 @@ def create_app(config: BotConfig) -> App:
         action = body["actions"][0]
         value = decode_action_value(action)
         channel_id = str(value["channel_id"])
+        message_ts = str(value["message_ts"])
         review_message_ts = str(body.get("message", {}).get("ts") or "")
         review_key = (channel_id, review_message_ts)
         if not claim_review_message(review_key):
             return
+        forget_review_post(channel_id, message_ts)
         _clear_review_buttons(
             client=client,
             channel_id=channel_id,
@@ -496,6 +613,7 @@ def _post_review_for_post(client: Any, channel_id: str, post: MumemoSlackPost) -
             title=post.title,
             body=post.body,
             image_count=len(post.images),
+            urls=post.urls,
             status_text=None,
             buttons_enabled=True,
         ),
@@ -514,6 +632,7 @@ def _update_review_status(
     review_message_ts: str,
     post: MumemoSlackPost,
     status_text: str,
+    buttons_enabled: bool = False,
 ) -> None:
     client.chat_update(
         channel=channel_id,
@@ -525,8 +644,9 @@ def _update_review_status(
             title=post.title,
             body=post.body,
             image_count=len(post.images),
+            urls=post.urls,
             status_text=_short_status(status_text),
-            buttons_enabled=False,
+            buttons_enabled=buttons_enabled,
         ),
     )
 
