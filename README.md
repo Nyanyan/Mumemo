@@ -70,6 +70,8 @@ When a new Slack post has the same title as an existing memo, the review shows b
 
 Attached image files are saved under `docs/assets/slack/<title>/`. The first image becomes the tile thumbnail, and every attached image is recorded in `images` so the detail page can show the full set. Detail page images can be clicked to open a larger view. Approved posts are inserted above older non-fixed posts, while fixed entries such as `これは何？` remain first.
 
-To organize existing posts from Slack, type `mumemo`, `mumemo list`, or `mumemo 整理` in the configured channel. The bot posts the current list with `編集` and `削除` buttons. Deleting a memo also removes its local Slack image files, empty image title folders, and stale generated route folder when safe. If the slash command is configured, `/mumemo` opens the same organizer as an ephemeral Slack response.
+To organize existing posts from Slack, type `mumemo`, `mumemo list`, or `mumemo 整理` in the configured channel. The bot posts the current list with `編集` and `削除` buttons. Fixed memos such as `これは何？` are shown and can be edited, but cannot be deleted. Deleting a memo also removes its local Slack image files, empty image title folders, and stale generated route folders when safe. If the slash command is configured, `/mumemo` opens the same organizer as an ephemeral Slack response.
+
+In the edit modal, remove image URL lines to delete images, add URL lines to reference existing images, or use `画像を追加` to upload new image files from Slack. Uploaded files are copied into `docs/assets/slack/<title>/` and appended to the memo image list.
 
 The bot updates local files and runs `node scripts/build-route-pages.mjs`. It does not commit or push changes; review the generated files and commit them when ready.
