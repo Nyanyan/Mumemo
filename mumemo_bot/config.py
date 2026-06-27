@@ -50,7 +50,7 @@ class BotConfig:
                 "MUMEMO_SLACK_ASSET_URL_PREFIX",
                 "/assets/slack",
             ).rstrip("/"),
-            default_image=os.getenv("MUMEMO_DEFAULT_IMAGE", "/website_icon.png"),
+            default_image=_default_image_env(),
             route_build_command=route_build_command,
             site_base_url=_site_base_url_env(),
         )
@@ -83,6 +83,12 @@ def _command_env(name: str, default: list[str]) -> list[str]:
         raise RuntimeError(f"{name} must not be empty")
     return command
 
+
+def _default_image_env() -> str:
+    value = os.getenv("MUMEMO_DEFAULT_IMAGE", "/website_icon_small.png").strip()
+    if value == "/website_icon.png":
+        return "/website_icon_small.png"
+    return value or "/website_icon_small.png"
 
 def _site_base_url_env() -> str:
     raw_value = os.getenv("MUMEMO_SITE_BASE_URL", "").strip()

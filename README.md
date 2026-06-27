@@ -8,7 +8,8 @@ Memo content is stored in `docs/data/memos.json`. Each item supports:
 
 - `title`: displayed title and default URL source
 - `body`: detail text and search text
-- `image`: public thumbnail image path, such as `/assets/example.jpg`
+- `image`: primary detail image path, such as `/assets/example.jpg`
+- `thumbnail`: optional small tile image path; Slack images get generated JPEG thumbnails under `thumbs/`
 - `images`: optional detail image paths; all are shown on the detail page
 - `postedAt`: optional post date, such as `2026-06-27`; shown at the end of the detail page
 - `slug`: optional stable URL slug; when omitted, the title is normalized
@@ -69,7 +70,7 @@ New top-level Slack posts are not published immediately. The bot replies in the 
 
 When a new Slack post has the same title as an existing memo, the review shows both versions. Use `上書きして投稿` to replace the existing memo with the new Slack post identity, `既存投稿に上書き` to keep the existing memo identity and replace its body/images, or `別投稿として投稿` to publish a separate memo with the same title.
 
-Attached image files are saved under `docs/assets/slack/<title>/`. The first image becomes the tile thumbnail, and every attached image is recorded in `images` so the detail page can show the full set. Detail page images can be clicked to open a larger view. Approved posts are inserted above older non-fixed posts, while fixed entries such as `これは何？` remain first.
+Attached image files are saved under `docs/assets/slack/<title>/`. Small JPEG tile thumbnails are generated under `docs/assets/slack/<title>/thumbs/`, while every attached original image is recorded in `images` so the detail page can show the full set. Detail page images can be clicked to open a larger view. Approved posts are inserted above older non-fixed posts, while fixed entries such as `これは何？` remain first.
 
 To organize existing posts from Slack, type `mumemo`, `mumemo list`, or `mumemo 整理` in the configured channel. The bot posts the current list with `編集` and `削除` buttons. Fixed memos such as `これは何？` are shown and can be edited, but cannot be deleted. Deleting a memo also removes its local Slack image files, empty image title folders, and stale generated route folders when safe. If the slash command is configured, `/mumemo` opens the same organizer as an ephemeral Slack response.
 

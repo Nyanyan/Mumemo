@@ -80,7 +80,7 @@ function imagesFor(entry) {
 }
 
 function thumbnailFor(entry) {
-  return entry.image || imagesFor(entry)[0] || "/website_icon.png";
+  return entry.thumbnail || entry.image || imagesFor(entry)[0] || "/website_icon_small.png";
 }
 
 function postedAtValue(entry) {
@@ -300,7 +300,7 @@ function createDetailMedia(entry) {
   }
 
   if (images.length === 0) {
-    media.append(createDetailImageButton({ ...entry, iconImage: true }, "/website_icon.png", 0));
+    media.append(createDetailImageButton({ ...entry, iconImage: true }, "/website_icon_small.png", 0));
   }
 
   return media;

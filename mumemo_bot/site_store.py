@@ -12,6 +12,7 @@ import subprocess
 import unicodedata
 
 import requests
+from PIL import Image, ImageOps
 
 from mumemo_bot.config import BotConfig, PROJECT_ROOT
 from mumemo_bot.slack_post import MumemoSlackPost, SlackImageFile
@@ -19,6 +20,8 @@ from mumemo_bot.slack_post import MumemoSlackPost, SlackImageFile
 
 _STORE_LOCK = Lock()
 PROTECTED_ROUTE_DIRS = {"assets", "data"}
+THUMBNAIL_SIZE = (640, 640)
+THUMBNAIL_QUALITY = 82
 
 
 @dataclass(frozen=True)
@@ -27,6 +30,8 @@ class SavedImage:
     source_name: str
     path: Path
     url: str
+    thumbnail_path: Path | None = None
+    thumbnail_url: str | None = None
 
 
 @dataclass(frozen=True)
@@ -178,6 +183,7 @@ def update_memo(
 
     clean_images = _clean_image_list(images)
     clean_image = image.strip() or (clean_images[0] if clean_images else config.default_image)
+    thumbnail = _thumbnail_url_for_image_url(config, clean_image)
 
     with _STORE_LOCK:
         memos = _load_memos(config.data_path)
@@ -190,6 +196,10 @@ def update_memo(
         memo["title"] = title
         memo["body"] = body
         memo["image"] = clean_image
+        if thumbnail:
+            memo["thumbnail"] = thumbnail
+        else:
+            memo.pop("thumbnail", None)
         if clean_images:
             memo["images"] = clean_images
         else:
@@ -301,12 +311,15 @@ def download_images(
                 if chunk:
                     output_file.write(chunk)
 
+        thumbnail_path = _create_thumbnail(saved_path)
         saved_images.append(
             SavedImage(
                 file_id=image.file_id,
                 source_name=image.name,
                 path=saved_path,
                 url=_asset_url(asset_url_prefix, saved_path.relative_to(asset_dir)),
+                thumbnail_path=thumbnail_path,
+                thumbnail_url=_asset_url(asset_url_prefix, thumbnail_path.relative_to(asset_dir)),
             )
         )
 
@@ -352,11 +365,13 @@ def _memo_from_post(
     post: MumemoSlackPost,
     saved_images: list[SavedImage],
 ) -> dict[str, Any]:
+    primary_image = saved_images[0] if saved_images else None
     memo: dict[str, Any] = {
         "id": _slack_memo_id(post.channel_id, post.message_ts),
         "title": post.title,
         "body": post.body,
-        "image": saved_images[0].url if saved_images else config.default_image,
+        "image": primary_image.url if primary_image else config.default_image,
+        "thumbnail": primary_image.thumbnail_url if primary_image else config.default_image,
         "source": {
             "type": "slack",
             "channel_id": post.channel_id,
@@ -397,7 +412,11 @@ def _memo_images(memo: dict[str, Any]) -> list[str]:
 def _memo_referenced_images(memo: dict[str, Any]) -> list[str]:
     images: list[str] = []
     seen: set[str] = set()
-    for image in [str(memo.get("image") or ""), *_memo_images(memo)]:
+    for image in [
+        str(memo.get("thumbnail") or ""),
+        str(memo.get("image") or ""),
+        *_memo_images(memo),
+    ]:
         clean_image = image.strip()
         if not clean_image or clean_image in seen:
             continue
@@ -539,6 +558,52 @@ def _asset_url(asset_url_prefix: str, relative_path: Path) -> str:
     encoded_parts = [quote(part) for part in relative_path.parts]
     return f"{prefix}/{'/'.join(encoded_parts)}"
 
+
+def _thumbnail_url_for_image_url(config: BotConfig, image_url: str) -> str | None:
+    clean_image_url = image_url.strip()
+    if not clean_image_url:
+        return None
+    if clean_image_url in {config.default_image, "/website_icon_small.png"}:
+        return clean_image_url
+
+    image_path = _local_asset_path(config, clean_image_url)
+    if image_path is None or not image_path.exists() or not image_path.is_file():
+        return None
+    if image_path.parent.name == "thumbs":
+        return clean_image_url
+
+    try:
+        thumbnail_path = _create_thumbnail(image_path)
+    except OSError:
+        return None
+    return _asset_url(config.asset_url_prefix, thumbnail_path.relative_to(config.asset_dir))
+
+
+def _create_thumbnail(image_path: Path) -> Path:
+    thumbnail_path = _thumbnail_path_for_image_path(image_path)
+    thumbnail_path.parent.mkdir(parents=True, exist_ok=True)
+    with Image.open(image_path) as source:
+        image = ImageOps.exif_transpose(source)
+        image = ImageOps.fit(image, THUMBNAIL_SIZE, method=Image.Resampling.LANCZOS)
+        if image.mode in {"RGBA", "LA", "P"}:
+            image = image.convert("RGBA")
+            background = Image.new("RGB", image.size, "white")
+            background.paste(image, mask=image.getchannel("A"))
+            image = background
+        else:
+            image = image.convert("RGB")
+        image.save(
+            thumbnail_path,
+            format="JPEG",
+            quality=THUMBNAIL_QUALITY,
+            optimize=True,
+            progressive=True,
+        )
+    return thumbnail_path
+
+
+def _thumbnail_path_for_image_path(image_path: Path) -> Path:
+    return image_path.parent / "thumbs" / f"{image_path.stem}-thumb.jpg"
 
 def _clean_image_list(images: list[str]) -> list[str]:
     clean_images: list[str] = []
