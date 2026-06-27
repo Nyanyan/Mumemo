@@ -22,6 +22,9 @@ _STORE_LOCK = Lock()
 PROTECTED_ROUTE_DIRS = {"assets", "data"}
 THUMBNAIL_SIZE = (640, 640)
 THUMBNAIL_QUALITY = 82
+DETAIL_IMAGE_MAX_SIZE = 1200
+DETAIL_IMAGE_QUALITY = 86
+DETAIL_IMAGE_DIRNAME = "display"
 
 
 @dataclass(frozen=True)
@@ -32,6 +35,8 @@ class SavedImage:
     url: str
     thumbnail_path: Path | None = None
     thumbnail_url: str | None = None
+    display_path: Path | None = None
+    display_url: str | None = None
 
 
 @dataclass(frozen=True)
@@ -186,6 +191,7 @@ def update_memo(
     clean_images = _clean_image_list(images)
     clean_image = image.strip() or (clean_images[0] if clean_images else config.default_image)
     thumbnail = _thumbnail_url_for_image_url(config, clean_image)
+    _ensure_detail_images_for_urls(config, clean_images or [clean_image])
 
     with _STORE_LOCK:
         memos = _load_memos(config.data_path)
@@ -297,6 +303,7 @@ def append_memo_with_post(
             memo.pop("images", None)
 
         current_image = str(memo.get("image") or "").strip()
+        _ensure_detail_images_for_urls(config, merged_images)
         if saved_images and (not current_image or current_image == config.default_image):
             memo["image"] = saved_images[0].url
             memo["thumbnail"] = saved_images[0].thumbnail_url
@@ -371,6 +378,7 @@ def download_images(
                     output_file.write(chunk)
 
         thumbnail_path = _create_thumbnail(saved_path)
+        display_path = _create_detail_image(saved_path)
         saved_images.append(
             SavedImage(
                 file_id=image.file_id,
@@ -379,6 +387,8 @@ def download_images(
                 url=_asset_url(asset_url_prefix, saved_path.relative_to(asset_dir)),
                 thumbnail_path=thumbnail_path,
                 thumbnail_url=_asset_url(asset_url_prefix, thumbnail_path.relative_to(asset_dir)),
+                display_path=display_path,
+                display_url=_asset_url(asset_url_prefix, display_path.relative_to(asset_dir)),
             )
         )
 
@@ -656,6 +666,19 @@ def _asset_url(asset_url_prefix: str, relative_path: Path) -> str:
     return f"{prefix}/{'/'.join(encoded_parts)}"
 
 
+def _ensure_detail_images_for_urls(config: BotConfig, image_urls: list[str]) -> None:
+    for image_url in image_urls:
+        image_path = _local_asset_path(config, image_url)
+        if image_path is None or not image_path.exists() or not image_path.is_file():
+            continue
+        if image_path.parent.name in {"thumbs", DETAIL_IMAGE_DIRNAME}:
+            continue
+        try:
+            _create_detail_image(image_path)
+        except OSError:
+            continue
+
+
 def _thumbnail_url_for_image_url(config: BotConfig, image_url: str) -> str | None:
     clean_image_url = image_url.strip()
     if not clean_image_url:
@@ -682,13 +705,7 @@ def _create_thumbnail(image_path: Path) -> Path:
     with Image.open(image_path) as source:
         image = ImageOps.exif_transpose(source)
         image = ImageOps.fit(image, THUMBNAIL_SIZE, method=Image.Resampling.LANCZOS)
-        if image.mode in {"RGBA", "LA", "P"}:
-            image = image.convert("RGBA")
-            background = Image.new("RGB", image.size, "white")
-            background.paste(image, mask=image.getchannel("A"))
-            image = background
-        else:
-            image = image.convert("RGB")
+        image = _flatten_to_rgb(image)
         image.save(
             thumbnail_path,
             format="JPEG",
@@ -699,8 +716,41 @@ def _create_thumbnail(image_path: Path) -> Path:
     return thumbnail_path
 
 
+def _create_detail_image(image_path: Path) -> Path:
+    detail_image_path = _detail_image_path_for_image_path(image_path)
+    detail_image_path.parent.mkdir(parents=True, exist_ok=True)
+    with Image.open(image_path) as source:
+        image = ImageOps.exif_transpose(source)
+        image.thumbnail(
+            (DETAIL_IMAGE_MAX_SIZE, DETAIL_IMAGE_MAX_SIZE),
+            Image.Resampling.LANCZOS,
+        )
+        image = _flatten_to_rgb(image)
+        image.save(
+            detail_image_path,
+            format="JPEG",
+            quality=DETAIL_IMAGE_QUALITY,
+            optimize=True,
+            progressive=True,
+        )
+    return detail_image_path
+
+
+def _flatten_to_rgb(image: Image.Image) -> Image.Image:
+    if image.mode in {"RGBA", "LA", "P"}:
+        image = image.convert("RGBA")
+        background = Image.new("RGB", image.size, "white")
+        background.paste(image, mask=image.getchannel("A"))
+        return background
+    return image.convert("RGB")
+
+
 def _thumbnail_path_for_image_path(image_path: Path) -> Path:
     return image_path.parent / "thumbs" / f"{image_path.stem}-thumb.jpg"
+
+
+def _detail_image_path_for_image_path(image_path: Path) -> Path:
+    return image_path.parent / DETAIL_IMAGE_DIRNAME / f"{image_path.stem}-display.jpg"
 
 def _clean_image_list(images: list[str]) -> list[str]:
     clean_images: list[str] = []
@@ -753,9 +803,13 @@ def _memo_referenced_asset_paths(config: BotConfig, memo: dict[str, Any]) -> lis
 
 
 def _image_asset_paths(image_path: Path) -> list[Path]:
-    if image_path.parent.name == "thumbs":
+    if image_path.parent.name in {"thumbs", DETAIL_IMAGE_DIRNAME}:
         return [image_path]
-    return [image_path, _thumbnail_path_for_image_path(image_path)]
+    return [
+        image_path,
+        _thumbnail_path_for_image_path(image_path),
+        _detail_image_path_for_image_path(image_path),
+    ]
 
 
 def _cleanup_stale_route_pages(

@@ -116,6 +116,53 @@ function thumbnailFor(entry) {
   return entry.thumbnail || entry.image || imagesFor(entry)[0] || "/website_icon_small.png";
 }
 
+function detailPreviewFor(imageUrl) {
+  const cleanImageUrl = typeof imageUrl === "string" ? imageUrl.trim() : "";
+  if (!cleanImageUrl || cleanImageUrl === "/website_icon_small.png") {
+    return cleanImageUrl || "/website_icon_small.png";
+  }
+
+  let url;
+  try {
+    url = new URL(cleanImageUrl, window.location.origin);
+  } catch {
+    return cleanImageUrl;
+  }
+
+  if (url.origin !== window.location.origin || !url.pathname.startsWith("/assets/slack/")) {
+    return cleanImageUrl;
+  }
+
+  const parts = url.pathname.split("/");
+  const filename = parts.pop() || "";
+  if (!filename || parts.includes("thumbs") || parts.includes("display")) {
+    return cleanImageUrl;
+  }
+
+  const dotIndex = filename.lastIndexOf(".");
+  const stem = dotIndex > 0 ? filename.slice(0, dotIndex) : filename;
+  if (!stem) {
+    return cleanImageUrl;
+  }
+
+  parts.push("display", `${stem}-display.jpg`);
+  return parts.join("/");
+}
+
+function useOriginalWhenPreviewMissing(image, previewUrl, originalUrl) {
+  if (previewUrl === originalUrl) {
+    return;
+  }
+
+  image.addEventListener(
+    "error",
+    () => {
+      image.src = originalUrl;
+    },
+    { once: true }
+  );
+}
+
 function postedAtValue(entry) {
   const direct = entry.postedAt || entry.posted_at || entry.createdAt || entry.created_at;
   if (typeof direct === "string" && direct.trim()) {
@@ -341,9 +388,11 @@ function createDetailImageButton(entry, imageUrl, index) {
 
   const image = document.createElement("img");
   image.className = `detail-image${entry.iconImage ? " icon-image" : ""}`;
-  image.src = imageUrl;
+  const previewUrl = detailPreviewFor(imageUrl);
+  image.src = previewUrl;
   image.alt = "";
   image.loading = index === 0 ? "eager" : "lazy";
+  useOriginalWhenPreviewMissing(image, previewUrl, imageUrl);
 
   button.append(image);
   button.addEventListener("click", () => openImageLightbox(imageUrl, entry.title));
