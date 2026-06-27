@@ -40,6 +40,10 @@ function hrefFor(entry) {
   return `/${encodeURIComponent(entry.slug)}`;
 }
 
+function absoluteHrefFor(entry) {
+  return new URL(hrefFor(entry), window.location.origin).href;
+}
+
 function currentSlug() {
   const path = window.location.pathname.replace(/^\/+|\/+$/g, "");
   if (!path) {
@@ -257,6 +261,113 @@ function createPostedAt(entry) {
   return meta;
 }
 
+function shareTextFor(entry) {
+  return `${entry.title} - ${siteTitle}`;
+}
+
+function createShareLink(label, href) {
+  const link = document.createElement("a");
+  link.className = "share-button";
+  link.href = href;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.textContent = label;
+  return link;
+}
+
+function createShareActions(entry) {
+  const shareUrl = absoluteHrefFor(entry);
+  const shareText = shareTextFor(entry);
+  const section = document.createElement("section");
+  section.className = "share-actions";
+  section.setAttribute("aria-label", "\u3053\u306e\u6295\u7a3f\u3092\u5171\u6709");
+
+  const title = document.createElement("h3");
+  title.className = "share-title";
+  title.textContent = "\u5171\u6709";
+
+  const row = document.createElement("div");
+  row.className = "share-row";
+
+  const copyButton = document.createElement("button");
+  copyButton.className = "share-button";
+  copyButton.type = "button";
+  copyButton.textContent = "\u30ea\u30f3\u30af\u3092\u30b3\u30d4\u30fc";
+
+  const status = document.createElement("span");
+  status.className = "share-status";
+  status.setAttribute("aria-live", "polite");
+
+  copyButton.addEventListener("click", async () => {
+    const copied = await copyText(shareUrl);
+    status.textContent = copied ? "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f" : "\u30b3\u30d4\u30fc\u3067\u304d\u307e\u305b\u3093\u3067\u3057\u305f";
+    copyButton.textContent = copied ? "\u30b3\u30d4\u30fc\u6e08\u307f" : "\u30ea\u30f3\u30af\u3092\u30b3\u30d4\u30fc";
+    window.setTimeout(() => {
+      status.textContent = "";
+      copyButton.textContent = "\u30ea\u30f3\u30af\u3092\u30b3\u30d4\u30fc";
+    }, 1800);
+  });
+  row.append(copyButton);
+
+  if (navigator.share) {
+    const nativeShareButton = document.createElement("button");
+    nativeShareButton.className = "share-button";
+    nativeShareButton.type = "button";
+    nativeShareButton.textContent = "\u7aef\u672b\u3067\u5171\u6709";
+    nativeShareButton.addEventListener("click", async () => {
+      try {
+        await navigator.share({
+          title: entry.title,
+          text: shareText,
+          url: shareUrl
+        });
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          status.textContent = "\u5171\u6709\u3092\u958b\u3051\u307e\u305b\u3093\u3067\u3057\u305f";
+        }
+      }
+    });
+    row.append(nativeShareButton);
+  }
+
+  row.append(
+    createShareLink("X", `https://twitter.com/intent/tweet?${new URLSearchParams({ text: shareText, url: shareUrl })}`),
+    createShareLink("Facebook", `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({ u: shareUrl })}`),
+    createShareLink("LINE", `https://social-plugins.line.me/lineit/share?${new URLSearchParams({ url: shareUrl })}`),
+    createShareLink("Bluesky", `https://bsky.app/intent/compose?${new URLSearchParams({ text: `${shareText}\n${shareUrl}` })}`)
+  );
+
+  section.append(title, row, status);
+  return section;
+}
+
+async function copyText(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Fall through to the legacy copy path.
+    }
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.top = "-999px";
+  document.body.append(textarea);
+  textarea.select();
+
+  try {
+    return document.execCommand("copy");
+  } catch {
+    return false;
+  } finally {
+    textarea.remove();
+  }
+}
+
 function renderDetail(entry) {
   document.title = `${entry.title} - ${siteTitle}`;
 
@@ -290,6 +401,7 @@ function renderDetail(entry) {
   if (postedAt) {
     copy.append(postedAt);
   }
+  copy.append(createShareActions(entry));
   hero.append(media, copy);
   detail.append(back, hero);
   app.replaceChildren(detail);

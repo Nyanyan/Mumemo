@@ -385,6 +385,61 @@
       text-align: right;
     }
 
+    .share-actions {
+      display: grid;
+      gap: 10px;
+      min-width: 0;
+      padding-top: 2px;
+    }
+
+    .share-title {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .share-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .share-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      max-width: 100%;
+      padding: 7px 11px;
+      border: 1px solid rgba(49, 30, 77, 0.28);
+      border-radius: 8px;
+      background: rgba(251, 247, 255, 0.88);
+      color: var(--brand-strong);
+      cursor: pointer;
+      font-size: 0.92rem;
+      font-weight: 700;
+      line-height: 1.25;
+      text-align: center;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .share-button:hover,
+    .share-button:focus-visible {
+      border-color: var(--brand);
+      background: var(--panel);
+      outline: none;
+    }
+
+    .share-status {
+      min-height: 1.35em;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
     .lightbox {
       position: fixed;
       inset: 0;
