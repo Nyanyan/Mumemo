@@ -627,6 +627,7 @@ function renderLocationSearch() {
   let filtersHidden = Boolean(selectedLabel);
   const updateFilterVisibility = () => {
     groups.hidden = filtersHidden;
+    groups.setAttribute("aria-hidden", String(filtersHidden));
     filterToggle.textContent = filtersHidden ? "\u7d5e\u308a\u8fbc\u307f\u3092\u8868\u793a" : "\u7d5e\u308a\u8fbc\u307f\u3092\u975e\u8868\u793a";
     filterToggle.setAttribute("aria-expanded", String(!filtersHidden));
   };

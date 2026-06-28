@@ -371,6 +371,10 @@
       gap: 18px;
     }
 
+    .location-sections[hidden] {
+      display: none;
+    }
+
     .location-section {
       display: grid;
       gap: 10px;
