@@ -487,11 +487,6 @@
       object-fit: cover;
     }
 
-    .tile.fixed .tile-thumb {
-      padding: 22px;
-      object-fit: contain;
-      background: #f1e6fb;
-    }
 
     .tile-body {
       display: grid;
