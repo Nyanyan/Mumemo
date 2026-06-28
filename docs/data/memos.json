@@ -5,12 +5,15 @@
     "image": "/website_icon_small.png",
     "fixed": true,
     "iconImage": true,
-    "thumbnail": "/website_icon_small.png",
+    "thumbnail": "/OGP_thumb.jpg",
     "id": "これは何？",
     "images": [
       "/website_icon_small.png"
     ],
-    "location": "不明"
+    "location": "不明",
+    "ogpImage": "/OGP.jpg",
+    "ogpImageWidth": 1200,
+    "ogpImageHeight": 630
   },
   {
     "id": "slack-C0BDC3P774J-1782643522.946369",

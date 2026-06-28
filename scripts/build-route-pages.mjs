@@ -220,15 +220,16 @@ function locationsMeta({ siteTitle, siteDescription, baseUrl, hasHomeOgpImage })
 
 function memoMeta({ memo, siteTitle, siteDescription, baseUrl, ogpManifest }) {
   const ogpImage = ogpManifest[memo.slug] || {};
-  const width = Number(ogpImage.width) || null;
-  const height = Number(ogpImage.height) || null;
+  const explicitOgpImage = typeof memo.ogpImage === "string" ? memo.ogpImage.trim() : "";
+  const width = explicitOgpImage ? Number(memo.ogpImageWidth) || null : Number(ogpImage.width) || null;
+  const height = explicitOgpImage ? Number(memo.ogpImageHeight) || null : Number(ogpImage.height) || null;
   return {
     siteName: siteTitle,
     title: `${memo.title} - ${siteTitle}`,
     description: summarize(memo.body, siteDescription),
     type: "article",
     url: absoluteUrl(baseUrl, routePath(memo.slug)),
-    image: absoluteUrl(baseUrl, ogpImage.url || defaultImage),
+    image: absoluteUrl(baseUrl, explicitOgpImage || ogpImage.url || defaultImage),
     imageWidth: width,
     imageHeight: height,
     twitterCard: width && height && width === height ? "summary" : "summary_large_image"

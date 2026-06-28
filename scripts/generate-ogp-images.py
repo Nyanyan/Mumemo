@@ -15,9 +15,13 @@ DOCS_DIR = REPO_ROOT / "docs"
 MEMOS_PATH = DOCS_DIR / "data" / "memos.json"
 OGP_DIR = DOCS_DIR / "assets" / "ogp"
 MANIFEST_PATH = OGP_DIR / "manifest.json"
+HOME_OGP_SOURCE = REPO_ROOT / "OGP.jpg"
+HOME_OGP_THUMB = DOCS_DIR / "OGP_thumb.jpg"
+HOME_OGP_THUMB_SIZE = (480, 252)
 LANDSCAPE_SIZE = (1200, 630)
 SQUARE_SIZE = (800, 800)
 JPEG_QUALITY = 86
+THUMBNAIL_QUALITY = 76
 DEFAULT_IMAGE = "/website_icon_small.png"
 
 
@@ -27,6 +31,7 @@ def main() -> None:
         raise RuntimeError(f"{MEMOS_PATH} must contain a JSON array")
 
     OGP_DIR.mkdir(parents=True, exist_ok=True)
+    sync_home_ogp_thumbnail()
     manifest: dict[str, dict[str, object]] = {}
     expected_paths: set[Path] = set()
 
@@ -64,6 +69,22 @@ def generate_ogp_image(memo: dict[str, object], output_path: Path) -> tuple[int,
         except OSError as error:
             print(f"Skipped OGP source {source_path}: {error}")
     return None
+
+
+def sync_home_ogp_thumbnail() -> None:
+    if not HOME_OGP_SOURCE.exists():
+        return
+    with Image.open(HOME_OGP_SOURCE) as source:
+        image = ImageOps.exif_transpose(source)
+        image = ImageOps.fit(image, HOME_OGP_THUMB_SIZE, method=Image.Resampling.LANCZOS)
+        image = flatten_to_rgb(image)
+        image.save(
+            HOME_OGP_THUMB,
+            format="JPEG",
+            quality=THUMBNAIL_QUALITY,
+            optimize=True,
+            progressive=True,
+        )
 
 
 def write_ogp_image(source_path: Path, output_path: Path) -> tuple[int, int]:
