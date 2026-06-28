@@ -65,11 +65,21 @@
       margin-bottom: 28px;
     }
 
+    .brand-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      max-width: 100%;
+    }
+
     .brand-link {
       display: inline-grid;
       grid-template-columns: 52px minmax(0, auto);
       align-items: center;
       gap: 14px;
+      flex: 1 1 auto;
+      min-width: 0;
       max-width: 100%;
       text-decoration: none;
     }
@@ -111,6 +121,11 @@
       gap: 8px;
       align-items: center;
       justify-content: flex-end;
+    }
+
+    .brand-author-link {
+      flex: 0 0 auto;
+      justify-content: center;
     }
 
     .author-link,
@@ -333,6 +348,14 @@
       gap: 10px;
       align-items: center;
       justify-content: space-between;
+    }
+
+    .location-header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: flex-end;
     }
 
     .location-title {
@@ -572,7 +595,8 @@
     }
 
     .back-link,
-    .detail-random-button {
+    .detail-random-button,
+    .location-filter-toggle {
       display: inline-flex;
       align-items: center;
       min-height: 40px;
@@ -585,7 +609,8 @@
       text-decoration: none;
     }
 
-    .detail-random-button {
+    .detail-random-button,
+    .location-filter-toggle {
       cursor: pointer;
       font-family: inherit;
     }
@@ -598,7 +623,9 @@
     .back-link:hover,
     .back-link:focus-visible,
     .detail-random-button:hover,
-    .detail-random-button:focus-visible {
+    .detail-random-button:focus-visible,
+    .location-filter-toggle:hover,
+    .location-filter-toggle:focus-visible {
       border-color: var(--brand);
       outline: none;
     }
@@ -882,12 +909,11 @@
 
       body[data-view="home"] .header-actions {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 10px;
         justify-content: stretch;
       }
 
-      body[data-view="home"] .header-actions .author-link,
       body[data-view="home"] .header-actions .header-location-button,
       body[data-view="home"] .header-actions .header-random-button,
       body[data-view="home"] .header-actions .home-share,
@@ -895,14 +921,16 @@
         width: 100%;
       }
 
-      body[data-view="home"] .header-actions .author-link,
       body[data-view="home"] .header-actions .header-location-button,
       body[data-view="home"] .header-actions .header-random-button,
       body[data-view="home"] .header-actions .home-share-button {
         justify-content: center;
         min-width: 0;
+        min-height: 36px;
+        padding: 7px 6px;
+        font-size: 0.82rem;
         text-align: center;
-        white-space: normal;
+        white-space: nowrap;
       }
 
       .toolbar-actions {
@@ -973,8 +1001,30 @@
       }
 
 
+      .brand-area {
+        justify-content: space-between;
+        gap: 10px;
+      }
+
       .brand-link {
         grid-template-columns: 44px minmax(0, 1fr);
+      }
+
+      .brand-author-link {
+        min-height: 36px;
+        padding: 7px 10px;
+      }
+
+      .location-header-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+      }
+
+      .location-header-actions .back-link,
+      .location-header-actions .location-filter-toggle {
+        justify-content: center;
+        width: 100%;
       }
 
       .brand-icon {

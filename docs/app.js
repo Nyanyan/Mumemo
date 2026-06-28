@@ -605,16 +605,35 @@ function renderLocationSearch() {
   title.className = "location-title";
   title.textContent = "\u5834\u6240\u3067\u691c\u7d22";
 
+  const filterToggle = document.createElement("button");
+  filterToggle.className = "location-filter-toggle";
+  filterToggle.type = "button";
+  filterToggle.setAttribute("aria-controls", "locationFilters");
+
   const back = document.createElement("a");
   back.className = "back-link";
   back.href = "/";
   back.dataset.nav = "";
   back.textContent = "\u4e00\u89a7\u3078\u623b\u308b";
 
-  header.append(title, back);
+  const headerActions = document.createElement("div");
+  headerActions.className = "location-header-actions";
+  headerActions.append(filterToggle, back);
+  header.append(title, headerActions);
 
   const groups = document.createElement("div");
+  groups.id = "locationFilters";
   groups.className = "location-sections";
+  let filtersHidden = Boolean(selectedLabel);
+  const updateFilterVisibility = () => {
+    groups.hidden = filtersHidden;
+    filterToggle.textContent = filtersHidden ? "\u7d5e\u308a\u8fbc\u307f\u3092\u8868\u793a" : "\u7d5e\u308a\u8fbc\u307f\u3092\u975e\u8868\u793a";
+    filterToggle.setAttribute("aria-expanded", String(!filtersHidden));
+  };
+  filterToggle.addEventListener("click", () => {
+    filtersHidden = !filtersHidden;
+    updateFilterVisibility();
+  });
   const regionItems = regionDefinitions.map((region) => [region.name, countData.regions.get(region.name) || 0]);
   const prefectureItems = prefectures.map((prefecture) => [prefecture, countData.prefectures.get(prefecture) || 0]);
   const otherItems = [...countData.countries, [unknownLocationLabel, countData.unknown]];
@@ -628,6 +647,7 @@ function renderLocationSearch() {
     }
   });
 
+  updateFilterVisibility();
   section.append(header, groups);
 
   if (selectedLabel) {
