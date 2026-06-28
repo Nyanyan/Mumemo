@@ -113,7 +113,8 @@
       justify-content: flex-end;
     }
 
-    .author-link {
+    .author-link,
+    .location-button {
       display: inline-flex;
       align-items: center;
       min-height: 40px;
@@ -222,7 +223,9 @@
     .share-menu-button:hover,
     .share-menu-button:focus-visible,
     .random-button:hover,
-    .random-button:focus-visible {
+    .random-button:focus-visible,
+    .location-button:hover,
+    .location-button:focus-visible {
       border-color: var(--brand);
       background: var(--panel);
       outline: none;
@@ -245,7 +248,8 @@
       min-width: 0;
     }
 
-    .random-button {
+    .random-button,
+    .location-button {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -260,7 +264,8 @@
       white-space: nowrap;
     }
 
-    .header-random-button {
+    .header-random-button,
+    .header-location-button {
       display: none;
     }
 
@@ -315,6 +320,95 @@
       color: var(--muted);
       font-size: 0.92rem;
       white-space: nowrap;
+    }
+
+    .location-view {
+      display: grid;
+      gap: 18px;
+    }
+
+    .location-header {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .location-title {
+      margin: 0;
+      color: var(--brand-strong);
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .location-sections {
+      display: grid;
+      gap: 18px;
+    }
+
+    .location-section {
+      display: grid;
+      gap: 10px;
+    }
+
+    .location-section-title,
+    .location-results-title {
+      margin: 0;
+      color: var(--brand-strong);
+      font-size: 1.08rem;
+      line-height: 1.35;
+    }
+
+    .location-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 168px), 1fr));
+      gap: 10px;
+    }
+
+    .location-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 42px;
+      min-width: 0;
+      padding: 8px 10px;
+      border: 1px solid rgba(49, 30, 77, 0.18);
+      border-radius: 8px;
+      background: rgba(251, 247, 255, 0.82);
+      color: var(--brand-strong);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .location-item:hover,
+    .location-item:focus-visible,
+    .location-item.current {
+      border-color: var(--brand);
+      background: var(--panel);
+      outline: none;
+    }
+
+    .location-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .location-count {
+      flex: 0 0 auto;
+      color: var(--muted);
+      font-size: 0.9rem;
+      white-space: nowrap;
+    }
+
+    .location-results {
+      display: grid;
+      gap: 12px;
+      margin-top: 4px;
     }
 
     .tile-grid {
@@ -596,6 +690,13 @@
       overflow-wrap: anywhere;
     }
 
+    .detail-location {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      text-align: right;
+    }
+
     .detail-posted-at {
       margin: 0;
       color: var(--muted);
@@ -772,12 +873,13 @@
 
       body[data-view="home"] .header-actions {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 10px;
         justify-content: stretch;
       }
 
       body[data-view="home"] .header-actions .author-link,
+      body[data-view="home"] .header-actions .header-location-button,
       body[data-view="home"] .header-actions .header-random-button,
       body[data-view="home"] .header-actions .home-share,
       body[data-view="home"] .header-actions .home-share-button {
@@ -785,6 +887,7 @@
       }
 
       body[data-view="home"] .header-actions .author-link,
+      body[data-view="home"] .header-actions .header-location-button,
       body[data-view="home"] .header-actions .header-random-button,
       body[data-view="home"] .header-actions .home-share-button {
         justify-content: center;
@@ -797,16 +900,22 @@
         justify-content: flex-start;
       }
 
-      body[data-view="home"] .header-random-button {
+      body[data-view="home"] .header-location-button {
         display: inline-flex;
         order: 1;
       }
 
-      .home-share {
+      body[data-view="home"] .header-random-button {
+        display: inline-flex;
         order: 2;
       }
 
-      .toolbar-actions .random-button {
+      .home-share {
+        order: 3;
+      }
+
+      .toolbar-actions .random-button,
+      .toolbar-actions .toolbar-location-button {
         display: none;
       }
 

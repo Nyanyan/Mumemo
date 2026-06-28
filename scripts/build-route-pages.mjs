@@ -208,6 +208,16 @@ function homeMeta({ siteTitle, siteDescription, baseUrl, hasHomeOgpImage }) {
   };
 }
 
+function locationsMeta({ siteTitle, siteDescription, baseUrl, hasHomeOgpImage }) {
+  const meta = homeMeta({ siteTitle, siteDescription, baseUrl, hasHomeOgpImage });
+  return {
+    ...meta,
+    title: `県で検索 - ${siteTitle}`,
+    description: `場所ごとに${siteTitle}の投稿を探せます。`,
+    url: absoluteUrl(baseUrl, "/locations/")
+  };
+}
+
 function memoMeta({ memo, siteTitle, siteDescription, baseUrl, ogpManifest }) {
   const ogpImage = ogpManifest[memo.slug] || {};
   const width = Number(ogpImage.width) || null;
@@ -243,6 +253,14 @@ const defaultHtml = renderHtml(indexHtml, homeMeta({ siteTitle, siteDescription,
 
 await fs.writeFile(indexPath, defaultHtml, "utf8");
 await fs.writeFile(fallbackPath, defaultHtml, "utf8");
+
+const locationsRouteDir = path.join(docsDir, "locations");
+await fs.mkdir(locationsRouteDir, { recursive: true });
+await fs.writeFile(
+  path.join(locationsRouteDir, "index.html"),
+  renderHtml(defaultHtml, locationsMeta({ siteTitle, siteDescription, baseUrl, hasHomeOgpImage })),
+  "utf8"
+);
 
 for (const memo of memos) {
   const routeDir = path.join(docsDir, memo.slug);

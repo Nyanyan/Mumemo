@@ -1,6 +1,58 @@
 const siteTitle = "Mumemo - にゃにゃんの博物館メモ";
 const memosUrl = "/data/memos.json";
 const shareIconUrl = "/assets/share-icon.svg";
+const locationsSlug = "locations";
+const unknownLocationLabel = "不明";
+const prefectures = [
+  "北海道",
+  "青森県",
+  "岩手県",
+  "宮城県",
+  "秋田県",
+  "山形県",
+  "福島県",
+  "茨城県",
+  "栃木県",
+  "群馬県",
+  "埼玉県",
+  "千葉県",
+  "東京都",
+  "神奈川県",
+  "新潟県",
+  "富山県",
+  "石川県",
+  "福井県",
+  "山梨県",
+  "長野県",
+  "岐阜県",
+  "静岡県",
+  "愛知県",
+  "三重県",
+  "滋賀県",
+  "京都府",
+  "大阪府",
+  "兵庫県",
+  "奈良県",
+  "和歌山県",
+  "鳥取県",
+  "島根県",
+  "岡山県",
+  "広島県",
+  "山口県",
+  "徳島県",
+  "香川県",
+  "愛媛県",
+  "高知県",
+  "福岡県",
+  "佐賀県",
+  "長崎県",
+  "熊本県",
+  "大分県",
+  "宮崎県",
+  "鹿児島県",
+  "沖縄県"
+];
+const prefectureSet = new Set(prefectures);
 
 const app = document.querySelector("#app");
 const homeTemplate = document.querySelector("#home-template");
@@ -52,6 +104,16 @@ function addSlugs(items) {
 
 function hrefFor(entry) {
   return `/${encodeURIComponent(entry.slug)}/`;
+}
+
+function locationsHref() {
+  return `/${locationsSlug}/`;
+}
+
+function locationHref(location) {
+  const url = new URL(locationsHref(), window.location.origin);
+  url.searchParams.set("location", location);
+  return `${url.pathname}${url.search}`;
 }
 
 function navigateToEntry(entry) {
@@ -202,6 +264,11 @@ function formatPostedAt(entry) {
   }
 
   return postedAtFormatter.format(date);
+}
+
+function locationFor(entry) {
+  const location = typeof entry.location === "string" ? entry.location.trim() : "";
+  return location || unknownLocationLabel;
 }
 
 function appendLinkedText(parent, text) {
@@ -373,7 +440,7 @@ function renderHome() {
     const searchableItems = entries.filter((entry) => !entry.fixed);
     const orderedItems = homeRandomOrder || searchableItems;
     const searchBase = homeRandomOrder ? [...fixedItems, ...orderedItems] : entries;
-    const matchesQuery = (entry) => `${entry.title}\n${entry.body}\n${formatPostedAt(entry)}`.toLocaleLowerCase("ja").includes(query);
+    const matchesQuery = (entry) => `${entry.title}\n${entry.body}\n${formatPostedAt(entry)}\n${locationFor(entry)}`.toLocaleLowerCase("ja").includes(query);
     const matched = query ? searchBase.filter(matchesQuery) : orderedItems;
     const shown = query ? matched : [...fixedItems, ...matched];
 
@@ -399,6 +466,143 @@ function renderHome() {
   });
   input.addEventListener("input", draw);
   draw();
+}
+
+function selectedLocationFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return (params.get("location") || "").trim();
+}
+
+function locationSearchEntries() {
+  return entries.filter((entry) => !entry.fixed);
+}
+
+function createLocationCountData() {
+  const prefectureCounts = new Map(prefectures.map((prefecture) => [prefecture, 0]));
+  const countryCounts = new Map();
+  let unknownCount = 0;
+
+  for (const entry of locationSearchEntries()) {
+    const location = locationFor(entry);
+    if (prefectureSet.has(location)) {
+      prefectureCounts.set(location, (prefectureCounts.get(location) || 0) + 1);
+    } else if (location === unknownLocationLabel) {
+      unknownCount += 1;
+    } else {
+      countryCounts.set(location, (countryCounts.get(location) || 0) + 1);
+    }
+  }
+
+  return {
+    prefectures: prefectureCounts,
+    countries: [...countryCounts.entries()].sort((a, b) => a[0].localeCompare(b[0], "ja")),
+    unknown: unknownCount
+  };
+}
+
+function createLocationItem(location, count, selectedLocation) {
+  const link = document.createElement("a");
+  link.className = `location-item${location === selectedLocation ? " current" : ""}`;
+  link.href = locationHref(location);
+  link.dataset.nav = "";
+  if (location === selectedLocation) {
+    link.setAttribute("aria-current", "page");
+  }
+
+  const name = document.createElement("span");
+  name.className = "location-name";
+  name.textContent = location;
+
+  const countText = document.createElement("span");
+  countText.className = "location-count";
+  countText.textContent = `(${count}件)`;
+
+  link.append(name, countText);
+  return link;
+}
+
+function createLocationGroup(title, items, selectedLocation) {
+  if (items.length === 0) {
+    return null;
+  }
+
+  const section = document.createElement("section");
+  section.className = "location-section";
+
+  const heading = document.createElement("h3");
+  heading.className = "location-section-title";
+  heading.textContent = title;
+
+  const list = document.createElement("div");
+  list.className = "location-list";
+  list.append(...items.map(([location, count]) => createLocationItem(location, count, selectedLocation)));
+
+  section.append(heading, list);
+  return section;
+}
+
+function renderLocationSearch() {
+  document.body.dataset.view = "locations";
+  const selectedLocation = selectedLocationFromUrl();
+  document.title = selectedLocation ? `${selectedLocation} - 県で検索 - ${siteTitle}` : `県で検索 - ${siteTitle}`;
+
+  const countData = createLocationCountData();
+  const section = document.createElement("section");
+  section.className = "location-view";
+
+  const header = document.createElement("div");
+  header.className = "location-header";
+
+  const title = document.createElement("h2");
+  title.className = "location-title";
+  title.textContent = "県で検索";
+
+  const back = document.createElement("a");
+  back.className = "back-link";
+  back.href = "/";
+  back.dataset.nav = "";
+  back.textContent = "一覧へ戻る";
+
+  header.append(title, back);
+
+  const groups = document.createElement("div");
+  groups.className = "location-sections";
+  const prefectureItems = prefectures.map((prefecture) => [prefecture, countData.prefectures.get(prefecture) || 0]);
+  const otherItems = [...countData.countries, [unknownLocationLabel, countData.unknown]];
+  [
+    createLocationGroup("都道府県", prefectureItems, selectedLocation),
+    createLocationGroup("海外・不明", otherItems, selectedLocation)
+  ].forEach((group) => {
+    if (group) {
+      groups.append(group);
+    }
+  });
+
+  section.append(header, groups);
+
+  if (selectedLocation) {
+    const results = document.createElement("section");
+    results.className = "location-results";
+
+    const resultsTitle = document.createElement("h3");
+    resultsTitle.className = "location-results-title";
+    resultsTitle.textContent = `${selectedLocation}の投稿`;
+
+    const matched = locationSearchEntries().filter((entry) => locationFor(entry) === selectedLocation);
+    const grid = document.createElement("div");
+    grid.className = "tile-grid";
+    if (matched.length > 0) {
+      grid.append(...matched.map(createTile));
+    } else {
+      grid.append(createStatusMessage("該当するメモはありません。"));
+    }
+
+    results.append(resultsTitle, grid);
+    section.append(results);
+  }
+
+  app.replaceChildren(section);
+  scheduleTileTextFit();
 }
 
 function createDetailImageButton(entry, imageUrl, index) {
@@ -445,6 +649,13 @@ function createPostedAt(entry) {
   const meta = document.createElement("p");
   meta.className = "detail-posted-at";
   meta.textContent = `投稿日: ${postedAt}`;
+  return meta;
+}
+
+function createLocationMeta(entry) {
+  const meta = document.createElement("p");
+  meta.className = "detail-location";
+  meta.textContent = `場所: ${locationFor(entry)}`;
   return meta;
 }
 
@@ -709,7 +920,7 @@ function renderDetail(entry) {
   text.className = "detail-text";
   appendLinkedText(text, entry.body);
 
-  copy.append(title, text);
+  copy.append(title, text, createLocationMeta(entry));
   const postedAt = createPostedAt(entry);
   if (postedAt) {
     copy.append(postedAt);
@@ -749,6 +960,11 @@ function route() {
 
   if (!slug) {
     renderHome();
+    return;
+  }
+
+  if (slug === locationsSlug) {
+    renderLocationSearch();
     return;
   }
 
