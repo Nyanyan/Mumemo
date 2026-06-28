@@ -21,6 +21,7 @@ MEMO_REVIEW_URLS_CALLBACK_ID = "mumemo_review_urls_modal"
 
 TITLE_BLOCK_ID = "title"
 BODY_BLOCK_ID = "body"
+LOCATION_BLOCK_ID = "location"
 IMAGE_BLOCK_ID = "image"
 IMAGES_BLOCK_ID = "images"
 UPLOAD_IMAGES_BLOCK_ID = "upload_images"
@@ -37,6 +38,7 @@ def review_blocks(
     title: str,
     body: str,
     image_count: int,
+    location: str | None,
     urls: list[str],
     title_conflict: Any | None,
     status_text: str | None,
@@ -52,6 +54,7 @@ def review_blocks(
         if thumbnail_label
         else ""
     )
+    location_line = f"\n*場所:* {_mrkdwn_text(location)}" if location else ""
 
     blocks: list[dict[str, Any]] = [
         {
@@ -64,6 +67,7 @@ def review_blocks(
                     f"*本文:*\n```{_code_text(body_preview)}```\n"
                     f"*添付画像:* {image_count}件"
                     f"{thumbnail_line}"
+                    f"{location_line}"
                 ),
             },
         }
@@ -334,6 +338,7 @@ def manage_blocks(
                         "text": (
                             f"*{_mrkdwn_text(title_label)}*\n"
                             f"{_mrkdwn_text(body_preview)}\n"
+                            f"場所: {_mrkdwn_text(item.location)}\n"
                             f"画像: {item.image_count}件"
                         ),
                     },
@@ -383,6 +388,18 @@ def edit_modal_view(
                 "action_id": VALUE_ACTION_ID,
                 "multiline": True,
                 "initial_value": _input_initial(memo.body, 2900),
+            },
+        },
+        {
+            "type": "input",
+            "block_id": LOCATION_BLOCK_ID,
+            "optional": True,
+            "label": {"type": "plain_text", "text": "場所"},
+            "hint": {"type": "plain_text", "text": "都道府県・国名・不明のいずれかを入力してください。空欄ならタイトルと本文から再推定します。"},
+            "element": {
+                "type": "plain_text_input",
+                "action_id": VALUE_ACTION_ID,
+                "initial_value": _input_initial(getattr(memo, "location", "不明"), 80),
             },
         },
     ]

@@ -9,7 +9,8 @@
     "id": "これは何？",
     "images": [
       "/website_icon_small.png"
-    ]
+    ],
+    "location": "不明"
   },
   {
     "id": "slack-C0BDC3P774J-1782633191.564529",
@@ -30,7 +31,8 @@
       "/assets/slack/%E8%AB%AB%E6%97%A9%E5%85%AC%E5%9C%92/F0BDR8M723T.jpg",
       "/assets/slack/%E8%AB%AB%E6%97%A9%E5%85%AC%E5%9C%92/F0BDPD25VV0.jpg",
       "/assets/slack/%E8%AB%AB%E6%97%A9%E5%85%AC%E5%9C%92/F0BDT2JMT36.jpg"
-    ]
+    ],
+    "location": "長崎県"
   },
   {
     "id": "slack-C0BDC3P774J-1782632860.036849",
@@ -48,7 +50,8 @@
     "images": [
       "/assets/slack/%E5%A4%A7%E6%B5%A6%E5%A4%A9%E4%B8%BB%E5%A0%82/F0BDH2NAK6X.jpg",
       "/assets/slack/%E5%A4%A7%E6%B5%A6%E5%A4%A9%E4%B8%BB%E5%A0%82/F0BDR8EKTFB.jpg"
-    ]
+    ],
+    "location": "長崎県"
   },
   {
     "id": "slack-C0BDC3P774J-1782632616.180239",
@@ -65,7 +68,8 @@
     "postedAt": "2026-06-28",
     "images": [
       "/assets/slack/%E9%95%B7%E5%B4%8E%E4%BC%9D%E7%B5%B1%E8%8A%B8%E8%83%BD%E9%A4%A8/F0BDPCKBWHY.jpg"
-    ]
+    ],
+    "location": "長崎県"
   },
   {
     "id": "slack-C0BDC3P774J-1782632192.066059",
@@ -90,7 +94,8 @@
       "/assets/slack/%E3%82%B0%E3%83%A9%E3%83%90%E3%83%BC%E5%9C%92/F0BD7TNFL9M.jpg",
       "/assets/slack/%E3%82%B0%E3%83%A9%E3%83%90%E3%83%BC%E5%9C%92/F0BDL0EH32R.jpg",
       "/assets/slack/%E3%82%B0%E3%83%A9%E3%83%90%E3%83%BC%E5%9C%92/F0BDL0J1V7F.jpg"
-    ]
+    ],
+    "location": "長崎県"
   },
   {
     "id": "slack-C0BDC3P774J-1782631841.800109",
@@ -110,7 +115,8 @@
       "/assets/slack/%E8%BB%8D%E8%89%A6%E5%B3%B6%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/F0BDT12J3FW.jpg",
       "/assets/slack/%E8%BB%8D%E8%89%A6%E5%B3%B6%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/F0BDH1JKPQT.jpg",
       "/assets/slack/%E8%BB%8D%E8%89%A6%E5%B3%B6%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/F0BDR770D9P.jpg"
-    ]
+    ],
+    "location": "長崎県"
   },
   {
     "id": "slack-C0BDC3P774J-1782631277.968589",
@@ -135,7 +141,8 @@
       "/assets/slack/%E5%87%BA%E5%B3%B6/F0BD7SHEN7R.jpg",
       "/assets/slack/%E5%87%BA%E5%B3%B6/F0BDT0CGQEQ.jpg",
       "/assets/slack/%E5%87%BA%E5%B3%B6/F0BDM8B7ZL6.jpg"
-    ]
+    ],
+    "location": "長崎県"
   },
   {
     "id": "slack-C0BDC3P774J-1782630765.711949",
@@ -156,7 +163,8 @@
       "/assets/slack/%E9%95%B7%E5%B4%8E%E5%8E%9F%E7%88%86%E8%B3%87%E6%96%99%E9%A4%A8%E3%83%BB%E7%88%86%E5%BF%83%E5%9C%B0%E5%85%AC%E5%9C%92%E3%83%BB%E5%B9%B3%E5%92%8C%E7%A5%88%E5%BF%B5%E5%83%8F/F0BDP9ZE6JW.jpg",
       "/assets/slack/%E9%95%B7%E5%B4%8E%E5%8E%9F%E7%88%86%E8%B3%87%E6%96%99%E9%A4%A8%E3%83%BB%E7%88%86%E5%BF%83%E5%9C%B0%E5%85%AC%E5%9C%92%E3%83%BB%E5%B9%B3%E5%92%8C%E7%A5%88%E5%BF%B5%E5%83%8F/F0BDR63DEGH.jpg",
       "/assets/slack/%E9%95%B7%E5%B4%8E%E5%8E%9F%E7%88%86%E8%B3%87%E6%96%99%E9%A4%A8%E3%83%BB%E7%88%86%E5%BF%83%E5%9C%B0%E5%85%AC%E5%9C%92%E3%83%BB%E5%B9%B3%E5%92%8C%E7%A5%88%E5%BF%B5%E5%83%8F/F0BDM7X86UE.jpg"
-    ]
+    ],
+    "location": "長崎県"
   },
   {
     "id": "slack-C0BDC3P774J-1782630009.318619",
@@ -177,7 +185,8 @@
       "/assets/slack/%E7%89%87%E5%B3%B6%E9%AD%9A%E9%9B%B7%E7%99%BA%E5%B0%84%E8%A9%A6%E9%A8%93%E5%A0%B4%E8%B7%A1/F0BDR4FL6JV.jpg",
       "/assets/slack/%E7%89%87%E5%B3%B6%E9%AD%9A%E9%9B%B7%E7%99%BA%E5%B0%84%E8%A9%A6%E9%A8%93%E5%A0%B4%E8%B7%A1/F0BD7QMG947.jpg",
       "/assets/slack/%E7%89%87%E5%B3%B6%E9%AD%9A%E9%9B%B7%E7%99%BA%E5%B0%84%E8%A9%A6%E9%A8%93%E5%A0%B4%E8%B7%A1/F0BDGUAF7S7.jpg"
-    ]
+    ],
+    "location": "長崎県"
   },
   {
     "id": "slack-C0BDC3P774J-1782628838.853029",
@@ -195,7 +204,8 @@
     "images": [
       "/assets/slack/%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%AB%8B%E6%81%90%E7%AB%9C%E5%8D%9A%E7%89%A9%E9%A4%A8/F0BDSSYQJTE.jpg",
       "/assets/slack/%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%AB%8B%E6%81%90%E7%AB%9C%E5%8D%9A%E7%89%A9%E9%A4%A8/F0BDR3NLQ8Z.jpg"
-    ]
+    ],
+    "location": "福井県"
   },
   {
     "id": "slack-C0BDC3P774J-1782628349.546579",
@@ -213,7 +223,8 @@
     "images": [
       "/assets/slack/%E6%96%B0%E6%BD%9F%E5%B8%82%E6%B0%B4%E6%97%8F%E9%A4%A8%20%E3%83%9E%E3%83%AA%E3%83%B3%E3%83%94%E3%82%A2%E6%97%A5%E6%9C%AC%E6%B5%B7/F0BD7PBCFC7.jpg",
       "/assets/slack/%E6%96%B0%E6%BD%9F%E5%B8%82%E6%B0%B4%E6%97%8F%E9%A4%A8%20%E3%83%9E%E3%83%AA%E3%83%B3%E3%83%94%E3%82%A2%E6%97%A5%E6%9C%AC%E6%B5%B7/F0BDR3AFDQR.jpg"
-    ]
+    ],
+    "location": "新潟県"
   },
   {
     "id": "slack-C0BDC3P774J-1782628102.232989",
@@ -231,7 +242,8 @@
     "images": [
       "/assets/slack/%E7%9F%B3%E5%B7%9D%E7%9C%8C%E7%AB%8B%E5%9B%B3%E6%9B%B8%E9%A4%A8/F0BDM4MD51U.jpg",
       "/assets/slack/%E7%9F%B3%E5%B7%9D%E7%9C%8C%E7%AB%8B%E5%9B%B3%E6%9B%B8%E9%A4%A8/F0BDGSKJT6X.jpg"
-    ]
+    ],
+    "location": "石川県"
   },
   {
     "id": "slack-C0BDC3P774J-1782573266.741809",
@@ -252,7 +264,8 @@
       "/assets/slack/%E8%87%AA%E9%81%8A%E8%8A%B1%E4%BA%BA%E6%B0%B4%E5%BC%95%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/F0BDM4YGBMG.jpg",
       "/assets/slack/%E8%87%AA%E9%81%8A%E8%8A%B1%E4%BA%BA%E6%B0%B4%E5%BC%95%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/F0BDK2DFWCW.jpg",
       "/assets/slack/%E8%87%AA%E9%81%8A%E8%8A%B1%E4%BA%BA%E6%B0%B4%E5%BC%95%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/F0BDP0KTA4R.jpg"
-    ]
+    ],
+    "location": "石川県"
   },
   {
     "id": "slack-C0BDC3P774J-1782572390.520089",
@@ -273,7 +286,8 @@
       "/assets/slack/%E9%87%91%E6%B2%A221%E4%B8%96%E7%B4%80%E7%BE%8E%E8%A1%93%E9%A4%A8/F0BDEPEAQEP.jpg",
       "/assets/slack/%E9%87%91%E6%B2%A221%E4%B8%96%E7%B4%80%E7%BE%8E%E8%A1%93%E9%A4%A8/F0BEFCABQAU.jpg",
       "/assets/slack/%E9%87%91%E6%B2%A221%E4%B8%96%E7%B4%80%E7%BE%8E%E8%A1%93%E9%A4%A8/F0BDHMZCWE9.jpg"
-    ]
+    ],
+    "location": "石川県"
   },
   {
     "id": "slack-C0BDC3P774J-1782571876.862789",
@@ -294,7 +308,8 @@
       "/assets/slack/%E7%9F%B3%E5%B7%9D%E7%9C%8C%E6%94%BF%E8%A8%98%E5%BF%B5%E3%81%97%E3%81%84%E3%81%AE%E3%81%8D%E8%BF%8E%E8%B3%93%E9%A4%A8/F0BDK1181TQ.jpg",
       "/assets/slack/%E7%9F%B3%E5%B7%9D%E7%9C%8C%E6%94%BF%E8%A8%98%E5%BF%B5%E3%81%97%E3%81%84%E3%81%AE%E3%81%8D%E8%BF%8E%E8%B3%93%E9%A4%A8/F0BDK0TG81L.jpg",
       "/assets/slack/%E7%9F%B3%E5%B7%9D%E7%9C%8C%E6%94%BF%E8%A8%98%E5%BF%B5%E3%81%97%E3%81%84%E3%81%AE%E3%81%8D%E8%BF%8E%E8%B3%93%E9%A4%A8/F0BDENRDFT5.jpg"
-    ]
+    ],
+    "location": "石川県"
   },
   {
     "id": "slack-C0BDC3P774J-1782565040.727429",
@@ -311,7 +326,8 @@
     "postedAt": "2026-06-27",
     "images": [
       "/assets/slack/%E9%87%91%E6%B2%A2%E5%9F%8E%20%E9%BC%A0%E5%A4%9A%E9%96%80/F0BDNL1CW9X.jpg"
-    ]
+    ],
+    "location": "石川県"
   },
   {
     "id": "slack-C0BDC3P774J-1782563638.063629",
@@ -334,7 +350,8 @@
       "/assets/slack/%E9%87%91%E6%B2%A2%E8%93%84%E9%9F%B3%E5%99%A8%E9%A4%A8/F0BDHB01ZNZ.jpg",
       "/assets/slack/%E9%87%91%E6%B2%A2%E8%93%84%E9%9F%B3%E5%99%A8%E9%A4%A8/F0BDECJCHMZ.jpg",
       "/assets/slack/%E9%87%91%E6%B2%A2%E8%93%84%E9%9F%B3%E5%99%A8%E9%A4%A8/F0BDNJAGEMP.jpg"
-    ]
+    ],
+    "location": "石川県"
   },
   {
     "id": "slack-C0BDC3P774J-1782561036.926229",
@@ -357,7 +374,8 @@
       "/assets/slack/%E3%83%95%E3%82%A9%E3%83%83%E3%82%B5%E3%83%9E%E3%82%B0%E3%83%8A%E3%83%91%E3%83%BC%E3%82%AF/F0BDNF5M85P.jpg",
       "/assets/slack/%E3%83%95%E3%82%A9%E3%83%83%E3%82%B5%E3%83%9E%E3%82%B0%E3%83%8A%E3%83%91%E3%83%BC%E3%82%AF/F0BDH8184SZ.jpg",
       "/assets/slack/%E3%83%95%E3%82%A9%E3%83%83%E3%82%B5%E3%83%9E%E3%82%B0%E3%83%8A%E3%83%91%E3%83%BC%E3%82%AF/F0BDLKN0M2N.jpg"
-    ]
+    ],
+    "location": "新潟県"
   },
   {
     "id": "slack-C0BDC3P774J-1782560272.084129",
@@ -376,7 +394,8 @@
       "/assets/slack/%E9%95%B7%E8%80%85%E3%82%B1%E5%8E%9F%E8%80%83%E5%8F%A4%E9%A4%A8/F0BDLJD7CEN.jpg",
       "/assets/slack/%E9%95%B7%E8%80%85%E3%82%B1%E5%8E%9F%E8%80%83%E5%8F%A4%E9%A4%A8/F0BDLJE509Y.jpg",
       "/assets/slack/%E9%95%B7%E8%80%85%E3%82%B1%E5%8E%9F%E8%80%83%E5%8F%A4%E9%A4%A8/F0BDLJLD85Q.jpg"
-    ]
+    ],
+    "location": "新潟県"
   },
   {
     "id": "slack-C0BDC3P774J-1782559744.907049",
@@ -398,7 +417,8 @@
       "/assets/slack/%E3%83%95%E3%82%A9%E3%83%83%E3%82%B5%E3%83%9E%E3%82%B0%E3%83%8A%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/F0BDLJ4QMNE.jpg",
       "/assets/slack/%E3%83%95%E3%82%A9%E3%83%83%E3%82%B5%E3%83%9E%E3%82%B0%E3%83%8A%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/F0BD54D0JKZ.jpg",
       "/assets/slack/%E3%83%95%E3%82%A9%E3%83%83%E3%82%B5%E3%83%9E%E3%82%B0%E3%83%8A%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/F0BDQ7N62UU.jpg"
-    ]
+    ],
+    "location": "新潟県"
   },
   {
     "id": "slack-C0BDC3P774J-1782559097.036629",
@@ -418,7 +438,8 @@
       "/assets/slack/%E5%AF%8C%E5%B1%B1%E7%9C%8C%E7%AB%8B%E3%82%A4%E3%82%BF%E3%82%A4%E3%82%A4%E3%82%BF%E3%82%A4%E7%97%85%E8%B3%87%E6%96%99%E9%A4%A8/F0BDNCXCHUH.jpg",
       "/assets/slack/%E5%AF%8C%E5%B1%B1%E7%9C%8C%E7%AB%8B%E3%82%A4%E3%82%BF%E3%82%A4%E3%82%A4%E3%82%BF%E3%82%A4%E7%97%85%E8%B3%87%E6%96%99%E9%A4%A8/F0BDJERUCDU.jpg",
       "/assets/slack/%E5%AF%8C%E5%B1%B1%E7%9C%8C%E7%AB%8B%E3%82%A4%E3%82%BF%E3%82%A4%E3%82%A4%E3%82%BF%E3%82%A4%E7%97%85%E8%B3%87%E6%96%99%E9%A4%A8/F0BEERMESD6.jpg"
-    ]
+    ],
+    "location": "富山県"
   },
   {
     "id": "slack-C0BDC3P774J-1782558362.852599",
@@ -439,7 +460,8 @@
       "/assets/slack/%E5%AF%8C%E5%B1%B1%E5%B8%82%E7%A7%91%E5%AD%A6%E5%8D%9A%E7%89%A9%E9%A4%A8/F0BEEQHLMFS.jpg",
       "/assets/slack/%E5%AF%8C%E5%B1%B1%E5%B8%82%E7%A7%91%E5%AD%A6%E5%8D%9A%E7%89%A9%E9%A4%A8/F0BDQ5R0A92.jpg",
       "/assets/slack/%E5%AF%8C%E5%B1%B1%E5%B8%82%E7%A7%91%E5%AD%A6%E5%8D%9A%E7%89%A9%E9%A4%A8/F0BDNBVE1S5.jpg"
-    ]
+    ],
+    "location": "富山県"
   },
   {
     "id": "slack-C0BDC3P774J-1782557795.785889",
@@ -459,7 +481,8 @@
       "/assets/slack/%E5%AF%8C%E5%B1%B1%E5%B8%82%E3%82%AC%E3%83%A9%E3%82%B9%E7%BE%8E%E8%A1%93%E9%A4%A8/F0BEEQ42YTS.jpg",
       "/assets/slack/%E5%AF%8C%E5%B1%B1%E5%B8%82%E3%82%AC%E3%83%A9%E3%82%B9%E7%BE%8E%E8%A1%93%E9%A4%A8/F0BEEQ4PW3A.jpg",
       "/assets/slack/%E5%AF%8C%E5%B1%B1%E5%B8%82%E3%82%AC%E3%83%A9%E3%82%B9%E7%BE%8E%E8%A1%93%E9%A4%A8/F0BDH4APE8M.jpg"
-    ]
+    ],
+    "location": "富山県"
   },
   {
     "id": "slack-C0BDC3P774J-1782557486.685469",
@@ -476,7 +499,8 @@
     "postedAt": "2026-06-27",
     "images": [
       "/assets/slack/%E5%AF%8C%E5%B1%B1%E5%B8%82%E4%BD%90%E8%97%A4%E8%A8%98%E5%BF%B5%E7%BE%8E%E8%A1%93%E9%A4%A8/F0BDH40QZV3.jpg"
-    ]
+    ],
+    "location": "富山県"
   },
   {
     "id": "slack-C0BDC3P774J-1782557174.226269",
@@ -495,7 +519,8 @@
       "/assets/slack/%E5%AF%8C%E5%B1%B1%E5%B8%82%E9%83%B7%E5%9C%9F%E5%8D%9A%E7%89%A9%E9%A4%A8/F0BDH3EQZEH.jpg",
       "/assets/slack/%E5%AF%8C%E5%B1%B1%E5%B8%82%E9%83%B7%E5%9C%9F%E5%8D%9A%E7%89%A9%E9%A4%A8/F0BDQ4NH3J8.jpg",
       "/assets/slack/%E5%AF%8C%E5%B1%B1%E5%B8%82%E9%83%B7%E5%9C%9F%E5%8D%9A%E7%89%A9%E9%A4%A8/F0BDNAU5JNM.jpg"
-    ]
+    ],
+    "location": "富山県"
   },
   {
     "id": "slack-C0BDC3P774J-1782556735.079389",
@@ -514,7 +539,8 @@
       "/assets/slack/%E6%BB%9D%E5%BB%89%E5%A4%AA%E9%83%8E%E8%A8%98%E5%BF%B5%E9%A4%A8/F0BEEP35W0Y.jpg",
       "/assets/slack/%E6%BB%9D%E5%BB%89%E5%A4%AA%E9%83%8E%E8%A8%98%E5%BF%B5%E9%A4%A8/F0BD511MXNK.jpg",
       "/assets/slack/%E6%BB%9D%E5%BB%89%E5%A4%AA%E9%83%8E%E8%A8%98%E5%BF%B5%E9%A4%A8/F0BD5119U9M.jpg"
-    ]
+    ],
+    "location": "大分県"
   },
   {
     "id": "slack-C0BDC3P774J-1782556118.583919",
@@ -534,7 +560,8 @@
       "/assets/slack/%E5%AF%8C%E5%B1%B1%E7%9C%8C%E7%BE%8E%E8%A1%93%E9%A4%A8/F0BDQ384PNY.jpg",
       "/assets/slack/%E5%AF%8C%E5%B1%B1%E7%9C%8C%E7%BE%8E%E8%A1%93%E9%A4%A8/F0BD4V3KBN3.jpg",
       "/assets/slack/%E5%AF%8C%E5%B1%B1%E7%9C%8C%E7%BE%8E%E8%A1%93%E9%A4%A8/F0BDN9GF7FB.jpg"
-    ]
+    ],
+    "location": "富山県"
   },
   {
     "id": "slack-C0BDC3P774J-1782551827.426809",
@@ -552,7 +579,8 @@
     "images": [
       "/assets/slack/%E5%9F%8E%E7%AB%AF%E5%88%A5%E9%99%A2%E5%96%84%E5%BE%B3%E5%AF%BA/F0BDDUDCDB5.jpg",
       "/assets/slack/%E5%9F%8E%E7%AB%AF%E5%88%A5%E9%99%A2%E5%96%84%E5%BE%B3%E5%AF%BA/F0BDL927R5Y.jpg"
-    ]
+    ],
+    "location": "富山県"
   },
   {
     "id": "slack-C0BDC3P774J-1782551532.905389",
@@ -572,7 +600,8 @@
       "/assets/slack/SHARE%E3%81%98%E3%82%87%E3%81%86%E3%81%AF%E3%81%AA%E7%B9%94%E9%A4%A8%28%E6%97%A7%E5%9F%8E%E7%AB%AF%E7%B9%94%E7%89%A9%E7%B5%84%E5%90%88%E4%BA%8B%E5%8B%99%E6%A3%9F%29/F0BD4Q73C5V.jpg",
       "/assets/slack/SHARE%E3%81%98%E3%82%87%E3%81%86%E3%81%AF%E3%81%AA%E7%B9%94%E9%A4%A8%28%E6%97%A7%E5%9F%8E%E7%AB%AF%E7%B9%94%E7%89%A9%E7%B5%84%E5%90%88%E4%BA%8B%E5%8B%99%E6%A3%9F%29/F0BDDTZ5ZRR.jpg",
       "/assets/slack/SHARE%E3%81%98%E3%82%87%E3%81%86%E3%81%AF%E3%81%AA%E7%B9%94%E9%A4%A8%28%E6%97%A7%E5%9F%8E%E7%AB%AF%E7%B9%94%E7%89%A9%E7%B5%84%E5%90%88%E4%BA%8B%E5%8B%99%E6%A3%9F%29/F0BDJ645Y0N.jpg"
-    ]
+    ],
+    "location": "富山県"
   },
   {
     "id": "slack-C0BDC3P774J-1782550962.342259",
@@ -593,7 +622,8 @@
       "/assets/slack/%E5%9F%8E%E7%AB%AF%E6%9B%B3%E5%B1%B1%E4%BC%9A%E9%A4%A8/F0BDDT8QF4K.jpg",
       "/assets/slack/%E5%9F%8E%E7%AB%AF%E6%9B%B3%E5%B1%B1%E4%BC%9A%E9%A4%A8/F0BDL7YRZH8.jpg",
       "/assets/slack/%E5%9F%8E%E7%AB%AF%E6%9B%B3%E5%B1%B1%E4%BC%9A%E9%A4%A8/F0BDGS0QDNZ.jpg"
-    ]
+    ],
+    "location": "富山県"
   },
   {
     "id": "slack-C0BDC3P774J-1782550215.859079",
@@ -611,7 +641,8 @@
     "images": [
       "/assets/slack/%E3%81%A8%E3%81%AA%E3%81%BF%E6%95%A3%E5%B1%85%E6%9D%91%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/F0BDJ4H5P38.jpg",
       "/assets/slack/%E3%81%A8%E3%81%AA%E3%81%BF%E6%95%A3%E5%B1%85%E6%9D%91%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/F0BD4NQK8ET.jpg"
-    ]
+    ],
+    "location": "富山県"
   },
   {
     "id": "slack-C0BDC3P774J-1782549384.189379",
@@ -631,7 +662,8 @@
       "/assets/slack/%E3%83%81%E3%83%A5%E3%83%BC%E3%83%AA%E3%83%83%E3%83%97%E5%9B%9B%E5%AD%A3%E5%BD%A9%E9%A4%A8/F0BDDR9HP19.jpg",
       "/assets/slack/%E3%83%81%E3%83%A5%E3%83%BC%E3%83%AA%E3%83%83%E3%83%97%E5%9B%9B%E5%AD%A3%E5%BD%A9%E9%A4%A8/F0BD4MP2J87.jpg",
       "/assets/slack/%E3%83%81%E3%83%A5%E3%83%BC%E3%83%AA%E3%83%83%E3%83%97%E5%9B%9B%E5%AD%A3%E5%BD%A9%E9%A4%A8/F0BDGPXNWFP.jpg"
-    ]
+    ],
+    "location": "富山県"
   },
   {
     "id": "slack-C0BDC3P774J-1782548566.916949",
@@ -652,7 +684,8 @@
       "/assets/slack/%E7%A0%BA%E6%B3%A2%E5%B8%82%E5%87%BA%E7%94%BA%E5%AD%90%E4%BE%9B%E6%AD%8C%E8%88%9E%E4%BC%8E%E6%9B%B3%E5%B1%B1%E4%BC%9A%E9%A4%A8/F0BDL52VDCJ.jpg",
       "/assets/slack/%E7%A0%BA%E6%B3%A2%E5%B8%82%E5%87%BA%E7%94%BA%E5%AD%90%E4%BE%9B%E6%AD%8C%E8%88%9E%E4%BC%8E%E6%9B%B3%E5%B1%B1%E4%BC%9A%E9%A4%A8/F0BDPPYR9UL.jpg",
       "/assets/slack/%E7%A0%BA%E6%B3%A2%E5%B8%82%E5%87%BA%E7%94%BA%E5%AD%90%E4%BE%9B%E6%AD%8C%E8%88%9E%E4%BC%8E%E6%9B%B3%E5%B1%B1%E4%BC%9A%E9%A4%A8/F0BDJ2T304E.jpg"
-    ]
+    ],
+    "location": "富山県"
   },
   {
     "id": "slack-C0BDC3P774J-1782546904.074089",
@@ -675,7 +708,8 @@
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%BE%A1%E8%BB%8A%E5%B1%B1%E4%BC%9A%E9%A4%A8/F0BD4JWAX1D.jpg",
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%BE%A1%E8%BB%8A%E5%B1%B1%E4%BC%9A%E9%A4%A8/F0BDJ0NEV70.jpg",
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%BE%A1%E8%BB%8A%E5%B1%B1%E4%BC%9A%E9%A4%A8/F0BDPN4SAG4.jpg"
-    ]
+    ],
+    "location": "富山県"
   },
   {
     "id": "slack-C0BDC3P774J-1782546103.992069",
@@ -693,7 +727,8 @@
     "images": [
       "/assets/slack/%E3%82%A6%E3%83%A9%E3%83%B3%E3%82%AC%E3%83%A9%E3%82%B9%E9%8B%B3%E8%8A%B8%E9%A4%A8/F0BD4HUBDT9.jpg",
       "/assets/slack/%E3%82%A6%E3%83%A9%E3%83%B3%E3%82%AC%E3%83%A9%E3%82%B9%E9%8B%B3%E8%8A%B8%E9%A4%A8/F0BEEAFHXQ8.jpg"
-    ]
+    ],
+    "location": "富山県"
   },
   {
     "id": "slack-C0BDC3P774J-1782545528.620909",
@@ -714,7 +749,8 @@
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E9%8B%B3%E7%89%A9%E8%B3%87%E6%96%99%E9%A4%A8/F0BDL1GABBL.jpg",
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E9%8B%B3%E7%89%A9%E8%B3%87%E6%96%99%E9%A4%A8/F0BDDLUDPB5.jpg",
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E9%8B%B3%E7%89%A9%E8%B3%87%E6%96%99%E9%A4%A8/F0BDHUFBV8E.jpg"
-    ]
+    ],
+    "location": "富山県"
   },
   {
     "id": "slack-C0BDC3P774J-1782544637.733809",
@@ -735,7 +771,8 @@
       "/assets/slack/%E5%89%8D%E7%94%B0%E5%88%A9%E9%95%B7%E5%85%AC%E5%A2%93%E6%89%80/F0BD4DCFD3R.jpg",
       "/assets/slack/%E5%89%8D%E7%94%B0%E5%88%A9%E9%95%B7%E5%85%AC%E5%A2%93%E6%89%80/F0BDDH2CCLB.jpg",
       "/assets/slack/%E5%89%8D%E7%94%B0%E5%88%A9%E9%95%B7%E5%85%AC%E5%A2%93%E6%89%80/F0BDKT4TRGS.jpg"
-    ]
+    ],
+    "location": "富山県"
   },
   {
     "id": "slack-C0BDC3P774J-1782541551.908429",
@@ -755,7 +792,8 @@
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%A4%A7%E4%BB%8F/F0BEE58F97A.jpg",
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%A4%A7%E4%BB%8F/F0BDKSDPTV0.jpg",
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%A4%A7%E4%BB%8F/F0BDPFW7J9J.jpg"
-    ]
+    ],
+    "location": "富山県"
   },
   {
     "id": "slack-C0BDC3P774J-1782534451.565389",
@@ -777,7 +815,8 @@
       "/assets/slack/%E7%91%9E%E9%BE%8D%E5%AF%BA/F0BDKJ26K5G.jpg",
       "/assets/slack/%E7%91%9E%E9%BE%8D%E5%AF%BA/F0BEDSCCF0Q.jpg"
     ],
-    "thumbnail": "/assets/slack/%E7%91%9E%E9%BE%8D%E5%AF%BA/thumbs/F0BDD7XJQ7M-thumb.jpg"
+    "thumbnail": "/assets/slack/%E7%91%9E%E9%BE%8D%E5%AF%BA/thumbs/F0BDD7XJQ7M-thumb.jpg",
+    "location": "富山県"
   },
   {
     "id": "slack-C0BDC3P774J-1782534237.911039",
@@ -803,7 +842,8 @@
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E7%AB%8B%E5%8D%9A%E7%89%A9%E9%A4%A8/F0BDKHVAX4J.jpg",
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E7%AB%8B%E5%8D%9A%E7%89%A9%E9%A4%A8/F0BDD7T0AM9.jpg"
     ],
-    "thumbnail": "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E7%AB%8B%E5%8D%9A%E7%89%A9%E9%A4%A8/thumbs/F0BDMDBUBAM-thumb.jpg"
+    "thumbnail": "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E7%AB%8B%E5%8D%9A%E7%89%A9%E9%A4%A8/thumbs/F0BDMDBUBAM-thumb.jpg",
+    "location": "富山県"
   },
   {
     "id": "slack-C0BDC3P774J-1782534018.879459",
@@ -824,7 +864,8 @@
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%B8%87%E8%91%89%E6%AD%B4%E5%8F%B2%E9%A4%A8/F0BDKHFJSMQ.jpg",
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%B8%87%E8%91%89%E6%AD%B4%E5%8F%B2%E9%A4%A8/F0BEDRWKN1W.jpg"
     ],
-    "thumbnail": "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%B8%87%E8%91%89%E6%AD%B4%E5%8F%B2%E9%A4%A8/thumbs/F0BDMD0SM2M-thumb.jpg"
+    "thumbnail": "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%B8%87%E8%91%89%E6%AD%B4%E5%8F%B2%E9%A4%A8/thumbs/F0BDMD0SM2M-thumb.jpg",
+    "location": "富山県"
   },
   {
     "id": "slack-C0BDC3P774J-1782533717.679379",
@@ -842,7 +883,8 @@
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%BC%8F%E6%9C%A8%E3%82%B3%E3%83%9F%E3%83%A5%E3%83%8B%E3%83%86%E3%82%A3%E3%82%BB%E3%83%B3%E3%82%BF%E3%83%BC/F0BDKH8G4FL.jpg",
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%BC%8F%E6%9C%A8%E3%82%B3%E3%83%9F%E3%83%A5%E3%83%8B%E3%83%86%E3%82%A3%E3%82%BB%E3%83%B3%E3%82%BF%E3%83%BC/F0BDHENCET0.jpg"
     ],
-    "thumbnail": "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%BC%8F%E6%9C%A8%E3%82%B3%E3%83%9F%E3%83%A5%E3%83%8B%E3%83%86%E3%82%A3%E3%82%BB%E3%83%B3%E3%82%BF%E3%83%BC/thumbs/F0BDKH8G4FL-thumb.jpg"
+    "thumbnail": "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%BC%8F%E6%9C%A8%E3%82%B3%E3%83%9F%E3%83%A5%E3%83%8B%E3%83%86%E3%82%A3%E3%82%BB%E3%83%B3%E3%82%BF%E3%83%BC/thumbs/F0BDKH8G4FL-thumb.jpg",
+    "location": "富山県"
   },
   {
     "id": "slack-C0BDC3P774J-1782533276.372259",
@@ -867,7 +909,8 @@
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%BC%8F%E6%9C%A8%E5%8C%97%E5%89%8D%E8%88%B9%E8%B3%87%E6%96%99%E9%A4%A8%28%E6%97%A7%E7%A7%8B%E5%85%83%E5%AE%B6%E4%BD%8F%E5%AE%85%29/F0BDD6MS7PV.jpg",
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%BC%8F%E6%9C%A8%E5%8C%97%E5%89%8D%E8%88%B9%E8%B3%87%E6%96%99%E9%A4%A8%28%E6%97%A7%E7%A7%8B%E5%85%83%E5%AE%B6%E4%BD%8F%E5%AE%85%29/F0BD42X4B0F.jpg"
     ],
-    "thumbnail": "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%BC%8F%E6%9C%A8%E5%8C%97%E5%89%8D%E8%88%B9%E8%B3%87%E6%96%99%E9%A4%A8%28%E6%97%A7%E7%A7%8B%E5%85%83%E5%AE%B6%E4%BD%8F%E5%AE%85%29/thumbs/F0BDP620UFN-thumb.jpg"
+    "thumbnail": "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%BC%8F%E6%9C%A8%E5%8C%97%E5%89%8D%E8%88%B9%E8%B3%87%E6%96%99%E9%A4%A8%28%E6%97%A7%E7%A7%8B%E5%85%83%E5%AE%B6%E4%BD%8F%E5%AE%85%29/thumbs/F0BDP620UFN-thumb.jpg",
+    "location": "富山県"
   },
   {
     "id": "slack-C0BDC3P774J-1782532990.751939",
@@ -893,7 +936,8 @@
       "/assets/slack/%E5%8B%9D%E8%88%88%E5%AF%BA/F0BDHDS5EBG.jpg",
       "/assets/slack/%E5%8B%9D%E8%88%88%E5%AF%BA/F0BDD69UY1H.jpg"
     ],
-    "thumbnail": "/assets/slack/%E5%8B%9D%E8%88%88%E5%AF%BA/thumbs/F0BDHDLDZ7Y-thumb.jpg"
+    "thumbnail": "/assets/slack/%E5%8B%9D%E8%88%88%E5%AF%BA/thumbs/F0BDHDLDZ7Y-thumb.jpg",
+    "location": "富山県"
   },
   {
     "id": "slack-C0BDC3P774J-1782532115.928609",
@@ -917,7 +961,8 @@
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%BC%8F%E6%9C%A8%E6%B0%97%E8%B1%A1%E8%B3%87%E6%96%99%E9%A4%A8/F0BDMAFHAKB.jpg",
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%BC%8F%E6%9C%A8%E6%B0%97%E8%B1%A1%E8%B3%87%E6%96%99%E9%A4%A8/F0BEDP55W9E.jpg"
     ],
-    "thumbnail": "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%BC%8F%E6%9C%A8%E6%B0%97%E8%B1%A1%E8%B3%87%E6%96%99%E9%A4%A8/thumbs/F0BDP48MKBN-thumb.jpg"
+    "thumbnail": "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E4%BC%8F%E6%9C%A8%E6%B0%97%E8%B1%A1%E8%B3%87%E6%96%99%E9%A4%A8/thumbs/F0BDP48MKBN-thumb.jpg",
+    "location": "富山県"
   },
   {
     "id": "slack-C0BDC3P774J-1782531175.117119",
@@ -938,7 +983,8 @@
       "/assets/slack/%E8%B6%8A%E4%B8%AD%E7%A6%8F%E5%B2%A1%E3%81%AE%E8%8F%85%E7%AC%A0%E8%A3%BD%E4%BD%9C%E6%8A%80%E8%A1%93%E4%BF%9D%E5%AD%98%E4%BC%9A/F0BDKB70Q1Y.jpg",
       "/assets/slack/%E8%B6%8A%E4%B8%AD%E7%A6%8F%E5%B2%A1%E3%81%AE%E8%8F%85%E7%AC%A0%E8%A3%BD%E4%BD%9C%E6%8A%80%E8%A1%93%E4%BF%9D%E5%AD%98%E4%BC%9A/F0BEDKG6L7J.jpg"
     ],
-    "thumbnail": "/assets/slack/%E8%B6%8A%E4%B8%AD%E7%A6%8F%E5%B2%A1%E3%81%AE%E8%8F%85%E7%AC%A0%E8%A3%BD%E4%BD%9C%E6%8A%80%E8%A1%93%E4%BF%9D%E5%AD%98%E4%BC%9A/thumbs/F0BDH8JV5DL-thumb.jpg"
+    "thumbnail": "/assets/slack/%E8%B6%8A%E4%B8%AD%E7%A6%8F%E5%B2%A1%E3%81%AE%E8%8F%85%E7%AC%A0%E8%A3%BD%E4%BD%9C%E6%8A%80%E8%A1%93%E4%BF%9D%E5%AD%98%E4%BC%9A/thumbs/F0BDH8JV5DL-thumb.jpg",
+    "location": "富山県"
   },
   {
     "id": "slack-C0BDC3P774J-1782528433.947209",
@@ -960,6 +1006,7 @@
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E7%A6%8F%E5%B2%A1%E6%AD%B4%E5%8F%B2%E6%B0%91%E4%BF%97%E8%B3%87%E6%96%99%E9%A4%A8/memo-F0BEDK8BSAC.jpg",
       "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E7%A6%8F%E5%B2%A1%E6%AD%B4%E5%8F%B2%E6%B0%91%E4%BF%97%E8%B3%87%E6%96%99%E9%A4%A8/memo-F0BDFUTC22H.jpg"
     ],
-    "thumbnail": "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E7%A6%8F%E5%B2%A1%E6%AD%B4%E5%8F%B2%E6%B0%91%E4%BF%97%E8%B3%87%E6%96%99%E9%A4%A8/thumbs/memo-F0BDKAY3MH8-thumb.jpg"
+    "thumbnail": "/assets/slack/%E9%AB%98%E5%B2%A1%E5%B8%82%E7%A6%8F%E5%B2%A1%E6%AD%B4%E5%8F%B2%E6%B0%91%E4%BF%97%E8%B3%87%E6%96%99%E9%A4%A8/thumbs/memo-F0BDKAY3MH8-thumb.jpg",
+    "location": "富山県"
   }
 ]

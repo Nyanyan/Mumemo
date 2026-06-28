@@ -15,11 +15,12 @@ import requests
 from PIL import Image, ImageOps
 
 from mumemo_bot.config import BotConfig, PROJECT_ROOT
+from mumemo_bot.location import infer_location, normalize_location
 from mumemo_bot.slack_post import MumemoSlackPost, SlackImageFile
 
 
 _STORE_LOCK = Lock()
-PROTECTED_ROUTE_DIRS = {"assets", "data"}
+PROTECTED_ROUTE_DIRS = {"assets", "data", "locations"}
 THUMBNAIL_SIZE = (640, 640)
 THUMBNAIL_QUALITY = 82
 DETAIL_IMAGE_MAX_SIZE = 1200
@@ -57,6 +58,7 @@ class MemoListItem:
     image: str
     images: list[str]
     image_count: int
+    location: str
     fixed: bool
 
 
@@ -183,6 +185,7 @@ def update_memo(
     body: str,
     image: str,
     images: list[str],
+    location: str | None = None,
 ) -> MemoChangeResult:
     title = title.strip()
     if not title:
@@ -190,6 +193,7 @@ def update_memo(
 
     clean_images = _clean_image_list(images)
     clean_image = image.strip() or (clean_images[0] if clean_images else config.default_image)
+    clean_location = _location_for_update(title, body, location)
     thumbnail = _thumbnail_url_for_image_url(config, clean_image)
     _ensure_detail_images_for_urls(config, clean_images or [clean_image])
 
@@ -203,6 +207,7 @@ def update_memo(
         memo["id"] = str(memo.get("id") or memo_id)
         memo["title"] = title
         memo["body"] = body
+        memo["location"] = clean_location
         memo["image"] = clean_image
         if thumbnail:
             memo["thumbnail"] = thumbnail
@@ -303,6 +308,8 @@ def append_memo_with_post(
             memo.pop("images", None)
 
         current_image = str(memo.get("image") or "").strip()
+        if not str(memo.get("location") or "").strip():
+            memo["location"] = infer_location(str(memo.get("title") or post.title), str(memo.get("body") or ""))
         _ensure_detail_images_for_urls(config, merged_images)
         if saved_images and (not current_image or current_image == config.default_image):
             memo["image"] = saved_images[0].url
@@ -439,6 +446,7 @@ def _memo_from_post(
         "id": _slack_memo_id(post.channel_id, post.message_ts),
         "title": post.title,
         "body": post.body,
+        "location": infer_location(post.title, post.body),
         "image": primary_image.url if primary_image else config.default_image,
         "thumbnail": primary_image.thumbnail_url if primary_image else config.default_image,
         "source": {
@@ -456,6 +464,12 @@ def _memo_from_post(
     return memo
 
 
+def _location_for_update(title: str, body: str, location: str | None) -> str:
+    clean_location = str(location or "").strip()
+    if clean_location:
+        return normalize_location(clean_location)
+    return infer_location(title, body)
+
 def _list_item(memo: dict[str, Any], memo_id: str) -> MemoListItem:
     image = str(memo.get("image") or "")
     images = _memo_images(memo)
@@ -466,9 +480,16 @@ def _list_item(memo: dict[str, Any], memo_id: str) -> MemoListItem:
         image=image,
         images=images,
         image_count=len(images) if images else (1 if image else 0),
+        location=_memo_location(memo),
         fixed=bool(memo.get("fixed")),
     )
 
+
+def _memo_location(memo: dict[str, Any]) -> str:
+    clean_location = str(memo.get("location") or "").strip()
+    if clean_location:
+        return normalize_location(clean_location)
+    return infer_location(str(memo.get("title") or ""), str(memo.get("body") or ""))
 
 def _memo_images(memo: dict[str, Any]) -> list[str]:
     images = memo.get("images")

@@ -9,6 +9,7 @@ from slack_bolt.adapter.socket_mode import SocketModeHandler
 
 from mumemo_bot.config import BotConfig, PROJECT_ROOT, mask_secret
 from mumemo_bot.git_sync import GitSyncError, GitSyncResult, commit_and_push_site_changes
+from mumemo_bot.location import infer_location
 from mumemo_bot.site_store import (
     MemoNotFoundError,
     ProtectedMemoError,
@@ -35,6 +36,7 @@ from mumemo_bot.slack_views import (
     EDIT_MEMO_ACTION_ID,
     EDIT_REVIEW_URLS_ACTION_ID,
     IMAGE_BLOCK_ID,
+    LOCATION_BLOCK_ID,
     IMAGES_BLOCK_ID,
     MEMO_EDIT_CALLBACK_ID,
     MEMO_REVIEW_URLS_CALLBACK_ID,
@@ -771,6 +773,7 @@ def create_app(config: BotConfig) -> App:
         message_ts = metadata.get("message_ts")
         user_id = str(body.get("user", {}).get("id") or "")
         body_text = modal_value(view, BODY_BLOCK_ID)
+        location = modal_value(view, LOCATION_BLOCK_ID).strip()
         primary_image_ref = modal_value(view, IMAGE_BLOCK_ID).strip()
         image_order_lines = [line.strip() for line in modal_value(view, IMAGES_BLOCK_ID).splitlines()]
 
@@ -820,6 +823,7 @@ def create_app(config: BotConfig) -> App:
                 body=body_text,
                 image=image,
                 images=images,
+                location=location,
             )
             git_status = _sync_git_after_change(
                 action="update",
@@ -884,6 +888,7 @@ def _post_review_for_post(
             title=post.title,
             body=post.body,
             image_count=len(post.images),
+            location=infer_location(post.title, post.body),
             urls=post.urls,
             title_conflict=title_conflict,
             status_text=None,
@@ -918,6 +923,7 @@ def _update_review_status(
             title=post.title,
             body=post.body,
             image_count=len(post.images),
+            location=infer_location(post.title, post.body),
             urls=post.urls,
             title_conflict=title_conflict,
             status_text=_short_status(status_text),
