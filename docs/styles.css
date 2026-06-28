@@ -391,6 +391,15 @@
       outline: none;
     }
 
+    .location-item.is-empty {
+      opacity: 0.52;
+    }
+
+    .location-item.is-empty:not(.current):hover,
+    .location-item.is-empty:not(.current):focus-visible {
+      opacity: 0.74;
+    }
+
     .location-name {
       min-width: 0;
       overflow: hidden;

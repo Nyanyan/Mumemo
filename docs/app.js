@@ -502,7 +502,11 @@ function createLocationCountData() {
 
 function createLocationItem(location, count, selectedLocation) {
   const link = document.createElement("a");
-  link.className = `location-item${location === selectedLocation ? " current" : ""}`;
+  link.className = [
+    "location-item",
+    count === 0 ? "is-empty" : "",
+    location === selectedLocation ? "current" : ""
+  ].filter(Boolean).join(" ");
   link.href = locationHref(location);
   link.dataset.nav = "";
   if (location === selectedLocation) {
