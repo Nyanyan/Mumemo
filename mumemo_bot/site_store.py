@@ -15,7 +15,7 @@ import requests
 from PIL import Image, ImageOps
 
 from mumemo_bot.config import BotConfig, PROJECT_ROOT
-from mumemo_bot.location import infer_location, normalize_location
+from mumemo_bot.location import UNKNOWN_LOCATION, infer_location, normalize_location
 from mumemo_bot.slack_post import MumemoSlackPost, SlackImageFile
 
 
@@ -48,6 +48,7 @@ class StoreResult:
     data_path: Path
     memo_id: str | None = None
     page_url: str | None = None
+    location: str = ""
 
 
 @dataclass(frozen=True)
@@ -77,7 +78,12 @@ class ProtectedMemoError(RuntimeError):
     pass
 
 
-def save_post_as_memo(config: BotConfig, post: MumemoSlackPost) -> StoreResult:
+def save_post_as_memo(
+    config: BotConfig,
+    post: MumemoSlackPost,
+    *,
+    location: str | None = None,
+) -> StoreResult:
     config.data_path.parent.mkdir(parents=True, exist_ok=True)
     with _STORE_LOCK:
         memos = _load_memos(config.data_path)
@@ -92,6 +98,7 @@ def save_post_as_memo(config: BotConfig, post: MumemoSlackPost) -> StoreResult:
                 data_path=config.data_path,
                 memo_id=memo_id,
                 page_url=_memo_page_url(config, memos, existing_index),
+                location=_memo_location(existing),
             )
 
     saved_images = download_images(
@@ -114,9 +121,10 @@ def save_post_as_memo(config: BotConfig, post: MumemoSlackPost) -> StoreResult:
                 data_path=config.data_path,
                 memo_id=memo_id,
                 page_url=_memo_page_url(config, memos, existing_index),
+                location=_memo_location(existing),
             )
 
-        memo = _memo_from_post(config, post, saved_images)
+        memo = _memo_from_post(config, post, saved_images, location=location)
         if _has_title_conflict(memos, post):
             memo["slug"] = _next_duplicate_slug(memos, post.title)
         insert_index = _new_memo_insert_index(memos)
@@ -133,6 +141,7 @@ def save_post_as_memo(config: BotConfig, post: MumemoSlackPost) -> StoreResult:
         data_path=config.data_path,
         memo_id=memo_id,
         page_url=page_url,
+        location=_memo_location(memo),
     )
 
 
@@ -193,7 +202,7 @@ def update_memo(
 
     clean_images = _clean_image_list(images)
     clean_image = image.strip() or (clean_images[0] if clean_images else config.default_image)
-    clean_location = _location_for_update(title, body, location)
+    clean_location = _location_for_update(config, title, body, location)
     thumbnail = _thumbnail_url_for_image_url(config, clean_image)
     _ensure_detail_images_for_urls(config, clean_images or [clean_image])
 
@@ -235,6 +244,7 @@ def overwrite_memo_with_post(
     memo_id: str,
     post: MumemoSlackPost,
     preserve_existing_identity: bool,
+    location: str | None = None,
 ) -> StoreResult:
     saved_images = download_images(
         bot_token=config.slack_bot_token,
@@ -251,7 +261,7 @@ def overwrite_memo_with_post(
             raise ProtectedMemoError("固定メモはSlack管理画面から上書きできません")
 
         old_memos = [dict(item) for item in memos]
-        new_memo = _memo_from_post(config, post, saved_images)
+        new_memo = _memo_from_post(config, post, saved_images, location=location)
         if preserve_existing_identity:
             _preserve_existing_identity(old_memo, new_memo, memo_id)
 
@@ -269,6 +279,7 @@ def overwrite_memo_with_post(
         data_path=config.data_path,
         memo_id=memo_id,
         page_url=page_url,
+        location=_memo_location(new_memo),
     )
 
 
@@ -277,6 +288,7 @@ def append_memo_with_post(
     *,
     memo_id: str,
     post: MumemoSlackPost,
+    location: str | None = None,
 ) -> StoreResult:
     saved_images = download_images(
         bot_token=config.slack_bot_token,
@@ -309,7 +321,12 @@ def append_memo_with_post(
 
         current_image = str(memo.get("image") or "").strip()
         if not str(memo.get("location") or "").strip():
-            memo["location"] = infer_location(str(memo.get("title") or post.title), str(memo.get("body") or ""))
+            memo["location"] = _location_for_store(
+                config,
+                str(memo.get("title") or post.title),
+                str(memo.get("body") or ""),
+                location,
+            )
         _ensure_detail_images_for_urls(config, merged_images)
         if saved_images and (not current_image or current_image == config.default_image):
             memo["image"] = saved_images[0].url
@@ -330,6 +347,7 @@ def append_memo_with_post(
         data_path=config.data_path,
         memo_id=_memo_ids(memos)[index],
         page_url=page_url,
+        location=_memo_location(memo),
     )
 
 def delete_memo(config: BotConfig, *, memo_id: str) -> MemoChangeResult:
@@ -440,13 +458,15 @@ def _memo_from_post(
     config: BotConfig,
     post: MumemoSlackPost,
     saved_images: list[SavedImage],
+    *,
+    location: str | None = None,
 ) -> dict[str, Any]:
     primary_image = saved_images[0] if saved_images else None
     memo: dict[str, Any] = {
         "id": _slack_memo_id(post.channel_id, post.message_ts),
         "title": post.title,
         "body": post.body,
-        "location": infer_location(post.title, post.body),
+        "location": _location_for_store(config, post.title, post.body, location),
         "image": primary_image.url if primary_image else config.default_image,
         "thumbnail": primary_image.thumbnail_url if primary_image else config.default_image,
         "source": {
@@ -464,11 +484,29 @@ def _memo_from_post(
     return memo
 
 
-def _location_for_update(title: str, body: str, location: str | None) -> str:
+def _location_for_update(config: BotConfig, title: str, body: str, location: str | None) -> str:
     clean_location = str(location or "").strip()
     if clean_location:
         return normalize_location(clean_location)
-    return infer_location(title, body)
+    return _infer_location(config, title, body)
+
+
+def _location_for_store(config: BotConfig, title: str, body: str, location: str | None) -> str:
+    clean_location = str(location or "").strip()
+    if clean_location:
+        return normalize_location(clean_location)
+    return _infer_location(config, title, body)
+
+
+def _infer_location(config: BotConfig, title: str, body: str) -> str:
+    return infer_location(
+        title,
+        body,
+        nominatim_user_agent=config.nominatim_user_agent,
+        nominatim_email=config.nominatim_email,
+        nominatim_endpoint=config.nominatim_endpoint,
+        timeout_seconds=config.nominatim_timeout_seconds,
+    )
 
 def _list_item(memo: dict[str, Any], memo_id: str) -> MemoListItem:
     image = str(memo.get("image") or "")
@@ -489,7 +527,7 @@ def _memo_location(memo: dict[str, Any]) -> str:
     clean_location = str(memo.get("location") or "").strip()
     if clean_location:
         return normalize_location(clean_location)
-    return infer_location(str(memo.get("title") or ""), str(memo.get("body") or ""))
+    return UNKNOWN_LOCATION
 
 def _memo_images(memo: dict[str, Any]) -> list[str]:
     images = memo.get("images")

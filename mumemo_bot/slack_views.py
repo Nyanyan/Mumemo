@@ -48,13 +48,13 @@ def review_blocks(
     images = images or []
     body_preview = body.strip() or "(本文なし)"
     body_preview = _truncate(body_preview, 1800)
+    location_label = str(location or "\u4e0d\u660e").strip() or "\u4e0d\u660e"
     thumbnail_label = _thumbnail_label(images[0], 0) if images else ""
     thumbnail_line = (
-        f"\n*サムネイル:* {_mrkdwn_text(thumbnail_label)}"
+        f"\n*\u30b5\u30e0\u30cd\u30a4\u30eb:* {_mrkdwn_text(thumbnail_label)}"
         if thumbnail_label
         else ""
     )
-    location_line = f"\n*場所:* {_mrkdwn_text(location)}" if location else ""
 
     blocks: list[dict[str, Any]] = [
         {
@@ -64,10 +64,10 @@ def review_blocks(
                 "text": (
                     "*Mumemo 下書き*\n"
                     f"*タイトル:* {_mrkdwn_text(title)}\n"
-                    f"*本文:*\n```{_code_text(body_preview)}```\n"
-                    f"*添付画像:* {image_count}件"
-                    f"{thumbnail_line}"
-                    f"{location_line}"
+                    f"*\u5834\u6240:* {_mrkdwn_text(location_label)}\n"
+                    f"*\u6dfb\u4ed8\u753b\u50cf:* {image_count}\u4ef6"
+                    f"{thumbnail_line}\n"
+                    f"*\u672c\u6587:*\n```{_code_text(body_preview)}```"
                 ),
             },
         }
@@ -395,7 +395,7 @@ def edit_modal_view(
             "block_id": LOCATION_BLOCK_ID,
             "optional": True,
             "label": {"type": "plain_text", "text": "場所"},
-            "hint": {"type": "plain_text", "text": "都道府県・国名・不明のいずれかを入力してください。空欄ならタイトルと本文から再推定します。"},
+            "hint": {"type": "plain_text", "text": "都道府県・国名・不明のいずれかを入力してください。空欄ならタイトルからNominatimで再推定します。"},
             "element": {
                 "type": "plain_text_input",
                 "action_id": VALUE_ACTION_ID,

@@ -22,6 +22,10 @@ class BotConfig:
     default_image: str
     route_build_command: list[str]
     site_base_url: str = ""
+    nominatim_endpoint: str = "https://nominatim.openstreetmap.org/search"
+    nominatim_user_agent: str = ""
+    nominatim_email: str = ""
+    nominatim_timeout_seconds: float = 10.0
 
     @property
     def slack_channel_label(self) -> str:
@@ -53,6 +57,13 @@ class BotConfig:
             default_image=_default_image_env(),
             route_build_command=route_build_command,
             site_base_url=_site_base_url_env(),
+            nominatim_endpoint=os.getenv(
+                "MUMEMO_NOMINATIM_ENDPOINT",
+                "https://nominatim.openstreetmap.org/search",
+            ).strip(),
+            nominatim_user_agent=_required_env("MUMEMO_NOMINATIM_USER_AGENT"),
+            nominatim_email=os.getenv("MUMEMO_NOMINATIM_EMAIL", "").strip(),
+            nominatim_timeout_seconds=_float_env("MUMEMO_NOMINATIM_TIMEOUT_SECONDS", 10.0),
         )
 
 
@@ -82,6 +93,16 @@ def _command_env(name: str, default: list[str]) -> list[str]:
     if not command:
         raise RuntimeError(f"{name} must not be empty")
     return command
+
+
+def _float_env(name: str, default: float) -> float:
+    raw_value = os.getenv(name, "").strip()
+    if not raw_value:
+        return default
+    try:
+        return float(raw_value)
+    except ValueError as error:
+        raise RuntimeError(f"{name} must be a number") from error
 
 
 def _default_image_env() -> str:

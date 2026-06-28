@@ -9,7 +9,7 @@ from slack_bolt.adapter.socket_mode import SocketModeHandler
 
 from mumemo_bot.config import BotConfig, PROJECT_ROOT, mask_secret
 from mumemo_bot.git_sync import GitSyncError, GitSyncResult, commit_and_push_site_changes
-from mumemo_bot.location import infer_location
+from mumemo_bot.location import LocationInference, UNKNOWN_LOCATION, infer_location_detail
 from mumemo_bot.site_store import (
     MemoNotFoundError,
     ProtectedMemoError,
@@ -68,6 +68,7 @@ def create_app(config: BotConfig) -> App:
     accepted_post_keys: set[tuple[str, str]] = set()
     handled_review_message_keys: set[tuple[str, str]] = set()
     review_posts: dict[tuple[str, str], MumemoSlackPost] = {}
+    review_locations: dict[tuple[str, str], LocationInference] = {}
 
     def claim_event(event_id: str) -> bool:
         if not event_id:
@@ -96,17 +97,35 @@ def create_app(config: BotConfig) -> App:
             handled_review_message_keys.add(key)
             return True
 
-    def remember_review_post(post: MumemoSlackPost) -> None:
+    def remember_review_post(
+        post: MumemoSlackPost,
+        location_detail: LocationInference | None = None,
+    ) -> None:
+        key = (post.channel_id, post.message_ts)
         with state_lock:
-            review_posts[(post.channel_id, post.message_ts)] = post
+            review_posts[key] = post
+            if location_detail is not None:
+                review_locations[key] = location_detail
 
     def get_review_post(channel_id: str, message_ts: str) -> MumemoSlackPost | None:
         with state_lock:
             return review_posts.get((channel_id, message_ts))
 
+    def remember_review_location(
+        post: MumemoSlackPost,
+        location_detail: LocationInference,
+    ) -> None:
+        with state_lock:
+            review_locations[(post.channel_id, post.message_ts)] = location_detail
+
+    def get_review_location(channel_id: str, message_ts: str) -> LocationInference | None:
+        with state_lock:
+            return review_locations.get((channel_id, message_ts))
+
     def forget_review_post(channel_id: str, message_ts: str) -> None:
         with state_lock:
             review_posts.pop((channel_id, message_ts), None)
+            review_locations.pop((channel_id, message_ts), None)
 
     def resolve_review_post(channel_id: str, message_ts: str, client: Any) -> MumemoSlackPost:
         post = get_review_post(channel_id, message_ts)
@@ -135,9 +154,20 @@ def create_app(config: BotConfig) -> App:
             return
 
         post: MumemoSlackPost | None = None
+        location_detail: LocationInference | None = None
         claimed = False
         try:
             post = resolve_review_post(channel_id, message_ts, client)
+            location_detail = get_review_location(channel_id, message_ts)
+            if location_detail is None:
+                location_detail = _infer_post_location(config, post)
+                remember_review_location(post, location_detail)
+            print(
+                "[slack:publish] resolved review post: "
+                f"mode={mode}, title={post.title!r}, images={len(post.images)}, "
+                f"urls={len(post.urls)}, {_location_debug_text(location_detail)}",
+                flush=True,
+            )
             target_memo_id = memo_id
             if mode in {"append_existing", "overwrite_post", "overwrite_existing"} and not target_memo_id:
                 conflict = find_title_conflict(config, post)
@@ -151,6 +181,7 @@ def create_app(config: BotConfig) -> App:
                 review_message_ts=review_message_ts,
                 post=post,
                 status_text="保存中です...",
+                location_detail=location_detail,
             )
 
             if not claim_post(key):
@@ -160,6 +191,7 @@ def create_app(config: BotConfig) -> App:
                     review_message_ts=review_message_ts,
                     post=post,
                     status_text="この投稿はすでに処理中、または保存済みです。",
+                    location_detail=location_detail,
                 )
                 return
             claimed = True
@@ -169,6 +201,7 @@ def create_app(config: BotConfig) -> App:
                     config,
                     memo_id=str(target_memo_id),
                     post=post,
+                    location=location_detail.location,
                 )
                 status = _publish_status(
                     f"既存投稿に追記しました。追加画像: {result.image_count}件",
@@ -181,10 +214,11 @@ def create_app(config: BotConfig) -> App:
                     memo_id=str(target_memo_id),
                     post=post,
                     preserve_existing_identity=True,
+                    location=location_detail.location,
                 )
                 status = _publish_status("上書き投稿しました。", result)
             else:
-                result = save_post_as_memo(config, post)
+                result = save_post_as_memo(config, post, location=location_detail.location)
                 status = _publish_status(
                     "別で投稿しました。" if mode == "separate" else "公開しました。" if result.created else "このSlack投稿はすでにMumemoへ保存済みです。",
                     result,
@@ -202,6 +236,7 @@ def create_app(config: BotConfig) -> App:
                     review_message_ts=review_message_ts,
                     post=post,
                     status_text=_short_status(f"保存に失敗しました: {error}"),
+                    location_detail=location_detail or _location_error_detail(post, error),
                 )
             else:
                 _clear_review_buttons(
@@ -218,6 +253,14 @@ def create_app(config: BotConfig) -> App:
             )
             return
 
+        print(
+            "[slack:publish] stored memo: "
+            f"mode={mode}, created={result.created}, title={result.title!r}, "
+            f"memo_id={result.memo_id!r}, page_url={result.page_url!r}, "
+            f"location={result.location!r}, images={result.image_count}",
+            flush=True,
+        )
+
         git_status = _sync_git_after_publish(mode=mode, result=result, logger=logger)
         if git_status:
             status = _append_status(status, git_status)
@@ -228,6 +271,7 @@ def create_app(config: BotConfig) -> App:
             review_message_ts=review_message_ts,
             post=post,
             status_text=status,
+            location_detail=location_detail,
         )
         forget_review_post(channel_id, message_ts)
         reply_text = _publish_reply_text(result)
@@ -282,18 +326,32 @@ def create_app(config: BotConfig) -> App:
             print(f"[slack:event] skipped: {error}", flush=True)
             return
 
+        try:
+            location_detail = _infer_post_location(config, post)
+        except Exception as error:
+            logger.exception("Failed to infer Mumemo location")
+            print(f"[slack:event] location inference failed: {error}", flush=True)
+            _reply(
+                client=client,
+                channel_id=config.slack_channel_id,
+                thread_ts=post.message_ts,
+                text=_short_status(f"Mumemoの場所推定に失敗しました: {error}"),
+            )
+            return
         print(
             "[slack:event] accepted for review: "
             f"title={post.title!r}, body_chars={len(post.body)}, "
-            f"images={len(post.images)}, urls={len(post.urls)}",
+            f"images={len(post.images)}, urls={len(post.urls)}, "
+            f"{_location_debug_text(location_detail)}",
             flush=True,
         )
-        remember_review_post(post)
+        remember_review_post(post, location_detail)
         _post_review_for_post(
             client=client,
             config=config,
             channel_id=config.slack_channel_id,
             post=post,
+            location_detail=location_detail,
         )
 
     @app.command("/mumemo")
@@ -523,7 +581,10 @@ def create_app(config: BotConfig) -> App:
 
         ack()
         try:
-            remember_review_post(updated_post)
+            location_detail = get_review_location(channel_id, message_ts)
+            if location_detail is None:
+                location_detail = _infer_post_location(config, updated_post)
+            remember_review_post(updated_post, location_detail)
             _update_review_status(
                 client=client,
                 channel_id=channel_id,
@@ -532,6 +593,7 @@ def create_app(config: BotConfig) -> App:
                 status_text="URLを反映しました。承認前に確認してください。",
                 buttons_enabled=True,
                 title_conflict=find_title_conflict(config, updated_post),
+                location_detail=location_detail,
             )
         except Exception as error:
             logger.exception("Failed to update Mumemo URL review")
@@ -566,7 +628,10 @@ def create_app(config: BotConfig) -> App:
             )
             post = resolve_review_post(channel_id, message_ts, client)
             updated_post = post.with_thumbnail_image(file_id)
-            remember_review_post(updated_post)
+            location_detail = get_review_location(channel_id, message_ts)
+            if location_detail is None:
+                location_detail = _infer_post_location(config, updated_post)
+            remember_review_post(updated_post, location_detail)
             selected_name = updated_post.images[0].name if updated_post.images else ""
             _update_review_status(
                 client=client,
@@ -576,6 +641,7 @@ def create_app(config: BotConfig) -> App:
                 status_text=f"サムネイルを変更しました: {selected_name}",
                 buttons_enabled=True,
                 title_conflict=find_title_conflict(config, updated_post),
+                location_detail=location_detail,
             )
         except Exception as error:
             logger.exception("Failed to update Mumemo thumbnail review")
@@ -612,17 +678,26 @@ def create_app(config: BotConfig) -> App:
             return
 
         post: MumemoSlackPost | None = None
+        location_detail: LocationInference | None = None
         try:
             message = _fetch_original_message(client, channel_id, message_ts)
             post = MumemoSlackPost.from_message(channel_id=channel_id, message=message)
-            remember_review_post(post)
-            _post_review_for_post(client=client, config=config, channel_id=channel_id, post=post)
+            location_detail = _infer_post_location(config, post)
+            remember_review_post(post, location_detail)
+            _post_review_for_post(
+                client=client,
+                config=config,
+                channel_id=channel_id,
+                post=post,
+                location_detail=location_detail,
+            )
             _update_review_status(
                 client=client,
                 channel_id=channel_id,
                 review_message_ts=review_message_ts,
                 post=post,
                 status_text="再読み込みしました。新しい下書きを使ってください。",
+                location_detail=location_detail,
             )
         except Exception as error:
             logger.exception("Failed to reload Slack post for Mumemo review")
@@ -634,6 +709,7 @@ def create_app(config: BotConfig) -> App:
                     review_message_ts=review_message_ts,
                     post=post,
                     status_text=_short_status(f"再読み込みに失敗しました: {error}"),
+                    location_detail=location_detail or _location_error_detail(post, error),
                 )
             else:
                 _clear_review_buttons(
@@ -876,8 +952,18 @@ def _post_review_for_post(
     config: BotConfig,
     channel_id: str,
     post: MumemoSlackPost,
+    location_detail: LocationInference | None = None,
 ) -> None:
+    if location_detail is None:
+        location_detail = _infer_post_location(config, post)
     title_conflict = find_title_conflict(config, post)
+    print(
+        "[slack:review] preparing review message: "
+        f"thread_ts={post.message_ts}, title={post.title!r}, "
+        f"conflict={getattr(title_conflict, 'id', None)!r}, "
+        f"{_location_debug_text(location_detail)}",
+        flush=True,
+    )
     response = client.chat_postMessage(
         channel=channel_id,
         thread_ts=post.message_ts,
@@ -888,7 +974,7 @@ def _post_review_for_post(
             title=post.title,
             body=post.body,
             image_count=len(post.images),
-            location=infer_location(post.title, post.body),
+            location=location_detail.location,
             urls=post.urls,
             title_conflict=title_conflict,
             status_text=None,
@@ -898,7 +984,8 @@ def _post_review_for_post(
     )
     print(
         "[slack:review] posted review buttons: "
-        f"thread_ts={post.message_ts}, review_ts={response.get('ts')}",
+        f"thread_ts={post.message_ts}, review_ts={response.get('ts')}, "
+        f"{_location_debug_text(location_detail)}",
         flush=True,
     )
 
@@ -910,9 +997,17 @@ def _update_review_status(
     review_message_ts: str,
     post: MumemoSlackPost,
     status_text: str,
+    location_detail: LocationInference,
     buttons_enabled: bool = False,
     title_conflict: Any | None = None,
 ) -> None:
+    print(
+        "[slack:review] updating review status: "
+        f"thread_ts={post.message_ts}, review_ts={review_message_ts}, "
+        f"buttons_enabled={buttons_enabled}, {_location_debug_text(location_detail)}, "
+        f"status={_short_status(status_text)!r}",
+        flush=True,
+    )
     client.chat_update(
         channel=channel_id,
         ts=review_message_ts,
@@ -923,7 +1018,7 @@ def _update_review_status(
             title=post.title,
             body=post.body,
             image_count=len(post.images),
-            location=infer_location(post.title, post.body),
+            location=location_detail.location,
             urls=post.urls,
             title_conflict=title_conflict,
             status_text=_short_status(status_text),
@@ -1303,6 +1398,35 @@ def _manage_command_text(event: dict[str, Any]) -> str | None:
     return None
 
 
+def _infer_post_location(config: BotConfig, post: MumemoSlackPost) -> LocationInference:
+    return infer_location_detail(
+        post.title,
+        post.body,
+        nominatim_user_agent=config.nominatim_user_agent,
+        nominatim_email=config.nominatim_email,
+        nominatim_endpoint=config.nominatim_endpoint,
+        timeout_seconds=config.nominatim_timeout_seconds,
+    )
+
+
+def _location_error_detail(post: MumemoSlackPost, error: Exception) -> LocationInference:
+    return LocationInference(
+        location=UNKNOWN_LOCATION,
+        source="nominatim_error",
+        matched=f"{type(error).__name__}: {error}",
+        query=post.title,
+    )
+
+
+def _location_debug_text(location_detail: LocationInference) -> str:
+    return (
+        f"location={location_detail.location!r}, "
+        f"location_source={location_detail.source!r}, "
+        f"location_matched={location_detail.matched!r}, "
+        f"location_query={location_detail.query!r}"
+    )
+
+
 def _event_summary(label: str, event: dict[str, Any], body: dict[str, Any]) -> str:
     text = str(event.get("text") or "")
     text_preview = text.replace("\n", " ")[:120]
@@ -1347,6 +1471,10 @@ def _print_startup_diagnostics(config: BotConfig) -> None:
     print(f"[config] MUMEMO_SLACK_ASSET_DIR={config.asset_dir}", flush=True)
     print(f"[config] MUMEMO_SLACK_ASSET_URL_PREFIX={config.asset_url_prefix}", flush=True)
     print(f"[config] MUMEMO_ROUTE_BUILD_COMMAND={config.route_build_command}", flush=True)
+    print(f"[config] MUMEMO_NOMINATIM_ENDPOINT={config.nominatim_endpoint}", flush=True)
+    print(f"[config] MUMEMO_NOMINATIM_USER_AGENT={config.nominatim_user_agent}", flush=True)
+    print(f"[config] MUMEMO_NOMINATIM_EMAIL={config.nominatim_email}", flush=True)
+    print(f"[config] MUMEMO_NOMINATIM_TIMEOUT_SECONDS={config.nominatim_timeout_seconds}", flush=True)
 
 
 def _short_status(text: str) -> str:

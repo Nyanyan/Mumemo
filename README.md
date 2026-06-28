@@ -36,13 +36,17 @@ python -m pip install -r requirements.txt
 
 Copy `.env.example` values into `.env` and set real tokens there. `.env` is intentionally ignored by git.
 
-Required Slack settings:
+Required bot settings:
 
 - `SLACK_BOT_TOKEN`: bot token, usually `xoxb-...`
 - `SLACK_APP_TOKEN`: Socket Mode app token, usually `xapp-...`
 - `SLACK_CHANNEL_ID`: channel to accept top-level posts from
+- `MUMEMO_NOMINATIM_USER_AGENT`: identifying User-Agent for OpenStreetMap Nominatim, used when detecting a memo location from its title
 - `SLACK_CHANNEL_NAME`: optional display name for startup logs
 - `MUMEMO_SITE_BASE_URL`: optional public site URL used in publish-complete Slack messages; defaults to `docs/CNAME` when present
+- `MUMEMO_NOMINATIM_EMAIL`: optional contact email sent to Nominatim
+- `MUMEMO_NOMINATIM_ENDPOINT`: optional Nominatim search endpoint; defaults to `https://nominatim.openstreetmap.org/search`
+- `MUMEMO_NOMINATIM_TIMEOUT_SECONDS`: optional Nominatim timeout; defaults to `10`
 
 Useful Slack app permissions/events:
 
@@ -65,6 +69,8 @@ Title line
 Body text line 1
 Body text line 2
 ```
+
+The bot asks Nominatim once when preparing a Slack review, stores that detected location with the draft, and logs the query, matched address, source, and result for debugging. If the Nominatim request fails, the draft is not published through a local guess.
 
 New top-level Slack posts are not published immediately. The bot replies in the thread with a review message and buttons. Detected URLs are shown in the review. Press `URL修正` to edit only those URLs before publishing, `承認して公開` to save it to `docs/data/memos.json`, `再読み込み` to rebuild the review from the original Slack message, or `破棄` to remove only the Slack draft review. After publishing, Slack shows the public Mumemo page URL.
 
