@@ -91,6 +91,19 @@
       overflow-wrap: anywhere;
     }
 
+    .brand-title-main,
+    .brand-title-sub {
+      white-space: nowrap;
+    }
+
+    .brand-title.is-stacked .brand-title-separator {
+      display: none;
+    }
+
+    .brand-title.is-stacked .brand-title-sub {
+      display: block;
+    }
+
     .header-actions {
       position: relative;
       display: flex;

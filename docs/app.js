@@ -13,6 +13,7 @@ const postedAtFormatter = new Intl.DateTimeFormat("ja-JP", {
 let entries = [];
 let lightbox = null;
 let tileFitFrame = 0;
+let brandTitleFrame = 0;
 let homeRandomOrder = null;
 
 const tileFitClasses = [
@@ -275,6 +276,26 @@ function scheduleTileTextFit() {
   tileFitFrame = window.requestAnimationFrame(fitVisibleTileText);
 }
 
+function scheduleBrandTitleWrap() {
+  window.cancelAnimationFrame(brandTitleFrame);
+  brandTitleFrame = window.requestAnimationFrame(updateBrandTitleWrap);
+}
+
+function updateBrandTitleWrap() {
+  const title = document.querySelector(".brand-title");
+  if (!(title instanceof HTMLElement)) {
+    return;
+  }
+
+  title.classList.remove("is-stacked");
+  const lineHeight = Number.parseFloat(window.getComputedStyle(title).lineHeight);
+  if (!Number.isFinite(lineHeight) || lineHeight <= 0) {
+    return;
+  }
+  if (title.scrollHeight > lineHeight * 1.35) {
+    title.classList.add("is-stacked");
+  }
+}
 function fitVisibleTileText() {
   document.querySelectorAll(".tile-grid").forEach(updateTileGridColumnState);
   document.querySelectorAll(".tile").forEach(fitTileText);
@@ -843,10 +864,17 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-window.addEventListener("resize", scheduleTileTextFit);
+window.addEventListener("resize", () => {
+  scheduleTileTextFit();
+  scheduleBrandTitleWrap();
+});
 window.addEventListener("popstate", route);
 if (document.fonts) {
-  document.fonts.ready.then(scheduleTileTextFit);
+  document.fonts.ready.then(() => {
+    scheduleTileTextFit();
+    scheduleBrandTitleWrap();
+  });
 }
 setupHomeShareButton();
+scheduleBrandTitleWrap();
 start();
