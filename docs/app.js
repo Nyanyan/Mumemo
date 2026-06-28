@@ -54,6 +54,21 @@ const prefectures = [
 ];
 const prefectureSet = new Set(prefectures);
 
+const regionDefinitions = [
+  { name: "\u5317\u6d77\u9053\u5730\u65b9", prefectures: ["\u5317\u6d77\u9053"] },
+  { name: "\u6771\u5317\u5730\u65b9", prefectures: ["\u9752\u68ee\u770c", "\u5ca9\u624b\u770c", "\u5bae\u57ce\u770c", "\u79cb\u7530\u770c", "\u5c71\u5f62\u770c", "\u798f\u5cf6\u770c"] },
+  { name: "\u95a2\u6771\u5730\u65b9", prefectures: ["\u8328\u57ce\u770c", "\u6803\u6728\u770c", "\u7fa4\u99ac\u770c", "\u57fc\u7389\u770c", "\u5343\u8449\u770c", "\u6771\u4eac\u90fd", "\u795e\u5948\u5ddd\u770c"] },
+  { name: "\u4e2d\u90e8\u5730\u65b9", prefectures: ["\u65b0\u6f5f\u770c", "\u5bcc\u5c71\u770c", "\u77f3\u5ddd\u770c", "\u798f\u4e95\u770c", "\u5c71\u68a8\u770c", "\u9577\u91ce\u770c", "\u5c90\u961c\u770c", "\u9759\u5ca1\u770c", "\u611b\u77e5\u770c"] },
+  { name: "\u8fd1\u757f\u5730\u65b9", prefectures: ["\u4e09\u91cd\u770c", "\u6ecb\u8cc0\u770c", "\u4eac\u90fd\u5e9c", "\u5927\u962a\u5e9c", "\u5175\u5eab\u770c", "\u5948\u826f\u770c", "\u548c\u6b4c\u5c71\u770c"] },
+  { name: "\u4e2d\u56fd\u5730\u65b9", prefectures: ["\u9ce5\u53d6\u770c", "\u5cf6\u6839\u770c", "\u5ca1\u5c71\u770c", "\u5e83\u5cf6\u770c", "\u5c71\u53e3\u770c"] },
+  { name: "\u56db\u56fd\u5730\u65b9", prefectures: ["\u5fb3\u5cf6\u770c", "\u9999\u5ddd\u770c", "\u611b\u5a9b\u770c", "\u9ad8\u77e5\u770c"] },
+  { name: "\u4e5d\u5dde\u30fb\u6c96\u7e04\u5730\u65b9", prefectures: ["\u798f\u5ca1\u770c", "\u4f50\u8cc0\u770c", "\u9577\u5d0e\u770c", "\u718a\u672c\u770c", "\u5927\u5206\u770c", "\u5bae\u5d0e\u770c", "\u9e7f\u5150\u5cf6\u770c", "\u6c96\u7e04\u770c"] }
+];
+const regionByPrefecture = new Map(
+  regionDefinitions.flatMap((region) => region.prefectures.map((prefecture) => [prefecture, region.name]))
+);
+
+
 const app = document.querySelector("#app");
 const homeTemplate = document.querySelector("#home-template");
 const postedAtFormatter = new Intl.DateTimeFormat("ja-JP", {
@@ -113,6 +128,12 @@ function locationsHref() {
 function locationHref(location) {
   const url = new URL(locationsHref(), window.location.origin);
   url.searchParams.set("location", location);
+  return `${url.pathname}${url.search}`;
+}
+
+function regionHref(region) {
+  const url = new URL(locationsHref(), window.location.origin);
+  url.searchParams.set("region", region);
   return `${url.pathname}${url.search}`;
 }
 
@@ -473,12 +494,18 @@ function selectedLocationFromUrl() {
   return (params.get("location") || "").trim();
 }
 
+function selectedRegionFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return (params.get("region") || "").trim();
+}
+
 function locationSearchEntries() {
   return entries.filter((entry) => !entry.fixed);
 }
 
 function createLocationCountData() {
   const prefectureCounts = new Map(prefectures.map((prefecture) => [prefecture, 0]));
+  const regionCounts = new Map(regionDefinitions.map((region) => [region.name, 0]));
   const countryCounts = new Map();
   let unknownCount = 0;
 
@@ -486,6 +513,10 @@ function createLocationCountData() {
     const location = locationFor(entry);
     if (prefectureSet.has(location)) {
       prefectureCounts.set(location, (prefectureCounts.get(location) || 0) + 1);
+      const region = regionByPrefecture.get(location);
+      if (region) {
+        regionCounts.set(region, (regionCounts.get(region) || 0) + 1);
+      }
     } else if (location === unknownLocationLabel) {
       unknownCount += 1;
     } else {
@@ -495,19 +526,20 @@ function createLocationCountData() {
 
   return {
     prefectures: prefectureCounts,
+    regions: regionCounts,
     countries: [...countryCounts.entries()].sort((a, b) => a[0].localeCompare(b[0], "ja")),
     unknown: unknownCount
   };
 }
 
-function createLocationItem(location, count, selectedLocation) {
+function createLocationItem(location, count, selectedLocation, hrefFactory = locationHref) {
   const link = document.createElement("a");
   link.className = [
     "location-item",
     count === 0 ? "is-empty" : "",
     location === selectedLocation ? "current" : ""
   ].filter(Boolean).join(" ");
-  link.href = locationHref(location);
+  link.href = hrefFactory(location);
   link.dataset.nav = "";
   if (location === selectedLocation) {
     link.setAttribute("aria-current", "page");
@@ -519,13 +551,13 @@ function createLocationItem(location, count, selectedLocation) {
 
   const countText = document.createElement("span");
   countText.className = "location-count";
-  countText.textContent = `(${count}件)`;
+  countText.textContent = `(${count}\u4ef6)`;
 
   link.append(name, countText);
   return link;
 }
 
-function createLocationGroup(title, items, selectedLocation) {
+function createLocationGroup(title, items, selectedLocation, hrefFactory = locationHref) {
   if (items.length === 0) {
     return null;
   }
@@ -539,16 +571,28 @@ function createLocationGroup(title, items, selectedLocation) {
 
   const list = document.createElement("div");
   list.className = "location-list";
-  list.append(...items.map(([location, count]) => createLocationItem(location, count, selectedLocation)));
+  list.append(...items.map(([location, count]) => createLocationItem(location, count, selectedLocation, hrefFactory)));
 
   section.append(heading, list);
   return section;
 }
 
+function entriesForSelectedRegion(regionName) {
+  const region = regionDefinitions.find((item) => item.name === regionName);
+  if (!region) {
+    return [];
+  }
+
+  const regionPrefectures = new Set(region.prefectures);
+  return locationSearchEntries().filter((entry) => regionPrefectures.has(locationFor(entry)));
+}
+
 function renderLocationSearch() {
   document.body.dataset.view = "locations";
   const selectedLocation = selectedLocationFromUrl();
-  document.title = selectedLocation ? `${selectedLocation} - 県で検索 - ${siteTitle}` : `県で検索 - ${siteTitle}`;
+  const selectedRegion = selectedRegionFromUrl();
+  const selectedLabel = selectedRegion || selectedLocation;
+  document.title = selectedLabel ? `${selectedLabel} - \u5834\u6240\u3067\u691c\u7d22 - ${siteTitle}` : `\u5834\u6240\u3067\u691c\u7d22 - ${siteTitle}`;
 
   const countData = createLocationCountData();
   const section = document.createElement("section");
@@ -559,23 +603,25 @@ function renderLocationSearch() {
 
   const title = document.createElement("h2");
   title.className = "location-title";
-  title.textContent = "県で検索";
+  title.textContent = "\u5834\u6240\u3067\u691c\u7d22";
 
   const back = document.createElement("a");
   back.className = "back-link";
   back.href = "/";
   back.dataset.nav = "";
-  back.textContent = "一覧へ戻る";
+  back.textContent = "\u4e00\u89a7\u3078\u623b\u308b";
 
   header.append(title, back);
 
   const groups = document.createElement("div");
   groups.className = "location-sections";
+  const regionItems = regionDefinitions.map((region) => [region.name, countData.regions.get(region.name) || 0]);
   const prefectureItems = prefectures.map((prefecture) => [prefecture, countData.prefectures.get(prefecture) || 0]);
   const otherItems = [...countData.countries, [unknownLocationLabel, countData.unknown]];
   [
-    createLocationGroup("都道府県", prefectureItems, selectedLocation),
-    createLocationGroup("海外・不明", otherItems, selectedLocation)
+    createLocationGroup("\u5730\u65b9\u3067\u691c\u7d22", regionItems, selectedRegion, regionHref),
+    createLocationGroup("\u90fd\u9053\u5e9c\u770c", prefectureItems, selectedLocation),
+    createLocationGroup("\u6d77\u5916\u30fb\u4e0d\u660e", otherItems, selectedLocation)
   ].forEach((group) => {
     if (group) {
       groups.append(group);
@@ -584,21 +630,23 @@ function renderLocationSearch() {
 
   section.append(header, groups);
 
-  if (selectedLocation) {
+  if (selectedLabel) {
     const results = document.createElement("section");
     results.className = "location-results";
 
     const resultsTitle = document.createElement("h3");
     resultsTitle.className = "location-results-title";
-    resultsTitle.textContent = `${selectedLocation}の投稿`;
+    resultsTitle.textContent = `${selectedLabel}\u306e\u6295\u7a3f`;
 
-    const matched = locationSearchEntries().filter((entry) => locationFor(entry) === selectedLocation);
+    const matched = selectedRegion
+      ? entriesForSelectedRegion(selectedRegion)
+      : locationSearchEntries().filter((entry) => locationFor(entry) === selectedLocation);
     const grid = document.createElement("div");
     grid.className = "tile-grid";
     if (matched.length > 0) {
       grid.append(...matched.map(createTile));
     } else {
-      grid.append(createStatusMessage("該当するメモはありません。"));
+      grid.append(createStatusMessage("\u8a72\u5f53\u3059\u308b\u30e1\u30e2\u306f\u3042\u308a\u307e\u305b\u3093\u3002"));
     }
 
     results.append(resultsTitle, grid);

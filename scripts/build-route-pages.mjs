@@ -212,7 +212,7 @@ function locationsMeta({ siteTitle, siteDescription, baseUrl, hasHomeOgpImage })
   const meta = homeMeta({ siteTitle, siteDescription, baseUrl, hasHomeOgpImage });
   return {
     ...meta,
-    title: `県で検索 - ${siteTitle}`,
+    title: `場所で検索 - ${siteTitle}`,
     description: `場所ごとに${siteTitle}の投稿を探せます。`,
     url: absoluteUrl(baseUrl, "/locations/")
   };
