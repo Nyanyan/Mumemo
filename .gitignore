@@ -6,7 +6,3 @@ __pycache__/
 **/__pycache__/
 *.pyc
 .venv/
-
-
-run_slack_bot.bat
-
