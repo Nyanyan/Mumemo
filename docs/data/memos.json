@@ -14,6 +14,36 @@
     "ogpImageHeight": 627
   },
   {
+    "id": "slack-C0BDC3P774J-1782815005.887009",
+    "title": "伊豆半島ジオパークミュージアム　ジオリア",
+    "body": "2024/01/08訪問\n\n伊豆半島を中心に、地学に関する豊富な展示があった。展示自体が面白いことはもちろん、随所に地学オタクが喜びそうな表示があり、それも面白かった。\n5枚目の写真は川の流れの模型で、砂を大きさごとに色分けして、粒の大きさによる侵食時の挙動を可視化していて、面白かった。後日(2025年)、茨城県つくば市の地質標本館に行ったときにも同様の展示があった(が、2023年頃に地質標本館に行ったときはなかった気がする)。\n修善寺で研究イベント(自費参加)があったときについでに行った。",
+    "location": "静岡県",
+    "image": "/assets/posts/%E4%BC%8A%E8%B1%86%E5%8D%8A%E5%B3%B6%E3%82%B8%E3%82%AA%E3%83%91%E3%83%BC%E3%82%AF%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0%20%E3%82%B8%E3%82%AA%E3%83%AA%E3%82%A2/display/F0BDP40R5PZ-display.jpg",
+    "thumbnail": "/assets/posts/%E4%BC%8A%E8%B1%86%E5%8D%8A%E5%B3%B6%E3%82%B8%E3%82%AA%E3%83%91%E3%83%BC%E3%82%AF%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0%20%E3%82%B8%E3%82%AA%E3%83%AA%E3%82%A2/thumbs/F0BDP40R5PZ-thumb.jpg",
+    "source": {
+      "type": "slack",
+      "channel_id": "C0BDC3P774J",
+      "message_ts": "1782815005.887009",
+      "user_id": "U01997YCADN"
+    },
+    "postedAt": "2026-06-30",
+    "images": [
+      "/assets/posts/%E4%BC%8A%E8%B1%86%E5%8D%8A%E5%B3%B6%E3%82%B8%E3%82%AA%E3%83%91%E3%83%BC%E3%82%AF%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0%20%E3%82%B8%E3%82%AA%E3%83%AA%E3%82%A2/display/F0BDP40R5PZ-display.jpg",
+      "/assets/posts/%E4%BC%8A%E8%B1%86%E5%8D%8A%E5%B3%B6%E3%82%B8%E3%82%AA%E3%83%91%E3%83%BC%E3%82%AF%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0%20%E3%82%B8%E3%82%AA%E3%83%AA%E3%82%A2/display/F0BE2F1AY0N-display.jpg",
+      "/assets/posts/%E4%BC%8A%E8%B1%86%E5%8D%8A%E5%B3%B6%E3%82%B8%E3%82%AA%E3%83%91%E3%83%BC%E3%82%AF%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0%20%E3%82%B8%E3%82%AA%E3%83%AA%E3%82%A2/display/F0BE87DL98U-display.jpg",
+      "/assets/posts/%E4%BC%8A%E8%B1%86%E5%8D%8A%E5%B3%B6%E3%82%B8%E3%82%AA%E3%83%91%E3%83%BC%E3%82%AF%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0%20%E3%82%B8%E3%82%AA%E3%83%AA%E3%82%A2/display/F0BE2EZP5EJ-display.jpg",
+      "/assets/posts/%E4%BC%8A%E8%B1%86%E5%8D%8A%E5%B3%B6%E3%82%B8%E3%82%AA%E3%83%91%E3%83%BC%E3%82%AF%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0%20%E3%82%B8%E3%82%AA%E3%83%AA%E3%82%A2/display/F0BE6EM6XSM-display.jpg"
+    ],
+    "originalImage": "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E4%BC%8A%E8%B1%86%E5%8D%8A%E5%B3%B6%E3%82%B8%E3%82%AA%E3%83%91%E3%83%BC%E3%82%AF%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0%20%E3%82%B8%E3%82%AA%E3%83%AA%E3%82%A2/F0BDP40R5PZ.jpg",
+    "originalImages": [
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E4%BC%8A%E8%B1%86%E5%8D%8A%E5%B3%B6%E3%82%B8%E3%82%AA%E3%83%91%E3%83%BC%E3%82%AF%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0%20%E3%82%B8%E3%82%AA%E3%83%AA%E3%82%A2/F0BDP40R5PZ.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E4%BC%8A%E8%B1%86%E5%8D%8A%E5%B3%B6%E3%82%B8%E3%82%AA%E3%83%91%E3%83%BC%E3%82%AF%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0%20%E3%82%B8%E3%82%AA%E3%83%AA%E3%82%A2/F0BE2F1AY0N.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E4%BC%8A%E8%B1%86%E5%8D%8A%E5%B3%B6%E3%82%B8%E3%82%AA%E3%83%91%E3%83%BC%E3%82%AF%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0%20%E3%82%B8%E3%82%AA%E3%83%AA%E3%82%A2/F0BE87DL98U.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E4%BC%8A%E8%B1%86%E5%8D%8A%E5%B3%B6%E3%82%B8%E3%82%AA%E3%83%91%E3%83%BC%E3%82%AF%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0%20%E3%82%B8%E3%82%AA%E3%83%AA%E3%82%A2/F0BE2EZP5EJ.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E4%BC%8A%E8%B1%86%E5%8D%8A%E5%B3%B6%E3%82%B8%E3%82%AA%E3%83%91%E3%83%BC%E3%82%AF%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0%20%E3%82%B8%E3%82%AA%E3%83%AA%E3%82%A2/F0BE6EM6XSM.jpg"
+    ]
+  },
+  {
     "id": "slack-C0BDC3P774J-1782813716.304959",
     "title": "阿多田交流館",
     "body": "2024/04/28訪問\n\n阿多田半島の歴史を展示している施設。確か私の訪問時は展示の撮影が禁止だった記憶があり、展示の写真はない。\n阿多田半島の先端はもともと海だったということがわかる展示がされていた記憶がある。\nまた、戦時中は回天平生基地があり、その関連展示が多数あった。\nなお、この写真は別日に撮ったものである。",
