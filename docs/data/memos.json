@@ -14,6 +14,34 @@
     "ogpImageHeight": 627
   },
   {
+    "id": "slack-C0BDC3P774J-1782810803.224619",
+    "title": "白鳥古墳",
+    "body": "2024/12/27訪問\n\n広島・山口最大の古墳らしい。白鳥神社が建っているところが後円部で、稲荷神社の奥が前方部である。写真4枚目は、ものすごくわかりにくいが、前方部と後円部の間あたりから前方部を見た様子。古墳の形がうっすら感じられる。\n詳しい展示が平生町歴史民俗資料館にある。",
+    "location": "山口県",
+    "image": "/assets/posts/%E7%99%BD%E9%B3%A5%E5%8F%A4%E5%A2%B3/display/F0BE4384CN6-display.jpg",
+    "thumbnail": "/assets/posts/%E7%99%BD%E9%B3%A5%E5%8F%A4%E5%A2%B3/thumbs/F0BE4384CN6-thumb.jpg",
+    "source": {
+      "type": "slack",
+      "channel_id": "C0BDC3P774J",
+      "message_ts": "1782810803.224619",
+      "user_id": "U01997YCADN"
+    },
+    "postedAt": "2026-06-30",
+    "images": [
+      "/assets/posts/%E7%99%BD%E9%B3%A5%E5%8F%A4%E5%A2%B3/display/F0BE4384CN6-display.jpg",
+      "/assets/posts/%E7%99%BD%E9%B3%A5%E5%8F%A4%E5%A2%B3/display/F0BE20K497G-display.jpg",
+      "/assets/posts/%E7%99%BD%E9%B3%A5%E5%8F%A4%E5%A2%B3/display/F0BE43ASM50-display.jpg",
+      "/assets/posts/%E7%99%BD%E9%B3%A5%E5%8F%A4%E5%A2%B3/display/F0BE446782E-display.jpg"
+    ],
+    "originalImage": "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E7%99%BD%E9%B3%A5%E5%8F%A4%E5%A2%B3/F0BE4384CN6.jpg",
+    "originalImages": [
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E7%99%BD%E9%B3%A5%E5%8F%A4%E5%A2%B3/F0BE4384CN6.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E7%99%BD%E9%B3%A5%E5%8F%A4%E5%A2%B3/F0BE20K497G.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E7%99%BD%E9%B3%A5%E5%8F%A4%E5%A2%B3/F0BE43ASM50.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E7%99%BD%E9%B3%A5%E5%8F%A4%E5%A2%B3/F0BE446782E.jpg"
+    ]
+  },
+  {
     "id": "slack-C0BDC3P774J-1782810125.513419",
     "title": "神花山古墳",
     "body": "2024/12/28訪問\n\n阿多田半島の付け根にある前方後円墳。埋葬されていたのが女性だそうで、珍しい。古墳のある小山の途中には復元した女王像が建っている。詳しい展示が平生町歴史民俗資料館にある。\nちなみに、阿多田半島の先端にはもう2つ古墳があるそうなのだが、行ってみようと思ったら途中で道がなくなった(写真5枚目)。",
