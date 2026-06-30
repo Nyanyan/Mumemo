@@ -8,6 +8,7 @@ DOCS_DIR = PROJECT_ROOT / "docs"
 MEMOS_PATH = DOCS_DIR / "data" / "memos.json"
 ASSET_DIR = DOCS_DIR / "assets" / "slack"
 ASSET_URL_PREFIX = "/assets/slack"
+ORIGINAL_ASSET_DIR = PROJECT_ROOT / "originals" / "slack"
 
 sys.path.insert(0, str(PROJECT_ROOT))
 from mumemo_bot.site_store import _create_detail_image  # noqa: E402
@@ -25,7 +26,7 @@ def main() -> None:
 
     for image_path in image_paths:
         try:
-            _create_detail_image(image_path)
+            _create_detail_image(image_path, display_output_path(image_path))
             generated += 1
         except OSError as error:
             skipped += 1
@@ -42,6 +43,12 @@ def collect_image_paths(memos: list[object]) -> list[Path]:
     image_paths: list[Path] = []
     seen: set[Path] = set()
 
+    if ORIGINAL_ASSET_DIR.exists():
+        for image_path in ORIGINAL_ASSET_DIR.rglob("*"):
+            if image_path.is_file() and image_path not in seen:
+                seen.add(image_path)
+                image_paths.append(image_path)
+
     for memo in memos:
         if not isinstance(memo, dict):
             continue
@@ -53,6 +60,15 @@ def collect_image_paths(memos: list[object]) -> list[Path]:
             image_paths.append(image_path)
 
     return image_paths
+
+
+def display_output_path(image_path: Path) -> Path | None:
+    try:
+        relative_path = image_path.resolve().relative_to(ORIGINAL_ASSET_DIR.resolve())
+    except ValueError:
+        return None
+    public_image_path = ASSET_DIR / relative_path
+    return public_image_path.parent / "display" / f"{public_image_path.stem}-display.jpg"
 
 
 def memo_image_urls(memo: dict[str, object]) -> list[str]:

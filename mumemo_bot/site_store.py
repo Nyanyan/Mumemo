@@ -26,6 +26,8 @@ THUMBNAIL_QUALITY = 82
 DETAIL_IMAGE_MAX_SIZE = 1200
 DETAIL_IMAGE_QUALITY = 86
 DETAIL_IMAGE_DIRNAME = "display"
+ORIGINAL_IMAGE_KEY = "originalImage"
+ORIGINAL_IMAGES_KEY = "originalImages"
 
 
 @dataclass(frozen=True)
@@ -34,6 +36,7 @@ class SavedImage:
     source_name: str
     path: Path
     url: str
+    original_url: str | None = None
     thumbnail_path: Path | None = None
     thumbnail_url: str | None = None
     display_path: Path | None = None
@@ -106,6 +109,9 @@ def save_post_as_memo(
         post=post,
         asset_dir=config.asset_dir,
         asset_url_prefix=config.asset_url_prefix,
+        original_asset_dir=config.original_asset_dir,
+        github_repo_url=config.github_repo_url,
+        github_branch=config.github_branch,
     )
 
     with _STORE_LOCK:
@@ -194,6 +200,8 @@ def update_memo(
     body: str,
     image: str,
     images: list[str],
+    original_images: list[str] | None = None,
+    new_original_images_by_image: dict[str, str] | None = None,
     location: str | None = None,
 ) -> MemoChangeResult:
     title = title.strip()
@@ -212,6 +220,20 @@ def update_memo(
         old_memos = [dict(item) for item in memos]
         old_memo = dict(memos[index])
         memo = memos[index]
+        old_original_image_map = _original_image_map(old_memo)
+        if new_original_images_by_image:
+            old_original_image_map.update(
+                {
+                    image_url.strip(): original_url.strip()
+                    for image_url, original_url in new_original_images_by_image.items()
+                    if image_url.strip() and original_url.strip()
+                }
+            )
+        clean_original_images = (
+            _clean_image_list(original_images)
+            if original_images is not None
+            else _align_original_images(clean_images, old_original_image_map)
+        )
 
         memo["id"] = str(memo.get("id") or memo_id)
         memo["title"] = title
@@ -226,6 +248,7 @@ def update_memo(
             memo["images"] = clean_images
         else:
             memo.pop("images", None)
+        _set_original_image_fields(memo, clean_image, clean_images, clean_original_images)
 
         _write_memos(config.data_path, memos)
         build_route_pages(config)
@@ -251,6 +274,9 @@ def overwrite_memo_with_post(
         post=post,
         asset_dir=config.asset_dir,
         asset_url_prefix=config.asset_url_prefix,
+        original_asset_dir=config.original_asset_dir,
+        github_repo_url=config.github_repo_url,
+        github_branch=config.github_branch,
     )
 
     with _STORE_LOCK:
@@ -295,6 +321,9 @@ def append_memo_with_post(
         post=post,
         asset_dir=config.asset_dir,
         asset_url_prefix=config.asset_url_prefix,
+        original_asset_dir=config.original_asset_dir,
+        github_repo_url=config.github_repo_url,
+        github_branch=config.github_branch,
     )
 
     with _STORE_LOCK:
@@ -308,12 +337,21 @@ def append_memo_with_post(
         memo["body"] = _append_body(old_body, post.body)
 
         new_image_urls = [image.url for image in saved_images]
+        new_original_urls_by_image = {
+            image.url: image.original_url
+            for image in saved_images
+            if image.original_url
+        }
         current_images = [
             image_url
             for image_url in _memo_images(memo)
             if image_url != config.default_image
         ]
         merged_images = _merge_image_urls(current_images, new_image_urls)
+        original_image_map = {
+            **_original_image_map(memo),
+            **new_original_urls_by_image,
+        }
         if merged_images:
             memo["images"] = merged_images
         else:
@@ -335,6 +373,12 @@ def append_memo_with_post(
             thumbnail = _thumbnail_url_for_image_url(config, current_image)
             if thumbnail:
                 memo["thumbnail"] = thumbnail
+        _set_original_image_fields(
+            memo,
+            str(memo.get("image") or ""),
+            merged_images,
+            _align_original_images(merged_images, original_image_map),
+        )
 
         _write_memos(config.data_path, memos)
         build_route_pages(config)
@@ -376,18 +420,27 @@ def download_images(
     post: MumemoSlackPost,
     asset_dir: Path,
     asset_url_prefix: str,
+    original_asset_dir: Path | None = None,
+    github_repo_url: str = "",
+    github_branch: str = "main",
 ) -> list[SavedImage]:
     if not post.images:
         return []
 
-    memo_asset_dir = asset_dir / _safe_title_folder(post.title)
-    memo_asset_dir.mkdir(parents=True, exist_ok=True)
+    title_folder = _safe_title_folder(post.title)
+    public_memo_asset_dir = asset_dir / title_folder
+    original_root = original_asset_dir or asset_dir
+    original_memo_asset_dir = original_root / title_folder
+    public_memo_asset_dir.mkdir(parents=True, exist_ok=True)
+    original_memo_asset_dir.mkdir(parents=True, exist_ok=True)
     session = requests.Session()
     session.headers.update({"Authorization": f"Bearer {bot_token}"})
     saved_images: list[SavedImage] = []
 
     for image in post.images:
-        saved_path = memo_asset_dir / _image_filename(image)
+        filename = _image_filename(image)
+        saved_path = original_memo_asset_dir / filename
+        public_image_path = public_memo_asset_dir / filename
         response = session.get(image.download_url, stream=True, timeout=60)
         try:
             response.raise_for_status()
@@ -402,18 +455,26 @@ def download_images(
                 if chunk:
                     output_file.write(chunk)
 
-        thumbnail_path = _create_thumbnail(saved_path)
-        display_path = _create_detail_image(saved_path)
+        thumbnail_path = _create_thumbnail(
+            saved_path,
+            _thumbnail_path_for_image_path(public_image_path),
+        )
+        display_path = _create_detail_image(
+            saved_path,
+            _detail_image_path_for_image_path(public_image_path),
+        )
+        display_url = _asset_url(asset_url_prefix, display_path.relative_to(asset_dir))
         saved_images.append(
             SavedImage(
                 file_id=image.file_id,
                 source_name=image.name,
                 path=saved_path,
-                url=_asset_url(asset_url_prefix, saved_path.relative_to(asset_dir)),
+                url=display_url,
+                original_url=_github_blob_url(github_repo_url, github_branch, saved_path),
                 thumbnail_path=thumbnail_path,
                 thumbnail_url=_asset_url(asset_url_prefix, thumbnail_path.relative_to(asset_dir)),
                 display_path=display_path,
-                display_url=_asset_url(asset_url_prefix, display_path.relative_to(asset_dir)),
+                display_url=display_url,
             )
         )
 
@@ -481,6 +542,10 @@ def _memo_from_post(
         memo["postedAt"] = posted_at
     if saved_images:
         memo["images"] = [image.url for image in saved_images]
+        original_images = [image.original_url for image in saved_images if image.original_url]
+        if original_images:
+            memo[ORIGINAL_IMAGE_KEY] = original_images[0]
+            memo[ORIGINAL_IMAGES_KEY] = original_images
     return memo
 
 
@@ -535,6 +600,49 @@ def _memo_images(memo: dict[str, Any]) -> list[str]:
         return [str(image) for image in images if str(image).strip()]
     image = str(memo.get("image") or "").strip()
     return [image] if image else []
+
+
+def _memo_original_images(memo: dict[str, Any]) -> list[str]:
+    originals = memo.get(ORIGINAL_IMAGES_KEY)
+    if isinstance(originals, list):
+        return [str(image).strip() for image in originals]
+    original = str(memo.get(ORIGINAL_IMAGE_KEY) or "").strip()
+    return [original] if original else []
+
+
+def _original_image_map(memo: dict[str, Any]) -> dict[str, str]:
+    return {
+        image: original
+        for image, original in zip(_memo_images(memo), _memo_original_images(memo))
+        if image and original
+    }
+
+
+def _align_original_images(images: list[str], original_image_map: dict[str, str]) -> list[str]:
+    return [
+        original_image_map.get(image, "")
+        for image in images
+    ]
+
+
+def _set_original_image_fields(
+    memo: dict[str, Any],
+    image: str,
+    images: list[str],
+    original_images: list[str],
+) -> None:
+    if not images or not any(original_images):
+        memo.pop(ORIGINAL_IMAGE_KEY, None)
+        memo.pop(ORIGINAL_IMAGES_KEY, None)
+        return
+
+    memo[ORIGINAL_IMAGES_KEY] = original_images
+    primary_original = ""
+    if image in images:
+        image_index = images.index(image)
+        if image_index < len(original_images):
+            primary_original = original_images[image_index]
+    memo[ORIGINAL_IMAGE_KEY] = primary_original or original_images[0]
 
 
 def _memo_referenced_images(memo: dict[str, Any]) -> list[str]:
@@ -725,6 +833,21 @@ def _asset_url(asset_url_prefix: str, relative_path: Path) -> str:
     return f"{prefix}/{'/'.join(encoded_parts)}"
 
 
+def _github_blob_url(repo_url: str, branch: str, path: Path) -> str | None:
+    clean_repo_url = repo_url.strip().rstrip("/")
+    if clean_repo_url.endswith(".git"):
+        clean_repo_url = clean_repo_url[:-4]
+    clean_branch = branch.strip() or "main"
+    if not clean_repo_url:
+        return None
+    try:
+        relative_path = path.resolve().relative_to(PROJECT_ROOT.resolve())
+    except ValueError:
+        return None
+    encoded_parts = [quote(part) for part in relative_path.parts]
+    return f"{clean_repo_url}/blob/{quote(clean_branch)}/{'/'.join(encoded_parts)}"
+
+
 def _ensure_detail_images_for_urls(config: BotConfig, image_urls: list[str]) -> None:
     for image_url in image_urls:
         image_path = _local_asset_path(config, image_url)
@@ -758,8 +881,8 @@ def _thumbnail_url_for_image_url(config: BotConfig, image_url: str) -> str | Non
     return _asset_url(config.asset_url_prefix, thumbnail_path.relative_to(config.asset_dir))
 
 
-def _create_thumbnail(image_path: Path) -> Path:
-    thumbnail_path = _thumbnail_path_for_image_path(image_path)
+def _create_thumbnail(image_path: Path, thumbnail_path: Path | None = None) -> Path:
+    thumbnail_path = thumbnail_path or _thumbnail_path_for_image_path(image_path)
     thumbnail_path.parent.mkdir(parents=True, exist_ok=True)
     with Image.open(image_path) as source:
         image = ImageOps.exif_transpose(source)
@@ -775,8 +898,8 @@ def _create_thumbnail(image_path: Path) -> Path:
     return thumbnail_path
 
 
-def _create_detail_image(image_path: Path) -> Path:
-    detail_image_path = _detail_image_path_for_image_path(image_path)
+def _create_detail_image(image_path: Path, detail_image_path: Path | None = None) -> Path:
+    detail_image_path = detail_image_path or _detail_image_path_for_image_path(image_path)
     detail_image_path.parent.mkdir(parents=True, exist_ok=True)
     with Image.open(image_path) as source:
         image = ImageOps.exif_transpose(source)
@@ -830,10 +953,16 @@ def _cleanup_replaced_memo(
     remaining_memos: list[dict[str, Any]],
 ) -> None:
     asset_root = config.asset_dir.resolve()
+    original_asset_root = config.original_asset_dir.resolve()
     remaining_asset_paths = {
         asset_path
         for memo in remaining_memos
         for asset_path in _memo_referenced_asset_paths(config, memo)
+    }
+    remaining_original_asset_paths = {
+        asset_path
+        for memo in remaining_memos
+        for asset_path in _memo_referenced_original_asset_paths(config, memo)
     }
     for asset_path in _memo_referenced_asset_paths(config, removed):
         if asset_path in remaining_asset_paths:
@@ -842,6 +971,13 @@ def _cleanup_replaced_memo(
             continue
         asset_path.unlink()
         _remove_empty_asset_parents(asset_path.parent, asset_root)
+    for asset_path in _memo_referenced_original_asset_paths(config, removed):
+        if asset_path in remaining_original_asset_paths:
+            continue
+        if not asset_path.exists() or not asset_path.is_file():
+            continue
+        asset_path.unlink()
+        _remove_empty_asset_parents(asset_path.parent, original_asset_root)
 
     _cleanup_stale_route_pages(old_memos, remaining_memos)
 
@@ -858,6 +994,18 @@ def _memo_referenced_asset_paths(config: BotConfig, memo: dict[str, Any]) -> lis
                 continue
             seen.add(asset_path)
             asset_paths.append(asset_path)
+    return asset_paths
+
+
+def _memo_referenced_original_asset_paths(config: BotConfig, memo: dict[str, Any]) -> list[Path]:
+    asset_paths: list[Path] = []
+    seen: set[Path] = set()
+    for image_url in [str(memo.get(ORIGINAL_IMAGE_KEY) or ""), *_memo_original_images(memo)]:
+        image_path = _local_original_asset_path(config, image_url)
+        if image_path is None or image_path in seen:
+            continue
+        seen.add(image_path)
+        asset_paths.append(image_path)
     return asset_paths
 
 
@@ -910,6 +1058,38 @@ def _local_asset_path(config: BotConfig, image_url: str) -> Path | None:
     relative_path = Path(*relative_url.split("/"))
     asset_root = config.asset_dir.resolve()
     candidate = (asset_root / relative_path).resolve()
+    if not _is_relative_to(candidate, asset_root):
+        return None
+    return candidate
+
+
+def _local_original_asset_path(config: BotConfig, image_url: str) -> Path | None:
+    clean_image_url = image_url.strip()
+    if not clean_image_url:
+        return None
+
+    parsed = urlparse(clean_image_url)
+    relative_url = ""
+    repo_url = config.github_repo_url.strip().rstrip("/")
+    if repo_url.endswith(".git"):
+        repo_url = repo_url[:-4]
+
+    if parsed.scheme and parsed.netloc:
+        repo_path = urlparse(repo_url).path.rstrip("/")
+        branch = quote(config.github_branch.strip() or "main")
+        blob_prefix = f"{repo_path}/blob/{branch}/"
+        if not parsed.path.startswith(blob_prefix):
+            return None
+        relative_url = parsed.path[len(blob_prefix) :]
+    else:
+        relative_url = unquote(parsed.path).lstrip("/")
+
+    if not relative_url:
+        return None
+
+    relative_path = Path(*unquote(relative_url).split("/"))
+    asset_root = config.original_asset_dir.resolve()
+    candidate = (PROJECT_ROOT / relative_path).resolve()
     if not _is_relative_to(candidate, asset_root):
         return None
     return candidate

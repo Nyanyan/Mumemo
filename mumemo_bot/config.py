@@ -19,8 +19,11 @@ class BotConfig:
     data_path: Path
     asset_dir: Path
     asset_url_prefix: str
+    original_asset_dir: Path
     default_image: str
     route_build_command: list[str]
+    github_repo_url: str
+    github_branch: str = "main"
     site_base_url: str = ""
     nominatim_endpoint: str = "https://nominatim.openstreetmap.org/search"
     nominatim_user_agent: str = ""
@@ -38,6 +41,7 @@ class BotConfig:
         load_environment()
         data_path = _path_env("MUMEMO_DATA_PATH", "docs/data/memos.json")
         asset_dir = _path_env("MUMEMO_SLACK_ASSET_DIR", "docs/assets/slack")
+        original_asset_dir = _path_env("MUMEMO_SLACK_ORIGINAL_ASSET_DIR", "originals/slack")
         route_build_command = _command_env(
             "MUMEMO_ROUTE_BUILD_COMMAND",
             DEFAULT_ROUTE_BUILD_COMMAND,
@@ -54,8 +58,14 @@ class BotConfig:
                 "MUMEMO_SLACK_ASSET_URL_PREFIX",
                 "/assets/slack",
             ).rstrip("/"),
+            original_asset_dir=original_asset_dir,
             default_image=_default_image_env(),
             route_build_command=route_build_command,
+            github_repo_url=os.getenv(
+                "MUMEMO_GITHUB_REPO_URL",
+                "https://github.com/Nyanyan/Mumemo",
+            ).strip().rstrip("/"),
+            github_branch=os.getenv("MUMEMO_GITHUB_BRANCH", "main").strip() or "main",
             site_base_url=_site_base_url_env(),
             nominatim_endpoint=os.getenv(
                 "MUMEMO_NOMINATIM_ENDPOINT",

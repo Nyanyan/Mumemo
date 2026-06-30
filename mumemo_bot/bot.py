@@ -889,8 +889,18 @@ def create_app(config: BotConfig) -> App:
                     ),
                     asset_dir=config.asset_dir,
                     asset_url_prefix=config.asset_url_prefix,
+                    original_asset_dir=config.original_asset_dir,
+                    github_repo_url=config.github_repo_url,
+                    github_branch=config.github_branch,
                 )
                 images = _append_unique(images, [saved_image.url for saved_image in saved_images])
+                new_original_images_by_image = {
+                    saved_image.url: saved_image.original_url
+                    for saved_image in saved_images
+                    if saved_image.original_url
+                }
+            else:
+                new_original_images_by_image = {}
 
             result = update_memo(
                 config,
@@ -899,6 +909,7 @@ def create_app(config: BotConfig) -> App:
                 body=body_text,
                 image=image,
                 images=images,
+                new_original_images_by_image=new_original_images_by_image,
                 location=location,
             )
             git_status = _sync_git_after_change(

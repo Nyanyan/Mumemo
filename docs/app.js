@@ -196,6 +196,19 @@ function imagesFor(entry) {
   return [...new Set(candidates)];
 }
 
+function originalImagesFor(entry) {
+  const images = Array.isArray(entry.originalImages) ? entry.originalImages : [];
+  const candidates = [...images, entry.originalImage].filter((image) => typeof image === "string" && image.trim());
+  return candidates;
+}
+
+function fullSizeImageFor(entry, imageUrl, index) {
+  const images = imagesFor(entry);
+  const originals = originalImagesFor(entry);
+  const imageIndex = images.indexOf(imageUrl);
+  return originals[imageIndex >= 0 ? imageIndex : index] || "";
+}
+
 function thumbnailFor(entry) {
   return entry.thumbnail || entry.image || imagesFor(entry)[0] || "/website_icon_small.png";
 }
@@ -693,7 +706,9 @@ function createDetailImageButton(entry, imageUrl, index) {
   useOriginalWhenPreviewMissing(image, previewUrl, imageUrl);
 
   button.append(image);
-  button.addEventListener("click", () => openImageLightbox(imageUrl, entry.title));
+  button.addEventListener("click", () => {
+    openImageLightbox(previewUrl, entry.title, fullSizeImageFor(entry, imageUrl, index));
+  });
   return button;
 }
 
@@ -1050,7 +1065,7 @@ function route() {
   renderNotFound(slug);
 }
 
-function openImageLightbox(imageUrl, title) {
+function openImageLightbox(imageUrl, title, fullSizeUrl = "") {
   closeImageLightbox({ restoreFocus: false });
   const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
@@ -1082,6 +1097,20 @@ function openImageLightbox(imageUrl, title) {
   });
 
   panel.append(close, image);
+  if (fullSizeUrl) {
+    const actions = document.createElement("div");
+    actions.className = "lightbox-actions";
+
+    const fullSizeLink = document.createElement("a");
+    fullSizeLink.className = "lightbox-fullsize";
+    fullSizeLink.href = fullSizeUrl;
+    fullSizeLink.target = "_blank";
+    fullSizeLink.rel = "noopener noreferrer";
+    fullSizeLink.textContent = "フルサイズ画像";
+
+    actions.append(fullSizeLink);
+    panel.append(actions);
+  }
   overlay.append(panel);
   document.body.append(overlay);
   document.body.classList.add("lightbox-open");

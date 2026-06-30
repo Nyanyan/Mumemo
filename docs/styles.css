@@ -849,6 +849,7 @@
     .lightbox-panel {
       position: relative;
       display: grid;
+      gap: 12px;
       place-items: center;
       width: min(100%, 1120px);
       max-height: calc(100vh - 40px);
@@ -857,11 +858,37 @@
     .lightbox-image {
       display: block;
       max-width: 100%;
-      max-height: calc(100vh - 64px);
+      max-height: calc(100vh - 116px);
       border-radius: 8px;
       background: #e8d7f8;
       box-shadow: 0 24px 70px rgba(16, 8, 29, 0.48);
       object-fit: contain;
+    }
+
+    .lightbox-actions {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .lightbox-fullsize {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 9px 16px;
+      border-radius: 8px;
+      background: rgba(251, 247, 255, 0.96);
+      color: var(--ink);
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 12px 28px rgba(16, 8, 29, 0.24);
+    }
+
+    .lightbox-fullsize:hover,
+    .lightbox-fullsize:focus-visible {
+      background: var(--panel);
+      outline: 3px solid rgba(251, 247, 255, 0.55);
     }
 
     .lightbox-close {

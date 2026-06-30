@@ -4,7 +4,7 @@ import subprocess
 from mumemo_bot.config import PROJECT_ROOT
 
 
-SITE_PATHSPEC = "docs"
+SITE_PATHSPECS = ["docs", "originals"]
 
 
 @dataclass(frozen=True)
@@ -21,10 +21,10 @@ class GitSyncError(RuntimeError):
 
 def commit_and_push_site_changes(action: str, title: str) -> GitSyncResult:
     commit_message = _commit_message(action, title)
-    _run_git(["add", "-A", SITE_PATHSPEC])
+    _run_git(["add", "-A", *SITE_PATHSPECS])
 
     diff_result = _run_git(
-        ["diff", "--cached", "--quiet", "--", SITE_PATHSPEC],
+        ["diff", "--cached", "--quiet", "--", *SITE_PATHSPECS],
         check=False,
     )
     if diff_result.returncode == 0:
@@ -37,7 +37,7 @@ def commit_and_push_site_changes(action: str, title: str) -> GitSyncResult:
     if diff_result.returncode != 1:
         raise GitSyncError(_format_git_error("diff --cached --quiet", diff_result))
 
-    _run_git(["commit", "-m", commit_message, "--", SITE_PATHSPEC])
+    _run_git(["commit", "-m", commit_message, "--", *SITE_PATHSPECS])
     commit_hash = _run_git(["rev-parse", "--short", "HEAD"]).stdout.strip() or None
     _run_git(["push", "origin", "main"])
     return GitSyncResult(
