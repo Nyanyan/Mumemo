@@ -77,7 +77,7 @@ Body text line 2
 
 The bot asks Nominatim once when preparing a Slack review, stores that detected location with the draft, and logs the query, matched address, source, and result for debugging. If the Nominatim request fails, the draft is not published through a local guess.
 
-New top-level Slack posts are not published immediately. The bot replies in the thread with a review message and buttons. Detected URLs are shown in the review. Press `URL修正` to edit only those URLs before publishing, `承認して公開` to save it to `docs/data/memos.json`, `再読み込み` to rebuild the review from the original Slack message, or `破棄` to remove only the Slack draft review. After publishing, Slack shows the public Mumemo page URL.
+New top-level Slack posts are not published immediately. The bot replies in the thread with a review message and buttons. Detected URLs are shown in the review. Press `場所修正` to edit the detected location, `URL修正` to edit only those URLs before publishing, `承認して公開` to save it to `docs/data/memos.json`, `再読み込み` to rebuild the review from the original Slack message, or `破棄` to remove only the Slack draft review. After publishing, Slack shows the public Mumemo page URL.
 
 When a new Slack post has the same title as an existing memo, the review shows both versions. Use `既存投稿に追記` to append the new body/images to the existing memo, `別で投稿` to publish a separate memo while assigning the new memo a suffixed slug, or `上書き投稿` to replace the existing memo body/images while keeping its URL.
 

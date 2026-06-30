@@ -9,7 +9,7 @@ from slack_bolt.adapter.socket_mode import SocketModeHandler
 
 from mumemo_bot.config import BotConfig, PROJECT_ROOT, mask_secret
 from mumemo_bot.git_sync import GitSyncError, GitSyncResult, commit_and_push_site_changes
-from mumemo_bot.location import LocationInference, UNKNOWN_LOCATION, infer_location_detail
+from mumemo_bot.location import LocationInference, UNKNOWN_LOCATION, infer_location_detail, normalize_location
 from mumemo_bot.site_store import (
     MemoNotFoundError,
     ProtectedMemoError,
@@ -33,12 +33,14 @@ from mumemo_bot.slack_views import (
     PUBLISH_SEPARATE_MEMO_ACTION_ID,
     DELETE_MEMO_ACTION_ID,
     DISMISS_REVIEW_ACTION_ID,
+    EDIT_REVIEW_LOCATION_ACTION_ID,
     EDIT_MEMO_ACTION_ID,
     EDIT_REVIEW_URLS_ACTION_ID,
     IMAGE_BLOCK_ID,
     LOCATION_BLOCK_ID,
     IMAGES_BLOCK_ID,
     MEMO_EDIT_CALLBACK_ID,
+    MEMO_REVIEW_LOCATION_CALLBACK_ID,
     MEMO_REVIEW_URLS_CALLBACK_ID,
     RELOAD_REVIEW_ACTION_ID,
     SELECT_REVIEW_THUMBNAIL_ACTION_ID,
@@ -52,6 +54,7 @@ from mumemo_bot.slack_views import (
     modal_file_values,
     modal_value,
     review_blocks,
+    review_location_modal_view,
     review_urls_modal_view,
 )
 
@@ -602,6 +605,91 @@ def create_app(config: BotConfig) -> App:
                 channel_id=channel_id,
                 user_id=str(body.get("user", {}).get("id") or ""),
                 text=_short_status(f"URL修正の反映に失敗しました: {error}"),
+            )
+
+    @app.action(EDIT_REVIEW_LOCATION_ACTION_ID)
+    def handle_edit_review_location(
+        ack: Any,
+        body: dict[str, Any],
+        client: Any,
+        logger: Any,
+    ) -> None:
+        ack()
+        action = body["actions"][0]
+        value = decode_action_value(action)
+        channel_id = str(value["channel_id"])
+        message_ts = str(value["message_ts"])
+        review_message_ts = str(body.get("message", {}).get("ts") or "")
+        user_id = str(body.get("user", {}).get("id") or "")
+
+        try:
+            post = resolve_review_post(channel_id, message_ts, client)
+            location_detail = get_review_location(channel_id, message_ts)
+            if location_detail is None:
+                location_detail = _infer_post_location(config, post)
+                remember_review_location(post, location_detail)
+            client.views_open(
+                trigger_id=body["trigger_id"],
+                view=review_location_modal_view(
+                    location=location_detail.location,
+                    channel_id=channel_id,
+                    message_ts=message_ts,
+                    review_message_ts=review_message_ts,
+                ),
+            )
+        except Exception as error:
+            logger.exception("Failed to open Mumemo location edit modal")
+            _post_ephemeral(
+                client=client,
+                channel_id=channel_id,
+                user_id=user_id,
+                text=_short_status(f"場所修正画面を開けませんでした: {error}"),
+            )
+
+    @app.view(MEMO_REVIEW_LOCATION_CALLBACK_ID)
+    def handle_review_location_submission(
+        ack: Any,
+        body: dict[str, Any],
+        view: dict[str, Any],
+        client: Any,
+        logger: Any,
+    ) -> None:
+        metadata = json.loads(str(view.get("private_metadata") or "{}"))
+        channel_id = str(metadata.get("channel_id") or config.slack_channel_id)
+        message_ts = str(metadata.get("message_ts") or "")
+        review_message_ts = str(metadata.get("review_message_ts") or "")
+        location = normalize_location(modal_value(view, LOCATION_BLOCK_ID))
+        post = get_review_post(channel_id, message_ts)
+        if post is None:
+            ack(response_action="errors", errors={LOCATION_BLOCK_ID: "下書きを再読み込みしてください"})
+            return
+
+        ack()
+        try:
+            location_detail = LocationInference(
+                location=location,
+                source="manual",
+                matched=location,
+                query=post.title,
+            )
+            remember_review_post(post, location_detail)
+            _update_review_status(
+                client=client,
+                channel_id=channel_id,
+                review_message_ts=review_message_ts,
+                post=post,
+                status_text=f"場所を反映しました: {location}",
+                buttons_enabled=True,
+                title_conflict=find_title_conflict(config, post),
+                location_detail=location_detail,
+            )
+        except Exception as error:
+            logger.exception("Failed to update Mumemo location review")
+            _post_ephemeral(
+                client=client,
+                channel_id=channel_id,
+                user_id=str(body.get("user", {}).get("id") or ""),
+                text=_short_status(f"場所修正の反映に失敗しました: {error}"),
             )
 
     @app.action(SELECT_REVIEW_THUMBNAIL_ACTION_ID)

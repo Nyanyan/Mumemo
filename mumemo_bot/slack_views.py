@@ -13,11 +13,13 @@ PUBLISH_SEPARATE_MEMO_ACTION_ID = "mumemo_publish_separate_memo"
 RELOAD_REVIEW_ACTION_ID = "mumemo_reload_review"
 DISMISS_REVIEW_ACTION_ID = "mumemo_dismiss_review"
 EDIT_REVIEW_URLS_ACTION_ID = "mumemo_edit_review_urls"
+EDIT_REVIEW_LOCATION_ACTION_ID = "mumemo_edit_review_location"
 SELECT_REVIEW_THUMBNAIL_ACTION_ID = "mumemo_select_review_thumbnail"
 EDIT_MEMO_ACTION_ID = "mumemo_edit_memo"
 DELETE_MEMO_ACTION_ID = "mumemo_delete_memo"
 MEMO_EDIT_CALLBACK_ID = "mumemo_edit_modal"
 MEMO_REVIEW_URLS_CALLBACK_ID = "mumemo_review_urls_modal"
+MEMO_REVIEW_LOCATION_CALLBACK_ID = "mumemo_review_location_modal"
 
 TITLE_BLOCK_ID = "title"
 BODY_BLOCK_ID = "body"
@@ -188,6 +190,14 @@ def review_blocks(
                     "initial_option": thumbnail_options[0],
                 }
             )
+        elements.append(
+            {
+                "type": "button",
+                "text": {"type": "plain_text", "text": "\u5834\u6240\u4fee\u6b63"},
+                "action_id": EDIT_REVIEW_LOCATION_ACTION_ID,
+                "value": value,
+            }
+        )
         if urls:
             elements.append(
                 {
@@ -261,6 +271,48 @@ def review_urls_modal_view(
                     "action_id": VALUE_ACTION_ID,
                     "multiline": True,
                     "initial_value": _input_initial("\n".join(post.urls), 2900),
+                },
+            }
+        ],
+    }
+
+
+def review_location_modal_view(
+    *,
+    location: str | None,
+    channel_id: str,
+    message_ts: str,
+    review_message_ts: str,
+) -> dict[str, Any]:
+    metadata = json.dumps(
+        {
+            "channel_id": channel_id,
+            "message_ts": message_ts,
+            "review_message_ts": review_message_ts,
+        },
+        ensure_ascii=False,
+    )
+    return {
+        "type": "modal",
+        "callback_id": MEMO_REVIEW_LOCATION_CALLBACK_ID,
+        "private_metadata": metadata,
+        "title": {"type": "plain_text", "text": "\u5834\u6240\u4fee\u6b63"},
+        "submit": {"type": "plain_text", "text": "\u53cd\u6620"},
+        "close": {"type": "plain_text", "text": "\u9589\u3058\u308b"},
+        "blocks": [
+            {
+                "type": "input",
+                "block_id": LOCATION_BLOCK_ID,
+                "optional": True,
+                "label": {"type": "plain_text", "text": "\u5834\u6240"},
+                "hint": {
+                    "type": "plain_text",
+                    "text": "\u90fd\u9053\u5e9c\u770c\u3084\u56fd\u540d\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044\u3002\u7a7a\u6b04\u306a\u3089\u4e0d\u660e\u3068\u3057\u3066\u6271\u3044\u307e\u3059\u3002",
+                },
+                "element": {
+                    "type": "plain_text_input",
+                    "action_id": VALUE_ACTION_ID,
+                    "initial_value": _input_initial(str(location or ""), 80),
                 },
             }
         ],
