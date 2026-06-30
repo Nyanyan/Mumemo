@@ -368,7 +368,8 @@ def append_memo_with_post(
         _ensure_detail_images_for_urls(config, merged_images)
         if saved_images and (not current_image or current_image == config.default_image):
             memo["image"] = saved_images[0].url
-            memo["thumbnail"] = saved_images[0].thumbnail_url
+            if saved_images[0].thumbnail_url:
+                memo["thumbnail"] = saved_images[0].thumbnail_url
         elif not str(memo.get("thumbnail") or "").strip():
             thumbnail = _thumbnail_url_for_image_url(config, current_image)
             if thumbnail:
@@ -437,7 +438,7 @@ def download_images(
     session.headers.update({"Authorization": f"Bearer {bot_token}"})
     saved_images: list[SavedImage] = []
 
-    for image in post.images:
+    for image_index, image in enumerate(post.images):
         filename = _image_filename(image)
         saved_path = original_memo_asset_dir / filename
         public_image_path = public_memo_asset_dir / filename
@@ -455,15 +456,24 @@ def download_images(
                 if chunk:
                     output_file.write(chunk)
 
-        thumbnail_path = _create_thumbnail(
-            saved_path,
-            _thumbnail_path_for_image_path(public_image_path),
+        thumbnail_path = (
+            _create_thumbnail(
+                saved_path,
+                _thumbnail_path_for_image_path(public_image_path),
+            )
+            if image_index == 0
+            else None
         )
         display_path = _create_detail_image(
             saved_path,
             _detail_image_path_for_image_path(public_image_path),
         )
         display_url = _asset_url(asset_url_prefix, display_path.relative_to(asset_dir))
+        thumbnail_url = (
+            _asset_url(asset_url_prefix, thumbnail_path.relative_to(asset_dir))
+            if thumbnail_path
+            else None
+        )
         saved_images.append(
             SavedImage(
                 file_id=image.file_id,
@@ -472,7 +482,7 @@ def download_images(
                 url=display_url,
                 original_url=_github_raw_url(github_repo_url, github_branch, saved_path),
                 thumbnail_path=thumbnail_path,
-                thumbnail_url=_asset_url(asset_url_prefix, thumbnail_path.relative_to(asset_dir)),
+                thumbnail_url=thumbnail_url,
                 display_path=display_path,
                 display_url=display_url,
             )
@@ -529,7 +539,7 @@ def _memo_from_post(
         "body": post.body,
         "location": _location_for_store(config, post.title, post.body, location),
         "image": primary_image.url if primary_image else config.default_image,
-        "thumbnail": primary_image.thumbnail_url if primary_image else config.default_image,
+        "thumbnail": primary_image.thumbnail_url if primary_image and primary_image.thumbnail_url else config.default_image,
         "source": {
             "type": "slack",
             "channel_id": post.channel_id,
