@@ -209,6 +209,16 @@ function fullSizeImageFor(entry, imageUrl, index) {
   return originals[imageIndex >= 0 ? imageIndex : index] || "";
 }
 
+function lightboxItemsFor(entry) {
+  const images = imagesFor(entry);
+  const sourceImages = images.length > 0 ? images : ["/website_icon_small.png"];
+  return sourceImages.map((imageUrl, index) => ({
+    previewUrl: detailPreviewFor(imageUrl),
+    fullSizeUrl: fullSizeImageFor(entry, imageUrl, index),
+    fallbackUrl: imageUrl
+  }));
+}
+
 function thumbnailFor(entry) {
   return entry.thumbnail || entry.image || imagesFor(entry)[0] || "/website_icon_small.png";
 }
@@ -691,7 +701,7 @@ function renderLocationSearch() {
   scheduleTileTextFit();
 }
 
-function createDetailImageButton(entry, imageUrl, index) {
+function createDetailImageButton(entry, imageUrl, index, lightboxItems = null) {
   const button = document.createElement("button");
   button.className = "detail-image-button";
   button.type = "button";
@@ -707,22 +717,23 @@ function createDetailImageButton(entry, imageUrl, index) {
 
   button.append(image);
   button.addEventListener("click", () => {
-    openImageLightbox(previewUrl, entry.title, fullSizeImageFor(entry, imageUrl, index));
+    openImageLightbox(lightboxItems || [{ previewUrl, fullSizeUrl: fullSizeImageFor(entry, imageUrl, index) }], entry.title, index);
   });
   return button;
 }
 
 function createDetailMedia(entry) {
   const images = imagesFor(entry);
+  const lightboxItems = lightboxItemsFor(entry);
   const media = document.createElement("div");
   media.className = `detail-media${images.length > 1 ? " many" : ""}`;
 
   for (const [index, imageUrl] of images.entries()) {
-    media.append(createDetailImageButton(entry, imageUrl, index));
+    media.append(createDetailImageButton(entry, imageUrl, index, lightboxItems));
   }
 
   if (images.length === 0) {
-    media.append(createDetailImageButton({ ...entry, iconImage: true }, "/website_icon_small.png", 0));
+    media.append(createDetailImageButton({ ...entry, iconImage: true }, "/website_icon_small.png", 0, lightboxItems));
   }
 
   return media;
@@ -1065,9 +1076,20 @@ function route() {
   renderNotFound(slug);
 }
 
-function openImageLightbox(imageUrl, title, fullSizeUrl = "") {
+function openImageLightbox(lightboxItems, title, initialIndex = 0) {
   closeImageLightbox({ restoreFocus: false });
   const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  const items = (Array.isArray(lightboxItems) ? lightboxItems : [])
+    .map((item) => ({
+      previewUrl: typeof item.previewUrl === "string" ? item.previewUrl : "",
+      fullSizeUrl: typeof item.fullSizeUrl === "string" ? item.fullSizeUrl : "",
+      fallbackUrl: typeof item.fallbackUrl === "string" ? item.fallbackUrl : ""
+    }))
+    .filter((item) => item.previewUrl);
+  if (items.length === 0) {
+    return;
+  }
+  let currentIndex = Math.min(Math.max(initialIndex, 0), items.length - 1);
 
   const overlay = document.createElement("div");
   overlay.className = "lightbox";
@@ -1086,10 +1108,62 @@ function openImageLightbox(imageUrl, title, fullSizeUrl = "") {
 
   const image = document.createElement("img");
   image.className = "lightbox-image";
-  image.src = imageUrl;
   image.alt = "";
 
+  const actions = document.createElement("div");
+  actions.className = "lightbox-actions";
+
+  const fullSizeLink = document.createElement("a");
+  fullSizeLink.className = "lightbox-fullsize";
+  fullSizeLink.target = "_blank";
+  fullSizeLink.rel = "noopener noreferrer";
+  fullSizeLink.textContent = "フルサイズ画像";
+  actions.append(fullSizeLink);
+
+  const previous = document.createElement("button");
+  previous.className = "lightbox-nav previous";
+  previous.type = "button";
+  previous.setAttribute("aria-label", "前の画像");
+  previous.textContent = "‹";
+
+  const next = document.createElement("button");
+  next.className = "lightbox-nav next";
+  next.type = "button";
+  next.setAttribute("aria-label", "次の画像");
+  next.textContent = "›";
+
+  const showImage = (nextIndex) => {
+    currentIndex = (nextIndex + items.length) % items.length;
+    const item = items[currentIndex];
+    let fallbackHref = "";
+    if (item.fallbackUrl) {
+      try {
+        fallbackHref = new URL(item.fallbackUrl, window.location.href).href;
+      } catch {
+        fallbackHref = "";
+      }
+    }
+    image.onerror = fallbackHref ? () => {
+      if (image.src !== fallbackHref) {
+        image.src = item.fallbackUrl;
+      }
+    } : null;
+    image.src = item.previewUrl;
+    if (item.fullSizeUrl) {
+      fullSizeLink.href = item.fullSizeUrl;
+      actions.hidden = false;
+    } else {
+      fullSizeLink.removeAttribute("href");
+      actions.hidden = true;
+    }
+  };
+
+  const showPrevious = () => showImage(currentIndex - 1);
+  const showNext = () => showImage(currentIndex + 1);
+
   close.addEventListener("click", () => closeImageLightbox());
+  previous.addEventListener("click", showPrevious);
+  next.addEventListener("click", showNext);
   overlay.addEventListener("click", (event) => {
     if (event.target === overlay) {
       closeImageLightbox();
@@ -1097,24 +1171,27 @@ function openImageLightbox(imageUrl, title, fullSizeUrl = "") {
   });
 
   panel.append(close, image);
-  if (fullSizeUrl) {
-    const actions = document.createElement("div");
-    actions.className = "lightbox-actions";
-
-    const fullSizeLink = document.createElement("a");
-    fullSizeLink.className = "lightbox-fullsize";
-    fullSizeLink.href = fullSizeUrl;
-    fullSizeLink.target = "_blank";
-    fullSizeLink.rel = "noopener noreferrer";
-    fullSizeLink.textContent = "フルサイズ画像";
-
-    actions.append(fullSizeLink);
-    panel.append(actions);
+  if (items.length > 1) {
+    panel.append(previous, next);
   }
+  panel.append(actions);
   overlay.append(panel);
   document.body.append(overlay);
   document.body.classList.add("lightbox-open");
-  lightbox = { overlay, previousFocus };
+  const handleKeydown = (event) => {
+    if (event.key === "ArrowLeft" && items.length > 1) {
+      event.preventDefault();
+      showPrevious();
+    } else if (event.key === "ArrowRight" && items.length > 1) {
+      event.preventDefault();
+      showNext();
+    } else if (event.key === "Escape") {
+      closeImageLightbox();
+    }
+  };
+  document.addEventListener("keydown", handleKeydown);
+  lightbox = { overlay, previousFocus, handleKeydown };
+  showImage(currentIndex);
   close.focus({ preventScroll: true });
 }
 
@@ -1123,7 +1200,10 @@ function closeImageLightbox(options = {}) {
     return;
   }
 
-  const { overlay, previousFocus } = lightbox;
+  const { overlay, previousFocus, handleKeydown } = lightbox;
+  if (handleKeydown) {
+    document.removeEventListener("keydown", handleKeydown);
+  }
   overlay.remove();
   document.body.classList.remove("lightbox-open");
   lightbox = null;
