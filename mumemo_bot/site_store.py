@@ -470,7 +470,7 @@ def download_images(
                 source_name=image.name,
                 path=saved_path,
                 url=display_url,
-                original_url=_github_blob_url(github_repo_url, github_branch, saved_path),
+                original_url=_github_raw_url(github_repo_url, github_branch, saved_path),
                 thumbnail_path=thumbnail_path,
                 thumbnail_url=_asset_url(asset_url_prefix, thumbnail_path.relative_to(asset_dir)),
                 display_path=display_path,
@@ -833,19 +833,39 @@ def _asset_url(asset_url_prefix: str, relative_path: Path) -> str:
     return f"{prefix}/{'/'.join(encoded_parts)}"
 
 
-def _github_blob_url(repo_url: str, branch: str, path: Path) -> str | None:
+def _github_raw_url(repo_url: str, branch: str, path: Path) -> str | None:
     clean_repo_url = repo_url.strip().rstrip("/")
     if clean_repo_url.endswith(".git"):
         clean_repo_url = clean_repo_url[:-4]
     clean_branch = branch.strip() or "main"
     if not clean_repo_url:
         return None
+    raw_base_url = _github_raw_base_url(clean_repo_url)
+    if not raw_base_url:
+        return None
     try:
         relative_path = path.resolve().relative_to(PROJECT_ROOT.resolve())
     except ValueError:
         return None
     encoded_parts = [quote(part) for part in relative_path.parts]
-    return f"{clean_repo_url}/blob/{quote(clean_branch)}/{'/'.join(encoded_parts)}"
+    return f"{raw_base_url}/{quote(clean_branch)}/{'/'.join(encoded_parts)}"
+
+
+def _github_raw_base_url(repo_url: str) -> str | None:
+    parsed = urlparse(repo_url)
+    if parsed.netloc not in {"github.com", "www.github.com", "raw.githubusercontent.com"}:
+        return None
+
+    parts = [part for part in parsed.path.strip("/").split("/") if part]
+    if len(parts) < 2:
+        return None
+
+    owner = quote(parts[0], safe="")
+    repo = parts[1]
+    if repo.endswith(".git"):
+        repo = repo[:-4]
+    repo = quote(repo, safe="")
+    return f"https://raw.githubusercontent.com/{owner}/{repo}"
 
 
 def _ensure_detail_images_for_urls(config: BotConfig, image_urls: list[str]) -> None:
@@ -1094,9 +1114,13 @@ def _local_original_asset_path(config: BotConfig, image_url: str) -> Path | None
         repo_path = urlparse(repo_url).path.rstrip("/")
         branch = quote(config.github_branch.strip() or "main")
         blob_prefix = f"{repo_path}/blob/{branch}/"
-        if not parsed.path.startswith(blob_prefix):
+        raw_prefix = f"{repo_path}/{branch}/"
+        if parsed.netloc == "raw.githubusercontent.com" and parsed.path.startswith(raw_prefix):
+            relative_url = parsed.path[len(raw_prefix) :]
+        elif parsed.path.startswith(blob_prefix):
+            relative_url = parsed.path[len(blob_prefix) :]
+        else:
             return None
-        relative_url = parsed.path[len(blob_prefix) :]
     else:
         relative_url = unquote(parsed.path).lstrip("/")
 
