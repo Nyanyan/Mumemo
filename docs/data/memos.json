@@ -14,6 +14,36 @@
     "ogpImageHeight": 627
   },
   {
+    "id": "slack-C0BDC3P774J-1782801003.529509",
+    "title": "松山市考古館",
+    "body": "2024/04/25訪問\n\n写真2枚目の、古墳の石室と埋葬の様子の再現展示が印象的だった。記憶によると、埋葬時にハエがたかっている様子まで生々しいくらいに再現されていた。うろ覚えなのだが、解説パネルにはハエが寄ってくることが必ずしも現代のように悪い意味を持っていたわけではなかったというようなことが書いてあった。\n他にも様々な展示が丁寧にされており、展示にかける情熱を感じた。",
+    "location": "愛媛県",
+    "image": "/assets/posts/%E6%9D%BE%E5%B1%B1%E5%B8%82%E8%80%83%E5%8F%A4%E9%A4%A8/display/F0BE4NJ97NV-display.jpg",
+    "thumbnail": "/assets/posts/%E6%9D%BE%E5%B1%B1%E5%B8%82%E8%80%83%E5%8F%A4%E9%A4%A8/thumbs/F0BE4NJ97NV-thumb.jpg",
+    "source": {
+      "type": "slack",
+      "channel_id": "C0BDC3P774J",
+      "message_ts": "1782801003.529509",
+      "user_id": "U01997YCADN"
+    },
+    "postedAt": "2026-06-30",
+    "images": [
+      "/assets/posts/%E6%9D%BE%E5%B1%B1%E5%B8%82%E8%80%83%E5%8F%A4%E9%A4%A8/display/F0BE4NJ97NV-display.jpg",
+      "/assets/posts/%E6%9D%BE%E5%B1%B1%E5%B8%82%E8%80%83%E5%8F%A4%E9%A4%A8/display/F0BE0QA2CAJ-display.jpg",
+      "/assets/posts/%E6%9D%BE%E5%B1%B1%E5%B8%82%E8%80%83%E5%8F%A4%E9%A4%A8/display/F0BE6GJHSJ0-display.jpg",
+      "/assets/posts/%E6%9D%BE%E5%B1%B1%E5%B8%82%E8%80%83%E5%8F%A4%E9%A4%A8/display/F0BEX61SJ64-display.jpg",
+      "/assets/posts/%E6%9D%BE%E5%B1%B1%E5%B8%82%E8%80%83%E5%8F%A4%E9%A4%A8/display/F0BE0QB81U6-display.jpg"
+    ],
+    "originalImage": "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E6%9D%BE%E5%B1%B1%E5%B8%82%E8%80%83%E5%8F%A4%E9%A4%A8/F0BE4NJ97NV.jpg",
+    "originalImages": [
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E6%9D%BE%E5%B1%B1%E5%B8%82%E8%80%83%E5%8F%A4%E9%A4%A8/F0BE4NJ97NV.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E6%9D%BE%E5%B1%B1%E5%B8%82%E8%80%83%E5%8F%A4%E9%A4%A8/F0BE0QA2CAJ.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E6%9D%BE%E5%B1%B1%E5%B8%82%E8%80%83%E5%8F%A4%E9%A4%A8/F0BE6GJHSJ0.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E6%9D%BE%E5%B1%B1%E5%B8%82%E8%80%83%E5%8F%A4%E9%A4%A8/F0BEX61SJ64.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E6%9D%BE%E5%B1%B1%E5%B8%82%E8%80%83%E5%8F%A4%E9%A4%A8/F0BE0QB81U6.jpg"
+    ]
+  },
+  {
     "id": "slack-C0BDC3P774J-1782800494.253509",
     "title": "広島平和記念資料館",
     "body": "2022/06/04、2024/12/26訪問\n\n広島の原爆等に関する資料館。遺品とその遺品に関するエピソードの展示を中心に、原爆開発の歴史的な経緯などの展示もあった。\n実は小学生時代(2010年前後？)にも訪れたことがあり、このときには原爆投下直後の街を再現した蝋人形があり、強く印象に残っている。2017年から2019年にかけての大改装でこの蝋人形の展示は終わってしまったそう。",
