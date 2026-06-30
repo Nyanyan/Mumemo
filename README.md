@@ -47,7 +47,9 @@ Required bot settings:
 - `MUMEMO_NOMINATIM_EMAIL`: optional contact email sent to Nominatim
 - `MUMEMO_NOMINATIM_ENDPOINT`: optional Nominatim search endpoint; defaults to `https://nominatim.openstreetmap.org/search`
 - `MUMEMO_NOMINATIM_TIMEOUT_SECONDS`: optional Nominatim timeout; defaults to `10`
-- `MUMEMO_SLACK_ORIGINAL_ASSET_DIR`: optional Slack original image directory; defaults to `originals/slack`
+- `MUMEMO_POST_ASSET_DIR`: optional public post image directory; defaults to `docs/assets/posts`
+- `MUMEMO_POST_ASSET_URL_PREFIX`: optional public post image URL prefix; defaults to `/assets/posts`
+- `MUMEMO_ORIGINAL_ASSET_DIR`: optional original image directory; defaults to `originals`
 - `MUMEMO_GITHUB_REPO_URL`: optional GitHub repository URL for full-size image links; defaults to `https://github.com/Nyanyan/Mumemo`
 - `MUMEMO_GITHUB_BRANCH`: optional GitHub branch for full-size image links; defaults to `main`
 
@@ -79,7 +81,7 @@ New top-level Slack posts are not published immediately. The bot replies in the 
 
 When a new Slack post has the same title as an existing memo, the review shows both versions. Use `既存投稿に追記` to append the new body/images to the existing memo, `別で投稿` to publish a separate memo while assigning the new memo a suffixed slug, or `上書き投稿` to replace the existing memo body/images while keeping its URL.
 
-Attached original image files are saved under `originals/slack/<title>/`, outside the GitHub Pages deploy directory. Public JPEG tile thumbnails are generated under `docs/assets/slack/<title>/thumbs/`, and public detail images are generated under `docs/assets/slack/<title>/display/`. The memo `images` field stores those resized detail images, while `originalImages` stores GitHub links to the undeployed originals. Detail page images open the resized image first; the lightbox's `フルサイズ画像` button opens the GitHub original in a new tab. Approved posts are inserted above older non-fixed posts, while fixed entries such as `これは何？` remain first.
+Attached original image files are saved under `originals/<title>/`, outside the GitHub Pages deploy directory. Public JPEG tile thumbnails are generated under `docs/assets/posts/<title>/thumbs/`, and public detail images are generated under `docs/assets/posts/<title>/display/`. The memo `images` field stores those resized detail images, while `originalImages` stores GitHub links to the undeployed originals. Detail page images open the resized image first; the lightbox's `フルサイズ画像` button opens the GitHub original in a new tab. Approved posts are inserted above older non-fixed posts, while fixed entries such as `これは何？` remain first.
 
 To organize existing posts from Slack, type `mumemo`, `mumemo list`, or `mumemo 整理` in the configured channel. The bot posts the current list with `編集` and `削除` buttons. Fixed memos such as `これは何？` are shown and can be edited, but cannot be deleted. Deleting a memo also removes its local Slack image files, empty image title folders, and stale generated route folders when safe. If the slash command is configured, `/mumemo` opens the same organizer as an ephemeral Slack response.
 

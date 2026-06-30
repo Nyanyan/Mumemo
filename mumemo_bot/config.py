@@ -40,8 +40,14 @@ class BotConfig:
     def from_env(cls) -> "BotConfig":
         load_environment()
         data_path = _path_env("MUMEMO_DATA_PATH", "docs/data/memos.json")
-        asset_dir = _path_env("MUMEMO_SLACK_ASSET_DIR", "docs/assets/slack")
-        original_asset_dir = _path_env("MUMEMO_SLACK_ORIGINAL_ASSET_DIR", "originals/slack")
+        asset_dir = _path_env(
+            "MUMEMO_POST_ASSET_DIR",
+            "docs/assets/posts",
+        )
+        original_asset_dir = _path_env(
+            "MUMEMO_ORIGINAL_ASSET_DIR",
+            "originals",
+        )
         route_build_command = _command_env(
             "MUMEMO_ROUTE_BUILD_COMMAND",
             DEFAULT_ROUTE_BUILD_COMMAND,
@@ -55,8 +61,8 @@ class BotConfig:
             data_path=data_path,
             asset_dir=asset_dir,
             asset_url_prefix=os.getenv(
-                "MUMEMO_SLACK_ASSET_URL_PREFIX",
-                "/assets/slack",
+                "MUMEMO_POST_ASSET_URL_PREFIX",
+                "/assets/posts",
             ).rstrip("/"),
             original_asset_dir=original_asset_dir,
             default_image=_default_image_env(),

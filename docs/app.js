@@ -226,7 +226,7 @@ function detailPreviewFor(imageUrl) {
     return cleanImageUrl;
   }
 
-  if (url.origin !== window.location.origin || !url.pathname.startsWith("/assets/slack/")) {
+  if (url.origin !== window.location.origin || !url.pathname.startsWith("/assets/posts/")) {
     return cleanImageUrl;
   }
 

@@ -6,9 +6,9 @@ import sys
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DOCS_DIR = PROJECT_ROOT / "docs"
 MEMOS_PATH = DOCS_DIR / "data" / "memos.json"
-ASSET_DIR = DOCS_DIR / "assets" / "slack"
-ASSET_URL_PREFIX = "/assets/slack"
-ORIGINAL_ASSET_DIR = PROJECT_ROOT / "originals" / "slack"
+ASSET_DIR = DOCS_DIR / "assets" / "posts"
+ASSET_URL_PREFIX = "/assets/posts"
+ORIGINAL_ASSET_DIR = PROJECT_ROOT / "originals"
 
 sys.path.insert(0, str(PROJECT_ROOT))
 from mumemo_bot.site_store import _create_detail_image  # noqa: E402
