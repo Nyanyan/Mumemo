@@ -873,6 +873,15 @@ def _thumbnail_url_for_image_url(config: BotConfig, image_url: str) -> str | Non
         return None
     if image_path.parent.name == "thumbs":
         return clean_image_url
+    if image_path.parent.name == DETAIL_IMAGE_DIRNAME:
+        thumbnail_path = _thumbnail_path_for_detail_image_path(image_path)
+        if thumbnail_path.exists() and thumbnail_path.is_file():
+            return _asset_url(config.asset_url_prefix, thumbnail_path.relative_to(config.asset_dir))
+        try:
+            _create_thumbnail(image_path, thumbnail_path)
+        except OSError:
+            return None
+        return _asset_url(config.asset_url_prefix, thumbnail_path.relative_to(config.asset_dir))
 
     try:
         thumbnail_path = _create_thumbnail(image_path)
@@ -933,6 +942,13 @@ def _thumbnail_path_for_image_path(image_path: Path) -> Path:
 
 def _detail_image_path_for_image_path(image_path: Path) -> Path:
     return image_path.parent / DETAIL_IMAGE_DIRNAME / f"{image_path.stem}-display.jpg"
+
+
+def _thumbnail_path_for_detail_image_path(image_path: Path) -> Path:
+    stem = image_path.stem
+    if stem.endswith("-display"):
+        stem = stem[: -len("-display")]
+    return image_path.parent.parent / "thumbs" / f"{stem}-thumb.jpg"
 
 def _clean_image_list(images: list[str]) -> list[str]:
     clean_images: list[str] = []
