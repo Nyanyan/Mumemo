@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>平生町民具館 - Mumemo - にゃにゃんの博物館メモ</title>
+  <meta name="description" content="2026/01/06訪問 民俗資料館のすぐ近くにある。大正初期の民家が移築されていたり、国木田独歩が教師をしていたときの机があったりと、ぱっと建物を見たときの印象よりも充実した展示であった。昔、このあたりには塩田があったそうで、塩田関連コーナーがあった。...">
+  <!-- mumemo:ogp:start -->
+  <meta property="og:site_name" content="Mumemo - にゃにゃんの博物館メモ">
+  <meta property="og:title" content="平生町民具館 - Mumemo - にゃにゃんの博物館メモ">
+  <meta property="og:description" content="2026/01/06訪問 民俗資料館のすぐ近くにある。大正初期の民家が移築されていたり、国木田独歩が教師をしていたときの机があったりと、ぱっと建物を見たときの印象よりも充実した展示であった。昔、このあたりには塩田があったそうで、塩田関連コーナーがあった。...">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://mumemo.nyanyan.dev/%E5%B9%B3%E7%94%9F%E7%94%BA%E6%B0%91%E5%85%B7%E9%A4%A8/">
+  <meta property="og:image" content="https://mumemo.nyanyan.dev/assets/ogp/%E5%B9%B3%E7%94%9F%E7%94%BA%E6%B0%91%E5%85%B7%E9%A4%A8-fe69662f.jpg">
+  <meta property="og:image:alt" content="平生町民具館 - Mumemo - にゃにゃんの博物館メモ">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="平生町民具館 - Mumemo - にゃにゃんの博物館メモ">
+  <meta name="twitter:description" content="2026/01/06訪問 民俗資料館のすぐ近くにある。大正初期の民家が移築されていたり、国木田独歩が教師をしていたときの机があったりと、ぱっと建物を見たときの印象よりも充実した展示であった。昔、このあたりには塩田があったそうで、塩田関連コーナーがあった。...">
+  <meta name="twitter:image" content="https://mumemo.nyanyan.dev/assets/ogp/%E5%B9%B3%E7%94%9F%E7%94%BA%E6%B0%91%E5%85%B7%E9%A4%A8-fe69662f.jpg">
+  <!-- mumemo:ogp:end -->
+<link rel="icon" href="/website_icon_small.png">
+  <link rel="apple-touch-icon" href="/website_icon_small.png">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="site-shell">
+    <header class="site-header">
+      <div class="brand-area">
+        <a class="brand-link" href="/" data-nav>
+          <img class="brand-icon" src="/website_icon_header.webp" alt="">
+          <h1 class="brand-title"><span class="brand-title-main">Mumemo</span><span class="brand-title-separator"> - </span><span class="brand-title-sub">にゃにゃんの博物館メモ</span></h1>
+        </a>
+        <a class="author-link brand-author-link" href="https://nyanyan.dev/" target="_blank" rel="author noopener noreferrer">作者</a>
+      </div>
+      <div class="header-actions">
+        <a class="location-button header-location-button" href="/locations/" data-nav>場所で検索</a>
+        <div class="home-share">
+          <button class="home-share-button" type="button" aria-label="トップページを共有" aria-expanded="false" aria-controls="homeShareMenu">
+            <img class="home-share-icon" src="/assets/share-icon.svg" alt="">
+            <span class="home-share-label">共有</span>
+          </button>
+          <div id="homeShareMenu" class="home-share-menu" hidden>
+            <button class="home-share-menu-item" type="button" data-home-share-copy>リンクをコピー</button>
+            <button class="home-share-menu-item" type="button" data-home-share-native>端末で共有</button>
+            <a class="home-share-menu-item" href="#" target="_blank" rel="noopener noreferrer" data-home-share-target="x">X</a>
+            <a class="home-share-menu-item" href="#" target="_blank" rel="noopener noreferrer" data-home-share-target="facebook">Facebook</a>
+            <a class="home-share-menu-item" href="#" target="_blank" rel="noopener noreferrer" data-home-share-target="line">LINE</a>
+            <a class="home-share-menu-item" href="#" target="_blank" rel="noopener noreferrer" data-home-share-target="bluesky">Bluesky</a>
+            <span class="home-share-status" aria-live="polite"></span>
+          </div>
+        </div>
+        <button id="headerRandomButton" class="random-button header-random-button" type="button" data-random-home>シャッフル</button>
+      </div>
+    </header>
+
+    <main id="app"></main>
+  </div>
+
+  <template id="home-template">
+    <section class="home-view" aria-labelledby="home-title">
+      <h2 id="home-title" class="visually-hidden">博物館メモ一覧</h2>
+      <div class="toolbar">
+        <label class="search-wrap">
+          <span class="visually-hidden">検索</span>
+          <input id="searchInput" class="search-input" type="search" autocomplete="off" placeholder="キーワード検索">
+        </label>
+        <div class="toolbar-actions">
+          <a class="location-button toolbar-location-button" href="/locations/" data-nav>場所で検索</a>
+          <button id="randomButton" class="random-button" type="button" data-random-home>シャッフル</button>
+          <span id="resultCount" class="result-count"></span>
+        </div>
+      </div>
+      <div id="tileGrid" class="tile-grid" aria-live="polite"></div>
+    </section>
+  </template>
+</body>
+</html>
