@@ -190,6 +190,18 @@ function summarize(text) {
   return text.replace(/\s+/g, " ").trim();
 }
 
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (character) => (
+    {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "\"": "&quot;",
+      "'": "&#39;"
+    }[character]
+  ));
+}
+
 function imagesFor(entry) {
   const images = Array.isArray(entry.images) ? entry.images : [];
   const candidates = [...images, entry.image].filter((image) => typeof image === "string" && image.trim());
@@ -207,6 +219,39 @@ function fullSizeImageFor(entry, imageUrl, index) {
   const originals = originalImagesFor(entry);
   const imageIndex = images.indexOf(imageUrl);
   return originals[imageIndex >= 0 ? imageIndex : index] || "";
+}
+
+function openFullSizeImage(imageUrl, title) {
+  if (!imageUrl) {
+    return;
+  }
+
+  const escapedUrl = escapeHtml(imageUrl);
+  const escapedTitle = escapeHtml(title || "Full size image");
+  const viewer = `<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${escapedTitle}</title>
+<style>
+html,body{margin:0;min-height:100%;background:#111;color:#fff}
+body{display:grid;place-items:center}
+img{display:block;max-width:100vw;max-height:100vh;width:auto;height:auto;object-fit:contain}
+</style>
+</head>
+<body>
+<img src="${escapedUrl}" alt="">
+</body>
+</html>`;
+  const viewerUrl = URL.createObjectURL(new Blob([viewer], { type: "text/html" }));
+  const opened = window.open(viewerUrl, "_blank");
+  if (!opened) {
+    window.location.href = imageUrl;
+  } else {
+    opened.opener = null;
+  }
+  window.setTimeout(() => URL.revokeObjectURL(viewerUrl), 60000);
 }
 
 function lightboxItemsFor(entry) {
@@ -1118,6 +1163,10 @@ function openImageLightbox(lightboxItems, title, initialIndex = 0) {
   fullSizeLink.target = "_blank";
   fullSizeLink.rel = "noopener noreferrer";
   fullSizeLink.textContent = "フルサイズ画像";
+  fullSizeLink.addEventListener("click", (event) => {
+    event.preventDefault();
+    openFullSizeImage(fullSizeLink.href, title);
+  });
   actions.append(fullSizeLink);
 
   const previous = document.createElement("button");
