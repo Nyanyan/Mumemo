@@ -14,6 +14,30 @@
     "ogpImageHeight": 627
   },
   {
+    "id": "slack-C0BDC3P774J-1782797517.588989",
+    "title": "一夜庵",
+    "body": "2023/02/20訪問\n\n山崎宗鑑という、俳諧の祖とも言われる人が結んだ庵。\n疲れ果てながら歩いていたら雨も降ってきたので、ここの軒下でしばらく休憩した。\n一夜庵というのは、山崎宗鑑が一夜以上の宿泊を許さなかったかららしい。私は1時間くらいの雨宿りだったので、セーフであろう。\n山崎宗鑑のことは一切知らずにたまたまここを訪れたのだが、個人的に山崎宗鑑の句は非常に好みで、帰宅後しばらく大学の図書館で山崎宗鑑を調べた。",
+    "location": "香川県",
+    "image": "/assets/posts/%E4%B8%80%E5%A4%9C%E5%BA%B5/display/F0BDZ677DLM-display.jpg",
+    "thumbnail": "/assets/posts/%E4%B8%80%E5%A4%9C%E5%BA%B5/thumbs/F0BDZ677DLM-thumb.jpg",
+    "source": {
+      "type": "slack",
+      "channel_id": "C0BDC3P774J",
+      "message_ts": "1782797517.588989",
+      "user_id": "U01997YCADN"
+    },
+    "postedAt": "2026-06-30",
+    "images": [
+      "/assets/posts/%E4%B8%80%E5%A4%9C%E5%BA%B5/display/F0BDZ677DLM-display.jpg",
+      "/assets/posts/%E4%B8%80%E5%A4%9C%E5%BA%B5/display/F0BE67A8YAY-display.jpg"
+    ],
+    "originalImage": "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E4%B8%80%E5%A4%9C%E5%BA%B5/F0BDZ677DLM.jpg",
+    "originalImages": [
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E4%B8%80%E5%A4%9C%E5%BA%B5/F0BDZ677DLM.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E4%B8%80%E5%A4%9C%E5%BA%B5/F0BE67A8YAY.jpg"
+    ]
+  },
+  {
     "id": "slack-C0BDC3P774J-1782797130.257329",
     "title": "銭形展望台",
     "body": "2023/02/20訪問\n\n坂を登って海側を見ると、砂で作られた巨大な寛永通宝がある。\n江戸時代に作られ、今でも毎年手入れされており、維持されている。\n観音寺駅から2kmほど歩いて行ったのだが、直前にしまなみ海道を自転車+徒歩で200kmくらい移動しており、非常に疲れた。2026年6月現在、調べてみると1日4便観音寺駅から乗合バスが出ているらしい。",
