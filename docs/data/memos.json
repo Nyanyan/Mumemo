@@ -14,6 +14,34 @@
     "ogpImageHeight": 627
   },
   {
+    "id": "slack-C0BDC3P774J-1782793289.783669",
+    "title": "宮古島市地下ダム資料館",
+    "body": "2023/05/05訪問\n\n宮古島は水資源を確保することが古くから死活問題だったらしく、地下ダムという形式のダムがいっぱい存在する。地下ダムは水を通す地層の中に貯水する仕組みだそうで、ここに来て初めて知った。\n近くには福里地下ダムがあり、見学できた。",
+    "location": "不明",
+    "image": "/assets/posts/%E5%AE%AE%E5%8F%A4%E5%B3%B6%E5%B8%82%E5%9C%B0%E4%B8%8B%E3%83%80%E3%83%A0%E8%B3%87%E6%96%99%E9%A4%A8/display/F0BE27PAG66-display.jpg",
+    "thumbnail": "/assets/posts/%E5%AE%AE%E5%8F%A4%E5%B3%B6%E5%B8%82%E5%9C%B0%E4%B8%8B%E3%83%80%E3%83%A0%E8%B3%87%E6%96%99%E9%A4%A8/thumbs/F0BE27PAG66-thumb.jpg",
+    "source": {
+      "type": "slack",
+      "channel_id": "C0BDC3P774J",
+      "message_ts": "1782793289.783669",
+      "user_id": "U01997YCADN"
+    },
+    "postedAt": "2026-06-30",
+    "images": [
+      "/assets/posts/%E5%AE%AE%E5%8F%A4%E5%B3%B6%E5%B8%82%E5%9C%B0%E4%B8%8B%E3%83%80%E3%83%A0%E8%B3%87%E6%96%99%E9%A4%A8/display/F0BE27PAG66-display.jpg",
+      "/assets/posts/%E5%AE%AE%E5%8F%A4%E5%B3%B6%E5%B8%82%E5%9C%B0%E4%B8%8B%E3%83%80%E3%83%A0%E8%B3%87%E6%96%99%E9%A4%A8/display/F0BDYRQHYSH-display.jpg",
+      "/assets/posts/%E5%AE%AE%E5%8F%A4%E5%B3%B6%E5%B8%82%E5%9C%B0%E4%B8%8B%E3%83%80%E3%83%A0%E8%B3%87%E6%96%99%E9%A4%A8/display/F0BE27SV38A-display.jpg",
+      "/assets/posts/%E5%AE%AE%E5%8F%A4%E5%B3%B6%E5%B8%82%E5%9C%B0%E4%B8%8B%E3%83%80%E3%83%A0%E8%B3%87%E6%96%99%E9%A4%A8/display/F0BE5SU23QU-display.jpg"
+    ],
+    "originalImage": "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E5%AE%AE%E5%8F%A4%E5%B3%B6%E5%B8%82%E5%9C%B0%E4%B8%8B%E3%83%80%E3%83%A0%E8%B3%87%E6%96%99%E9%A4%A8/F0BE27PAG66.jpg",
+    "originalImages": [
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E5%AE%AE%E5%8F%A4%E5%B3%B6%E5%B8%82%E5%9C%B0%E4%B8%8B%E3%83%80%E3%83%A0%E8%B3%87%E6%96%99%E9%A4%A8/F0BE27PAG66.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E5%AE%AE%E5%8F%A4%E5%B3%B6%E5%B8%82%E5%9C%B0%E4%B8%8B%E3%83%80%E3%83%A0%E8%B3%87%E6%96%99%E9%A4%A8/F0BDYRQHYSH.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E5%AE%AE%E5%8F%A4%E5%B3%B6%E5%B8%82%E5%9C%B0%E4%B8%8B%E3%83%80%E3%83%A0%E8%B3%87%E6%96%99%E9%A4%A8/F0BE27SV38A.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E5%AE%AE%E5%8F%A4%E5%B3%B6%E5%B8%82%E5%9C%B0%E4%B8%8B%E3%83%80%E3%83%A0%E8%B3%87%E6%96%99%E9%A4%A8/F0BE5SU23QU.jpg"
+    ]
+  },
+  {
     "id": "slack-C0BDC3P774J-1782789970.282009",
     "title": "宮古島市総合博物館",
     "body": "2023/05/06訪問\n\n宮古島の文化、歴史、生物などの展示がある。\n1枚目の人形のクオリティがとても高かった。",
