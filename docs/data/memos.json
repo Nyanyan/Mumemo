@@ -14,6 +14,32 @@
     "ogpImageHeight": 627
   },
   {
+    "id": "slack-C0BDC3P774J-1782958937.468949",
+    "title": "上高津貝塚ふるさと歴史の広場",
+    "body": "2022/12/25訪問\n\n土浦市にある貝塚。当時の生活を再現した公園になっている。椅子が土器風なのが印象的だった。\n残念ながらきちんと写真を撮っていなかった…",
+    "location": "茨城県",
+    "image": "/assets/posts/%E4%B8%8A%E9%AB%98%E6%B4%A5%E8%B2%9D%E5%A1%9A%E3%81%B5%E3%82%8B%E3%81%95%E3%81%A8%E6%AD%B4%E5%8F%B2%E3%81%AE%E5%BA%83%E5%A0%B4/display/F0BER8HF3GC-display.jpg",
+    "thumbnail": "/assets/posts/%E4%B8%8A%E9%AB%98%E6%B4%A5%E8%B2%9D%E5%A1%9A%E3%81%B5%E3%82%8B%E3%81%95%E3%81%A8%E6%AD%B4%E5%8F%B2%E3%81%AE%E5%BA%83%E5%A0%B4/thumbs/F0BER8HF3GC-thumb.jpg",
+    "source": {
+      "type": "slack",
+      "channel_id": "C0BDC3P774J",
+      "message_ts": "1782958937.468949",
+      "user_id": "U01997YCADN"
+    },
+    "postedAt": "2026-07-02",
+    "images": [
+      "/assets/posts/%E4%B8%8A%E9%AB%98%E6%B4%A5%E8%B2%9D%E5%A1%9A%E3%81%B5%E3%82%8B%E3%81%95%E3%81%A8%E6%AD%B4%E5%8F%B2%E3%81%AE%E5%BA%83%E5%A0%B4/display/F0BER8HF3GC-display.jpg",
+      "/assets/posts/%E4%B8%8A%E9%AB%98%E6%B4%A5%E8%B2%9D%E5%A1%9A%E3%81%B5%E3%82%8B%E3%81%95%E3%81%A8%E6%AD%B4%E5%8F%B2%E3%81%AE%E5%BA%83%E5%A0%B4/display/F0BEKGJB90W-display.jpg",
+      "/assets/posts/%E4%B8%8A%E9%AB%98%E6%B4%A5%E8%B2%9D%E5%A1%9A%E3%81%B5%E3%82%8B%E3%81%95%E3%81%A8%E6%AD%B4%E5%8F%B2%E3%81%AE%E5%BA%83%E5%A0%B4/display/F0BEPEE91PT-display.jpg"
+    ],
+    "originalImage": "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E4%B8%8A%E9%AB%98%E6%B4%A5%E8%B2%9D%E5%A1%9A%E3%81%B5%E3%82%8B%E3%81%95%E3%81%A8%E6%AD%B4%E5%8F%B2%E3%81%AE%E5%BA%83%E5%A0%B4/F0BER8HF3GC.jpg",
+    "originalImages": [
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E4%B8%8A%E9%AB%98%E6%B4%A5%E8%B2%9D%E5%A1%9A%E3%81%B5%E3%82%8B%E3%81%95%E3%81%A8%E6%AD%B4%E5%8F%B2%E3%81%AE%E5%BA%83%E5%A0%B4/F0BER8HF3GC.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E4%B8%8A%E9%AB%98%E6%B4%A5%E8%B2%9D%E5%A1%9A%E3%81%B5%E3%82%8B%E3%81%95%E3%81%A8%E6%AD%B4%E5%8F%B2%E3%81%AE%E5%BA%83%E5%A0%B4/F0BEKGJB90W.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E4%B8%8A%E9%AB%98%E6%B4%A5%E8%B2%9D%E5%A1%9A%E3%81%B5%E3%82%8B%E3%81%95%E3%81%A8%E6%AD%B4%E5%8F%B2%E3%81%AE%E5%BA%83%E5%A0%B4/F0BEPEE91PT.jpg"
+    ]
+  },
+  {
     "id": "slack-C0BDC3P774J-1782958405.948709",
     "title": "雄翔館",
     "body": "2026/03/12訪問\n\n予科練平和記念館の隣には陸上自衛隊の土浦駐屯地があり、駐屯地内にも予科練に関係する展示がある。\n元々海軍関連の施設があった場所に現在陸上自衛隊の駐屯地があるためか、山本五十六の像があった。",
