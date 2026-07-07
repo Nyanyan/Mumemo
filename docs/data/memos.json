@@ -14,6 +14,32 @@
     "ogpImageHeight": 627
   },
   {
+    "id": "slack-C0BDC3P774J-1783435677.149889",
+    "title": "弥生美術館",
+    "body": "2026/03/21訪問\n\n東大のすぐ隣にある美術館。私が行った時は袴の展示をしていて、大変面白かった。確かほとんどの展示は撮影禁止だったため、展示の写真は1枚しか撮っていなかった。\n袴が様々な学校で着られるようになっていって、そのうち制服になって、現代の制服にも痕跡が受け継がれている様子がわかりやすく展示されていた。結構お客さんも多く賑わっていた記憶がある。お客さんの中には袴を着て展示を見に来る人もいた。",
+    "location": "不明",
+    "image": "/assets/posts/%E5%BC%A5%E7%94%9F%E7%BE%8E%E8%A1%93%E9%A4%A8/display/F0BFJ03HGPM-display.jpg",
+    "thumbnail": "/assets/posts/%E5%BC%A5%E7%94%9F%E7%BE%8E%E8%A1%93%E9%A4%A8/thumbs/F0BFJ03HGPM-thumb.jpg",
+    "source": {
+      "type": "slack",
+      "channel_id": "C0BDC3P774J",
+      "message_ts": "1783435677.149889",
+      "user_id": "U01997YCADN"
+    },
+    "postedAt": "2026-07-07",
+    "images": [
+      "/assets/posts/%E5%BC%A5%E7%94%9F%E7%BE%8E%E8%A1%93%E9%A4%A8/display/F0BFJ03HGPM-display.jpg",
+      "/assets/posts/%E5%BC%A5%E7%94%9F%E7%BE%8E%E8%A1%93%E9%A4%A8/display/F0BFN77FR8W-display.jpg",
+      "/assets/posts/%E5%BC%A5%E7%94%9F%E7%BE%8E%E8%A1%93%E9%A4%A8/display/F0BF8S4DS5D-display.jpg"
+    ],
+    "originalImage": "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E5%BC%A5%E7%94%9F%E7%BE%8E%E8%A1%93%E9%A4%A8/F0BFJ03HGPM.jpg",
+    "originalImages": [
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E5%BC%A5%E7%94%9F%E7%BE%8E%E8%A1%93%E9%A4%A8/F0BFJ03HGPM.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E5%BC%A5%E7%94%9F%E7%BE%8E%E8%A1%93%E9%A4%A8/F0BFN77FR8W.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E5%BC%A5%E7%94%9F%E7%BE%8E%E8%A1%93%E9%A4%A8/F0BF8S4DS5D.jpg"
+    ]
+  },
+  {
     "id": "slack-C0BDC3P774J-1783430084.258499",
     "title": "国立公文書館つくば分館",
     "body": "2025/10/29訪問\n\nサイクリングをしていて偶然見かけて訪問したが、かなり面白かった。\n歴史的な文書や、つくばに関する文書(の複製)などが展示されていて、かなり興奮した。筑波研究学園都市の建設や、古い筑波山周辺の文書などが個人的には特に面白かった。\nまた、平成/令和ごっこをすることもできる。\n規模は大きくないのだが、文書をじっくり読むと何時間でも楽しめそうだった。",
