@@ -14,6 +14,34 @@
     "ogpImageHeight": 627
   },
   {
+    "id": "slack-C0BDC3P774J-1783425425.151509",
+    "title": "AIST-Cube",
+    "body": "2025/12/17ほか何回か訪問\n\n産総研(産業技術総合研究所)内にある新しめの展示館。産総研の研究者による研究が簡単に紹介されている。\n各研究をポスター1枚+実物程度の情報量で紹介してあるので、そこまで濃い内容の展示ではない。\n1つとんでもない情熱を感じる展示があった。写真2枚目から4枚目の展示なのだが、これは熱に依存しない抵抗器を開発する研究に関連したもので、実際に汎用抵抗器と独自開発した抵抗器をヒーターで熱して抵抗を測定するデモを行っていた。スタートボタンを押すだけで、この実験装置が動いて、PC画面にリアルタイムでグラフが描画される。実験結果のグラフを置いておくだけではなく、目の前で実験するということに強いこだわりを感じた。さらに、それが常設されてきちんと動いているのがすごかった。\nAIST-Cubeの見学には、2025年12月時点では予約が必要らしい。ただ、私はそれを知らずに訪問してしまい、その場で書類を書いて見学させていただいた。\nなお、私の記憶では2021年頃(？)にはアザラシロボットのパロやヒューマノイドロボットのHRPシリーズが置いてあったのだが、その後大改装して、今の形になったようだった(改装前もCubeという名前だった記憶があるが、改装後はもしかしたら場所自体も少し変わったかも？)。2025年12月現在、ロボットの展示はほとんどなかった記憶がある。この点は少し寂しかった。というか、ロボットを作る研究が結構ストップしてしまっている記憶があり、その事実がそもそも寂しい…。単なる想像なのだが、パッと見てわかりやすい研究(ロボット開発とか)が滞ってしまった中でも、過去の成果の展示ではなく、実際に今(または最近)やっている研究をアピールしたいという強い意思を持って改装したのかなあなどと思っている。産総研の研究は好きなので、またこちらにも訪問したい。",
+    "location": "茨城県",
+    "image": "/assets/posts/AIST-Cube/display/F0BFNNRLKU2-display.jpg",
+    "thumbnail": "/assets/posts/AIST-Cube/thumbs/F0BFNNRLKU2-thumb.jpg",
+    "source": {
+      "type": "slack",
+      "channel_id": "C0BDC3P774J",
+      "message_ts": "1783425425.151509",
+      "user_id": "U01997YCADN"
+    },
+    "postedAt": "2026-07-07",
+    "images": [
+      "/assets/posts/AIST-Cube/display/F0BFNNRLKU2-display.jpg",
+      "/assets/posts/AIST-Cube/display/F0BGH2YCTUG-display.jpg",
+      "/assets/posts/AIST-Cube/display/F0BFGF9C56X-display.jpg",
+      "/assets/posts/AIST-Cube/display/F0BGH31LLM6-display.jpg"
+    ],
+    "originalImage": "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/AIST-Cube/F0BFNNRLKU2.jpg",
+    "originalImages": [
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/AIST-Cube/F0BFNNRLKU2.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/AIST-Cube/F0BGH2YCTUG.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/AIST-Cube/F0BFGF9C56X.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/AIST-Cube/F0BGH31LLM6.jpg"
+    ]
+  },
+  {
     "id": "slack-C0BDC3P774J-1783424364.431979",
     "title": "スペースドーム",
     "body": "2025/12/17ほか何回か訪問\n\nJAXA筑波宇宙センター内にある公開展示施設。様々なロケットや宇宙機の展示があり、結構面白い。\n私は2021年に訪問したこともあったのだが、その後しばらく改装していて、改装後2025年に訪問したときは、解説が増えて丁寧になっていて、とてもわかりやすくなっていた。\n2025/12/17に訪問したときはちょうどH3ロケット8号機の打ち上げ日で、パブリックビューイングも行われていた。ただ、この日は打ち上げが直前で延期になり、後日再度打ち上げて、失敗してしまうのだった…悲しい。\nちなみにH3ロケット1号機で指令破壊されてしまっただいち3号の模型もあった。泣ける…",
