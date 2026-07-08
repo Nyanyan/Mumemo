@@ -14,6 +14,44 @@
     "ogpImageHeight": 627
   },
   {
+    "id": "slack-C0BDC3P774J-1783480265.076389",
+    "title": "岩国シロヘビの館",
+    "body": "2026/07/04訪問\n\n岩国では白蛇が信仰されていて、白蛇を飼育するなどものすごい情熱を感じる場所である。私がここに行った時には子供1匹、大人3匹の白蛇が飼育・展示されていた。また、白蛇に関する文化的・生物的な解説も充実していた。\n白蛇(アオダイショウのアルビノ)は潜性遺伝するらしい。そのため、メンデルの法則に関するゲームがあって、驚いた(子供向けのような見た目をしていたが、大人も楽しめると思う)。\nゲームの他にも体験できる展示がいくつかあり、面白い場所だった。",
+    "location": "山口県",
+    "image": "/assets/posts/%E5%B2%A9%E5%9B%BD%E3%82%B7%E3%83%AD%E3%83%98%E3%83%93%E3%81%AE%E9%A4%A8/display/F0BFDMXEV8F-display.jpg",
+    "thumbnail": "/assets/posts/%E5%B2%A9%E5%9B%BD%E3%82%B7%E3%83%AD%E3%83%98%E3%83%93%E3%81%AE%E9%A4%A8/thumbs/F0BFDMXEV8F-thumb.jpg",
+    "source": {
+      "type": "slack",
+      "channel_id": "C0BDC3P774J",
+      "message_ts": "1783480265.076389",
+      "user_id": "U01997YCADN"
+    },
+    "postedAt": "2026-07-08",
+    "images": [
+      "/assets/posts/%E5%B2%A9%E5%9B%BD%E3%82%B7%E3%83%AD%E3%83%98%E3%83%93%E3%81%AE%E9%A4%A8/display/F0BFDMXEV8F-display.jpg",
+      "/assets/posts/%E5%B2%A9%E5%9B%BD%E3%82%B7%E3%83%AD%E3%83%98%E3%83%93%E3%81%AE%E9%A4%A8/display/F0BGPD3P15E-display.jpg",
+      "/assets/posts/%E5%B2%A9%E5%9B%BD%E3%82%B7%E3%83%AD%E3%83%98%E3%83%93%E3%81%AE%E9%A4%A8/display/F0BGPD3NAC8-display.jpg",
+      "/assets/posts/%E5%B2%A9%E5%9B%BD%E3%82%B7%E3%83%AD%E3%83%98%E3%83%93%E3%81%AE%E9%A4%A8/display/F0BFX0YD3ED-display.jpg",
+      "/assets/posts/%E5%B2%A9%E5%9B%BD%E3%82%B7%E3%83%AD%E3%83%98%E3%83%93%E3%81%AE%E9%A4%A8/display/F0BFNRF1XM1-display.jpg",
+      "/assets/posts/%E5%B2%A9%E5%9B%BD%E3%82%B7%E3%83%AD%E3%83%98%E3%83%93%E3%81%AE%E9%A4%A8/display/F0BFYQRSUJ0-display.jpg",
+      "/assets/posts/%E5%B2%A9%E5%9B%BD%E3%82%B7%E3%83%AD%E3%83%98%E3%83%93%E3%81%AE%E9%A4%A8/display/F0BFT34SR62-display.jpg",
+      "/assets/posts/%E5%B2%A9%E5%9B%BD%E3%82%B7%E3%83%AD%E3%83%98%E3%83%93%E3%81%AE%E9%A4%A8/display/F0BFNRGKAV9-display.jpg",
+      "/assets/posts/%E5%B2%A9%E5%9B%BD%E3%82%B7%E3%83%AD%E3%83%98%E3%83%93%E3%81%AE%E9%A4%A8/display/F0BGPD4H0F2-display.jpg"
+    ],
+    "originalImage": "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E5%B2%A9%E5%9B%BD%E3%82%B7%E3%83%AD%E3%83%98%E3%83%93%E3%81%AE%E9%A4%A8/F0BFDMXEV8F.jpg",
+    "originalImages": [
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E5%B2%A9%E5%9B%BD%E3%82%B7%E3%83%AD%E3%83%98%E3%83%93%E3%81%AE%E9%A4%A8/F0BFDMXEV8F.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E5%B2%A9%E5%9B%BD%E3%82%B7%E3%83%AD%E3%83%98%E3%83%93%E3%81%AE%E9%A4%A8/F0BGPD3P15E.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E5%B2%A9%E5%9B%BD%E3%82%B7%E3%83%AD%E3%83%98%E3%83%93%E3%81%AE%E9%A4%A8/F0BGPD3NAC8.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E5%B2%A9%E5%9B%BD%E3%82%B7%E3%83%AD%E3%83%98%E3%83%93%E3%81%AE%E9%A4%A8/F0BFX0YD3ED.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E5%B2%A9%E5%9B%BD%E3%82%B7%E3%83%AD%E3%83%98%E3%83%93%E3%81%AE%E9%A4%A8/F0BFNRF1XM1.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E5%B2%A9%E5%9B%BD%E3%82%B7%E3%83%AD%E3%83%98%E3%83%93%E3%81%AE%E9%A4%A8/F0BFYQRSUJ0.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E5%B2%A9%E5%9B%BD%E3%82%B7%E3%83%AD%E3%83%98%E3%83%93%E3%81%AE%E9%A4%A8/F0BFT34SR62.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E5%B2%A9%E5%9B%BD%E3%82%B7%E3%83%AD%E3%83%98%E3%83%93%E3%81%AE%E9%A4%A8/F0BFNRGKAV9.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E5%B2%A9%E5%9B%BD%E3%82%B7%E3%83%AD%E3%83%98%E3%83%93%E3%81%AE%E9%A4%A8/F0BGPD4H0F2.jpg"
+    ]
+  },
+  {
     "id": "slack-C0BDC3P774J-1783479421.414629",
     "title": "岩国徴古館",
     "body": "2026/07/04訪問\n\n岩国の郷土資料館。独特な建物だなあと思って入ったのだが、戦時中の建築だそう(1942年起工、1945年3月竣工)。物資不足の中で作られたものの、大変おしゃれな良い建物だった。\n錦帯橋、岩国藩、吉川氏などの充実した展示があり、とても楽しめた。",
