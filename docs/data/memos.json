@@ -14,6 +14,44 @@
     "ogpImageHeight": 627
   },
   {
+    "id": "slack-C0BDC3P774J-1783756807.144219",
+    "title": "日本科学未来館",
+    "body": "2022/08/09、2024/01/21ほか何回か訪問\n\n幼少期に何度か訪問し、大学に入ってからは2回訪問した。幼少期は結構楽しかった記憶があったのだが、実は大学生に入ってから、特に2024年の展示(2022年からは改装されたはず)では、私の期待が高すぎたのか、昔ほどは楽しいと感じなかった(若干の説教くささも感じてしまった)。\nとは言え、面白い展示はいっぱいあった。2026年後半からまた改装するらしいので、改装後にまた行こうかと思う。",
+    "location": "東京都",
+    "image": "/assets/posts/%E6%97%A5%E6%9C%AC%E7%A7%91%E5%AD%A6%E6%9C%AA%E6%9D%A5%E9%A4%A8/display/F0BGSPJUA68-display.jpg",
+    "thumbnail": "/assets/posts/%E6%97%A5%E6%9C%AC%E7%A7%91%E5%AD%A6%E6%9C%AA%E6%9D%A5%E9%A4%A8/thumbs/F0BGSPJUA68-thumb.jpg",
+    "source": {
+      "type": "slack",
+      "channel_id": "C0BDC3P774J",
+      "message_ts": "1783756807.144219",
+      "user_id": "U01997YCADN"
+    },
+    "postedAt": "2026-07-11",
+    "images": [
+      "/assets/posts/%E6%97%A5%E6%9C%AC%E7%A7%91%E5%AD%A6%E6%9C%AA%E6%9D%A5%E9%A4%A8/display/F0BGSPJUA68-display.jpg",
+      "/assets/posts/%E6%97%A5%E6%9C%AC%E7%A7%91%E5%AD%A6%E6%9C%AA%E6%9D%A5%E9%A4%A8/display/F0BG7M1PKT9-display.jpg",
+      "/assets/posts/%E6%97%A5%E6%9C%AC%E7%A7%91%E5%AD%A6%E6%9C%AA%E6%9D%A5%E9%A4%A8/display/F0BGGQMA48K-display.jpg",
+      "/assets/posts/%E6%97%A5%E6%9C%AC%E7%A7%91%E5%AD%A6%E6%9C%AA%E6%9D%A5%E9%A4%A8/display/F0BGSPKNNEQ-display.jpg",
+      "/assets/posts/%E6%97%A5%E6%9C%AC%E7%A7%91%E5%AD%A6%E6%9C%AA%E6%9D%A5%E9%A4%A8/display/F0BGGQN9T0T-display.jpg",
+      "/assets/posts/%E6%97%A5%E6%9C%AC%E7%A7%91%E5%AD%A6%E6%9C%AA%E6%9D%A5%E9%A4%A8/display/F0BG7M36GKH-display.jpg",
+      "/assets/posts/%E6%97%A5%E6%9C%AC%E7%A7%91%E5%AD%A6%E6%9C%AA%E6%9D%A5%E9%A4%A8/display/F0BGM2C20JJ-display.jpg",
+      "/assets/posts/%E6%97%A5%E6%9C%AC%E7%A7%91%E5%AD%A6%E6%9C%AA%E6%9D%A5%E9%A4%A8/display/F0BGSPN3WFN-display.jpg",
+      "/assets/posts/%E6%97%A5%E6%9C%AC%E7%A7%91%E5%AD%A6%E6%9C%AA%E6%9D%A5%E9%A4%A8/display/F0BGKP9PSSH-display.jpg"
+    ],
+    "originalImage": "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E6%97%A5%E6%9C%AC%E7%A7%91%E5%AD%A6%E6%9C%AA%E6%9D%A5%E9%A4%A8/F0BGSPJUA68.jpg",
+    "originalImages": [
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E6%97%A5%E6%9C%AC%E7%A7%91%E5%AD%A6%E6%9C%AA%E6%9D%A5%E9%A4%A8/F0BGSPJUA68.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E6%97%A5%E6%9C%AC%E7%A7%91%E5%AD%A6%E6%9C%AA%E6%9D%A5%E9%A4%A8/F0BG7M1PKT9.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E6%97%A5%E6%9C%AC%E7%A7%91%E5%AD%A6%E6%9C%AA%E6%9D%A5%E9%A4%A8/F0BGGQMA48K.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E6%97%A5%E6%9C%AC%E7%A7%91%E5%AD%A6%E6%9C%AA%E6%9D%A5%E9%A4%A8/F0BGSPKNNEQ.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E6%97%A5%E6%9C%AC%E7%A7%91%E5%AD%A6%E6%9C%AA%E6%9D%A5%E9%A4%A8/F0BGGQN9T0T.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E6%97%A5%E6%9C%AC%E7%A7%91%E5%AD%A6%E6%9C%AA%E6%9D%A5%E9%A4%A8/F0BG7M36GKH.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E6%97%A5%E6%9C%AC%E7%A7%91%E5%AD%A6%E6%9C%AA%E6%9D%A5%E9%A4%A8/F0BGM2C20JJ.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E6%97%A5%E6%9C%AC%E7%A7%91%E5%AD%A6%E6%9C%AA%E6%9D%A5%E9%A4%A8/F0BGSPN3WFN.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E6%97%A5%E6%9C%AC%E7%A7%91%E5%AD%A6%E6%9C%AA%E6%9D%A5%E9%A4%A8/F0BGKP9PSSH.jpg"
+    ]
+  },
+  {
     "id": "slack-C0BDC3P774J-1783757864.254039",
     "title": "科学技術館",
     "body": "2023/03/27訪問\n\n科学技術に関する体験型展示が豊富な博物館。ここは(特に子供にとって)かなり楽しい場所だと思う。\n私自身は小学生時代(2010年前後)にも訪問していて、かなり楽しかった記憶がある。その頃は産総研のアザラシロボットであるパロを触ることができたのが印象に残っている(その後、2022年頃に産総研のCubeという博物館(改装前)で再会できて地味に嬉しかった)",
