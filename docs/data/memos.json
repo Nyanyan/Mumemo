@@ -14,6 +14,32 @@
     "ogpImageHeight": 627
   },
   {
+    "id": "slack-C0BDC3P774J-1783758609.374449",
+    "title": "浅草寺",
+    "body": "2023/01/07ほか何回か訪問\n\n大きなお寺。雷門が有名。近年は人が多いため、行くのに気合いが必要。ただ、一度大晦日(？)の夕方に行ったときはそんなに混んでいなかった。\nここのおみくじは辛口という噂を聞いたことがあり、実際私も凶を引いたことがある。しかし、大吉を引いたこともあって、密かに誇りに思っている。",
+    "location": "東京都",
+    "image": "/assets/posts/%E6%B5%85%E8%8D%89%E5%AF%BA/display/F0BGKRB75B7-display.jpg",
+    "thumbnail": "/assets/posts/%E6%B5%85%E8%8D%89%E5%AF%BA/thumbs/F0BGKRB75B7-thumb.jpg",
+    "source": {
+      "type": "slack",
+      "channel_id": "C0BDC3P774J",
+      "message_ts": "1783758609.374449",
+      "user_id": "U01997YCADN"
+    },
+    "postedAt": "2026-07-11",
+    "images": [
+      "/assets/posts/%E6%B5%85%E8%8D%89%E5%AF%BA/display/F0BGKRB75B7-display.jpg",
+      "/assets/posts/%E6%B5%85%E8%8D%89%E5%AF%BA/display/F0BG7PD1347-display.jpg",
+      "/assets/posts/%E6%B5%85%E8%8D%89%E5%AF%BA/display/F0BGM4MB0KG-display.jpg"
+    ],
+    "originalImage": "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E6%B5%85%E8%8D%89%E5%AF%BA/F0BGKRB75B7.jpg",
+    "originalImages": [
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E6%B5%85%E8%8D%89%E5%AF%BA/F0BGKRB75B7.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E6%B5%85%E8%8D%89%E5%AF%BA/F0BG7PD1347.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E6%B5%85%E8%8D%89%E5%AF%BA/F0BGM4MB0KG.jpg"
+    ]
+  },
+  {
     "id": "slack-C0BDC3P774J-1783756807.144219",
     "title": "日本科学未来館",
     "body": "2022/08/09、2024/01/21ほか何回か訪問\n\n幼少期に何度か訪問し、大学に入ってからは2回訪問した。幼少期は結構楽しかった記憶があったのだが、実は大学生に入ってから、特に2024年の展示(2022年からは改装されたはず)では、私の期待が高すぎたのか、昔ほどは楽しいと感じなかった(若干の説教くささも感じてしまった)。\nとは言え、面白い展示はいっぱいあった。2026年後半からまた改装するらしいので、改装後にまた行こうかと思う。",
