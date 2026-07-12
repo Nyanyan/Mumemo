@@ -14,6 +14,42 @@
     "ogpImageHeight": 627
   },
   {
+    "id": "slack-C0BDC3P774J-1783815709.824669",
+    "title": "筑波山梅林",
+    "body": "2025/03/08ほか何回か訪問\n\n筑波山の南斜面にある梅林。梅の時期はかなり賑わう。かなり良いところである。\n毎年梅まつりの時期は梅林内車両・自転車通行止めになっているが、それ以外の時期は自転車で入れる(多分車も？)。自転車で梅林内の道をずっと登っていくと、標高330mくらいまで登れて、そのまま進むとつくし湖に降りられる。",
+    "location": "茨城県",
+    "image": "/assets/posts/%E7%AD%91%E6%B3%A2%E5%B1%B1%E6%A2%85%E6%9E%97/display/F0BGR8H4ZT4-display.jpg",
+    "thumbnail": "/assets/posts/%E7%AD%91%E6%B3%A2%E5%B1%B1%E6%A2%85%E6%9E%97/thumbs/F0BGR8H4ZT4-thumb.jpg",
+    "source": {
+      "type": "slack",
+      "channel_id": "C0BDC3P774J",
+      "message_ts": "1783815709.824669",
+      "user_id": "U01997YCADN"
+    },
+    "postedAt": "2026-07-12",
+    "images": [
+      "/assets/posts/%E7%AD%91%E6%B3%A2%E5%B1%B1%E6%A2%85%E6%9E%97/display/F0BGR8H4ZT4-display.jpg",
+      "/assets/posts/%E7%AD%91%E6%B3%A2%E5%B1%B1%E6%A2%85%E6%9E%97/display/F0BGK192T6F-display.jpg",
+      "/assets/posts/%E7%AD%91%E6%B3%A2%E5%B1%B1%E6%A2%85%E6%9E%97/display/F0BGR8JJT1Q-display.jpg",
+      "/assets/posts/%E7%AD%91%E6%B3%A2%E5%B1%B1%E6%A2%85%E6%9E%97/display/F0BGV07RRD2-display.jpg",
+      "/assets/posts/%E7%AD%91%E6%B3%A2%E5%B1%B1%E6%A2%85%E6%9E%97/display/F0BGP8EA6CW-display.jpg",
+      "/assets/posts/%E7%AD%91%E6%B3%A2%E5%B1%B1%E6%A2%85%E6%9E%97/display/F0BGR8L2VFC-display.jpg",
+      "/assets/posts/%E7%AD%91%E6%B3%A2%E5%B1%B1%E6%A2%85%E6%9E%97/display/F0BGMV62GTX-display.jpg",
+      "/assets/posts/%E7%AD%91%E6%B3%A2%E5%B1%B1%E6%A2%85%E6%9E%97/display/F0BGR8M2U4A-display.jpg"
+    ],
+    "originalImage": "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E7%AD%91%E6%B3%A2%E5%B1%B1%E6%A2%85%E6%9E%97/F0BGR8H4ZT4.jpg",
+    "originalImages": [
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E7%AD%91%E6%B3%A2%E5%B1%B1%E6%A2%85%E6%9E%97/F0BGR8H4ZT4.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E7%AD%91%E6%B3%A2%E5%B1%B1%E6%A2%85%E6%9E%97/F0BGK192T6F.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E7%AD%91%E6%B3%A2%E5%B1%B1%E6%A2%85%E6%9E%97/F0BGR8JJT1Q.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E7%AD%91%E6%B3%A2%E5%B1%B1%E6%A2%85%E6%9E%97/F0BGV07RRD2.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E7%AD%91%E6%B3%A2%E5%B1%B1%E6%A2%85%E6%9E%97/F0BGP8EA6CW.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E7%AD%91%E6%B3%A2%E5%B1%B1%E6%A2%85%E6%9E%97/F0BGR8L2VFC.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E7%AD%91%E6%B3%A2%E5%B1%B1%E6%A2%85%E6%9E%97/F0BGMV62GTX.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E7%AD%91%E6%B3%A2%E5%B1%B1%E6%A2%85%E6%9E%97/F0BGR8M2U4A.jpg"
+    ]
+  },
+  {
     "id": "slack-C0BDC3P774J-1783814798.279869",
     "title": "目黒寄生虫館",
     "body": "2015年頃に訪問\n\n寄生虫専門の博物館。大量の寄生虫を見ることができる。結構面白い。おすすめである。ただ、ここに行った後すぐにラーメンを食べると、もやしが寄生虫にしか見えなくなる(もやしそっくりの寄生虫が展示されているため)。",
