@@ -81,6 +81,8 @@ let entries = [];
 let lightbox = null;
 let tileFitFrame = 0;
 let brandTitleFrame = 0;
+let scrollTopFrame = 0;
+let scrollTopButton = null;
 let homeRandomOrder = null;
 
 const tileFitClasses = [
@@ -503,6 +505,60 @@ function tileTextOverflows(body, title) {
   return body.scrollHeight > body.clientHeight + tolerance || title.scrollHeight > title.clientHeight + tolerance;
 }
 
+function ensureScrollTopButton() {
+  if (scrollTopButton) {
+    return scrollTopButton;
+  }
+
+  const button = document.createElement("button");
+  button.className = "scroll-top-button";
+  button.type = "button";
+  button.hidden = true;
+  button.tabIndex = -1;
+  button.setAttribute("aria-label", "Back to top");
+  button.addEventListener("click", () => {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+  });
+  document.body.append(button);
+  scrollTopButton = button;
+  return button;
+}
+
+function setScrollTopButtonEnabled(enabled) {
+  if (!enabled && !scrollTopButton) {
+    return;
+  }
+
+  const button = ensureScrollTopButton();
+  button.hidden = !enabled;
+  if (!enabled) {
+    button.classList.remove("is-visible");
+    button.tabIndex = -1;
+  }
+}
+
+function scheduleScrollTopButtonState() {
+  if (scrollTopFrame) {
+    return;
+  }
+
+  scrollTopFrame = window.requestAnimationFrame(updateScrollTopButtonState);
+}
+
+function updateScrollTopButtonState() {
+  scrollTopFrame = 0;
+  if (!scrollTopButton) {
+    return;
+  }
+
+  const enabled = document.body.dataset.view === "home";
+  const visible = enabled && window.scrollY > Math.max(360, window.innerHeight * 0.55);
+  scrollTopButton.hidden = !enabled;
+  scrollTopButton.classList.toggle("is-visible", visible);
+  scrollTopButton.tabIndex = visible ? 0 : -1;
+}
+
 function renderLoading() {
   app.replaceChildren(createStatusMessage("読み込み中です。"));
 }
@@ -517,6 +573,8 @@ function renderHome() {
   document.title = siteTitle;
   const view = homeTemplate.content.cloneNode(true);
   app.replaceChildren(view);
+  ensureScrollTopButton();
+  scheduleScrollTopButtonState();
 
   const input = document.querySelector("#searchInput");
   const grid = document.querySelector("#tileGrid");
@@ -1106,6 +1164,7 @@ function route() {
     renderHome();
     return;
   }
+  setScrollTopButtonEnabled(false);
 
   if (slug === locationsSlug) {
     renderLocationSearch();
@@ -1314,7 +1373,9 @@ document.addEventListener("keydown", (event) => {
 window.addEventListener("resize", () => {
   scheduleTileTextFit();
   scheduleBrandTitleWrap();
+  scheduleScrollTopButtonState();
 });
+window.addEventListener("scroll", scheduleScrollTopButtonState, { passive: true });
 window.addEventListener("popstate", route);
 if (document.fonts) {
   document.fonts.ready.then(() => {
