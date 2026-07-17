@@ -316,27 +316,14 @@
       transform: translateY(0);
     }
 
-    .scroll-top-button::before,
-    .scroll-top-button::after {
+    .scroll-top-button::before {
       display: block;
       content: "";
-    }
-
-    .scroll-top-button::before {
-      width: 0;
-      height: 0;
-      margin-top: -2px;
-      border-right: 7px solid transparent;
-      border-bottom: 9px solid currentColor;
-      border-left: 7px solid transparent;
-    }
-
-    .scroll-top-button::after {
-      width: 4px;
-      height: 15px;
-      margin-top: -2px;
-      border-radius: 999px;
+      width: 22px;
+      height: 22px;
       background: currentColor;
+      -webkit-mask: url("assets/arrow-up.svg") center / contain no-repeat;
+      mask: url("assets/arrow-up.svg") center / contain no-repeat;
     }
 
     .scroll-top-button:hover,
@@ -473,20 +460,44 @@
     }
 
     .location-item:hover,
-    .location-item:focus-visible,
-    .location-item.current {
+    .location-item:focus-visible {
       border-color: var(--brand);
       background: var(--panel);
       outline: none;
     }
 
     .location-item.is-empty {
-      opacity: 0.52;
+      border-color: rgba(49, 30, 77, 0.2);
+      background: rgba(49, 30, 77, 0.08);
+      color: rgba(49, 30, 77, 0.56);
+      font-weight: 650;
     }
 
     .location-item.is-empty:not(.current):hover,
     .location-item.is-empty:not(.current):focus-visible {
-      opacity: 0.74;
+      border-color: rgba(49, 30, 77, 0.34);
+      background: rgba(49, 30, 77, 0.13);
+      color: rgba(49, 30, 77, 0.74);
+    }
+
+    .location-item.current {
+      border-color: var(--brand-strong);
+      background: var(--brand-strong);
+      color: var(--panel);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.34), 0 8px 20px rgba(49, 30, 77, 0.18);
+      outline: none;
+    }
+
+    .location-item.current:hover,
+    .location-item.current:focus-visible {
+      border-color: var(--brand-strong);
+      background: var(--brand-strong);
+      color: var(--panel);
+    }
+
+    .location-item.current:focus-visible {
+      outline: 3px solid rgba(49, 30, 77, 0.22);
+      outline-offset: 2px;
     }
 
     .location-name {
@@ -501,6 +512,14 @@
       color: var(--muted);
       font-size: 0.9rem;
       white-space: nowrap;
+    }
+
+    .location-item.is-empty .location-count {
+      color: rgba(49, 30, 77, 0.6);
+    }
+
+    .location-item.current .location-count {
+      color: rgba(255, 255, 255, 0.84);
     }
 
     .location-results {
