@@ -22,7 +22,7 @@ LANDSCAPE_SIZE = (1200, 630)
 SQUARE_SIZE = (800, 800)
 JPEG_QUALITY = 86
 THUMBNAIL_QUALITY = 76
-DEFAULT_IMAGE = "/website_icon_small.png"
+DEFAULT_IMAGE = "/website_icon_dummy.jpg"
 
 
 def main() -> None:

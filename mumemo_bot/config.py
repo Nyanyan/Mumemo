@@ -122,10 +122,10 @@ def _float_env(name: str, default: float) -> float:
 
 
 def _default_image_env() -> str:
-    value = os.getenv("MUMEMO_DEFAULT_IMAGE", "/website_icon_small.png").strip()
-    if value == "/website_icon.png":
-        return "/website_icon_small.png"
-    return value or "/website_icon_small.png"
+    value = os.getenv("MUMEMO_DEFAULT_IMAGE", "/website_icon_dummy.jpg").strip()
+    if value in {"/website_icon.png", "/website_icon_small.png"}:
+        return "/website_icon_dummy.jpg"
+    return value or "/website_icon_dummy.jpg"
 
 def _site_base_url_env() -> str:
     raw_value = os.getenv("MUMEMO_SITE_BASE_URL", "").strip()

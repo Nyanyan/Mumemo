@@ -895,7 +895,7 @@ def _thumbnail_url_for_image_url(config: BotConfig, image_url: str) -> str | Non
     clean_image_url = image_url.strip()
     if not clean_image_url:
         return None
-    if clean_image_url in {config.default_image, "/website_icon_small.png"}:
+    if clean_image_url in {config.default_image, "/website_icon_dummy.jpg", "/website_icon_small.png"}:
         return clean_image_url
 
     image_path = _local_asset_path(config, clean_image_url)

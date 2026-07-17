@@ -1,6 +1,7 @@
 const siteTitle = "Mumemo - にゃにゃんの博物館メモ";
 const memosUrl = "/data/memos.json";
 const shareIconUrl = "/assets/share-icon.svg";
+const defaultImageUrl = "/website_icon_dummy.jpg";
 const locationsSlug = "locations";
 const unknownLocationLabel = "不明";
 const prefectures = [
@@ -258,7 +259,7 @@ img{display:block;max-width:100vw;max-height:100vh;width:auto;height:auto;object
 
 function lightboxItemsFor(entry) {
   const images = imagesFor(entry);
-  const sourceImages = images.length > 0 ? images : ["/website_icon_small.png"];
+  const sourceImages = images.length > 0 ? images : [defaultImageUrl];
   return sourceImages.map((imageUrl, index) => ({
     previewUrl: detailPreviewFor(imageUrl),
     fullSizeUrl: fullSizeImageFor(entry, imageUrl, index),
@@ -267,13 +268,13 @@ function lightboxItemsFor(entry) {
 }
 
 function thumbnailFor(entry) {
-  return entry.thumbnail || entry.image || imagesFor(entry)[0] || "/website_icon_small.png";
+  return entry.thumbnail || entry.image || imagesFor(entry)[0] || defaultImageUrl;
 }
 
 function detailPreviewFor(imageUrl) {
   const cleanImageUrl = typeof imageUrl === "string" ? imageUrl.trim() : "";
-  if (!cleanImageUrl || cleanImageUrl === "/website_icon_small.png") {
-    return cleanImageUrl || "/website_icon_small.png";
+  if (!cleanImageUrl || cleanImageUrl === defaultImageUrl || cleanImageUrl === "/website_icon_small.png") {
+    return cleanImageUrl || defaultImageUrl;
   }
 
   let url;
@@ -836,7 +837,7 @@ function createDetailMedia(entry) {
   }
 
   if (images.length === 0) {
-    media.append(createDetailImageButton({ ...entry, iconImage: true }, "/website_icon_small.png", 0, lightboxItems));
+    media.append(createDetailImageButton({ ...entry, iconImage: true }, defaultImageUrl, 0, lightboxItems));
   }
 
   return media;
