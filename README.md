@@ -12,6 +12,7 @@ Memo content is stored in `docs/data/memos.json`. Each item supports:
 - `thumbnail`: optional small tile image path; Slack images get generated JPEG thumbnails under `thumbs/`
 - `images`: optional detail image paths; all are shown on the detail page
 - `postedAt`: optional post date, such as `2026-06-27`; shown at the end of the detail page
+- `updatedAt`: optional last updated date, such as `2026-07-24`; shown next to `postedAt` and used for the default home sort
 - `slug`: optional stable URL slug; when omitted, the title is normalized
 - `fixed`: optional; show before other items on the default top page
 - `iconImage`: optional; render image with icon-style padding

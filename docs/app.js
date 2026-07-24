@@ -358,6 +358,60 @@ function formatPostedAt(entry) {
   return postedAtFormatter.format(date);
 }
 
+function updatedAtValue(entry) {
+  const direct = entry.updatedAt || entry.updated_at || entry.modifiedAt || entry.modified_at;
+  if (typeof direct === "string" && direct.trim()) {
+    return direct;
+  }
+  if (typeof direct === "number" && Number.isFinite(direct)) {
+    return new Date(direct).toISOString();
+  }
+  return "";
+}
+
+function formatUpdatedAt(entry) {
+  const rawValue = updatedAtValue(entry);
+  if (!rawValue) {
+    return "";
+  }
+
+  const date = new Date(rawValue);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return postedAtFormatter.format(date);
+}
+
+function dateSortTime(rawValue) {
+  if (!rawValue) {
+    return Number.NEGATIVE_INFINITY;
+  }
+
+  const date = new Date(rawValue);
+  return Number.isNaN(date.getTime()) ? Number.NEGATIVE_INFINITY : date.getTime();
+}
+
+function latestActivityTime(entry) {
+  return dateSortTime(updatedAtValue(entry) || postedAtValue(entry));
+}
+
+function sortByLatestActivity(items) {
+  return items
+    .map((item, index) => ({
+      item,
+      index,
+      activityTime: latestActivityTime(item),
+      postedTime: dateSortTime(postedAtValue(item))
+    }))
+    .sort((a, b) => (
+      b.activityTime - a.activityTime
+      || b.postedTime - a.postedTime
+      || a.index - b.index
+    ))
+    .map(({ item }) => item);
+}
+
 function locationFor(entry) {
   const location = typeof entry.location === "string" ? entry.location.trim() : "";
   return location || unknownLocationLabel;
@@ -585,10 +639,10 @@ function renderHome() {
   const draw = () => {
     const query = input.value.trim().toLocaleLowerCase("ja");
     const fixedItems = entries.filter((entry) => entry.fixed);
-    const searchableItems = entries.filter((entry) => !entry.fixed);
+    const searchableItems = sortByLatestActivity(entries.filter((entry) => !entry.fixed));
     const orderedItems = homeRandomOrder || searchableItems;
-    const searchBase = homeRandomOrder ? [...fixedItems, ...orderedItems] : entries;
-    const matchesQuery = (entry) => `${entry.title}\n${entry.body}\n${formatPostedAt(entry)}\n${locationFor(entry)}`.toLocaleLowerCase("ja").includes(query);
+    const searchBase = [...fixedItems, ...orderedItems];
+    const matchesQuery = (entry) => `${entry.title}\n${entry.body}\n${formatPostedAt(entry)}\n${formatUpdatedAt(entry)}\n${locationFor(entry)}`.toLocaleLowerCase("ja").includes(query);
     const matched = query ? searchBase.filter(matchesQuery) : orderedItems;
     const shown = query ? matched : [...fixedItems, ...matched];
 
@@ -849,9 +903,20 @@ function createPostedAt(entry) {
     return null;
   }
 
+  const updatedAt = formatUpdatedAt(entry);
   const meta = document.createElement("p");
   meta.className = "detail-posted-at";
-  meta.textContent = `投稿日: ${postedAt}`;
+
+  const posted = document.createElement("span");
+  posted.textContent = `投稿日: ${postedAt}`;
+  meta.append(posted);
+
+  if (updatedAt) {
+    const updated = document.createElement("span");
+    updated.textContent = `最終更新日: ${updatedAt}`;
+    meta.append(updated);
+  }
+
   return meta;
 }
 

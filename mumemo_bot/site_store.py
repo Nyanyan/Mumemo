@@ -249,6 +249,7 @@ def update_memo(
         else:
             memo.pop("images", None)
         _set_original_image_fields(memo, clean_image, clean_images, clean_original_images)
+        memo["updatedAt"] = _today_jst_iso()
 
         _write_memos(config.data_path, memos)
         build_route_pages(config)
@@ -290,6 +291,7 @@ def overwrite_memo_with_post(
         new_memo = _memo_from_post(config, post, saved_images, location=location)
         if preserve_existing_identity:
             _preserve_existing_identity(old_memo, new_memo, memo_id)
+        new_memo["updatedAt"] = _today_jst_iso()
 
         memos[index] = new_memo
         _write_memos(config.data_path, memos)
@@ -380,6 +382,7 @@ def append_memo_with_post(
             merged_images,
             _align_original_images(merged_images, original_image_map),
         )
+        memo["updatedAt"] = _today_jst_iso()
 
         _write_memos(config.data_path, memos)
         build_route_pages(config)
@@ -780,6 +783,10 @@ def _slack_ts_to_date(message_ts: str) -> str | None:
         timestamp,
         timezone(timedelta(hours=9)),
     ).date().isoformat()
+
+
+def _today_jst_iso() -> str:
+    return datetime.now(timezone(timedelta(hours=9))).date().isoformat()
 
 
 def _safe_id(value: str) -> str:
