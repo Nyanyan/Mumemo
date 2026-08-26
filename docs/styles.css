@@ -518,6 +518,11 @@ body[data-view="detail"] .header-detail-share-actions {
   gap: 8px;
 }
 
+.location-map-section {
+  display: grid;
+  gap: 10px;
+}
+
 .location-section-title,
 .location-results-title {
   margin: 0;
@@ -525,6 +530,107 @@ body[data-view="detail"] .header-detail-share-actions {
   font-size: 1rem;
   font-weight: 600;
   line-height: 1.4;
+}
+
+.location-map-scroll {
+  max-width: 100%;
+  overflow-x: visible;
+  padding: 2px 0 6px;
+}
+
+.japan-map {
+  display: grid;
+  grid-template-columns: repeat(13, minmax(0, 1fr));
+  grid-template-rows: repeat(15, minmax(38px, auto));
+  gap: 5px;
+  width: min(100%, 780px);
+  min-width: 0;
+  margin: 0 auto;
+  align-items: stretch;
+}
+
+.location-map-prefecture {
+  display: grid;
+  gap: 2px;
+  align-content: center;
+  justify-content: center;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 4px 3px;
+  border: 1px solid var(--line-strong);
+  border-radius: 3px;
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 650;
+  line-height: 1.05;
+  letter-spacing: 0;
+  text-align: center;
+  text-decoration: none;
+  box-shadow: inset 0 -2px 0 rgba(255, 255, 255, 0.58);
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, transform 140ms ease, opacity 140ms ease;
+}
+
+.location-map-prefecture:hover,
+.location-map-prefecture:focus-visible {
+  border-color: var(--accent-dark);
+  background: var(--paper-soft);
+  color: var(--accent-dark);
+  transform: translateY(-1px);
+}
+
+.location-map-prefecture.is-empty {
+  border-style: dashed;
+  background: transparent;
+  color: var(--soft);
+  opacity: 0.78;
+  box-shadow: none;
+}
+
+.location-map-prefecture.current,
+.location-map-prefecture.current:hover,
+.location-map-prefecture.current:focus-visible {
+  border-color: var(--accent-dark);
+  background: var(--accent-dark);
+  color: var(--paper);
+  box-shadow: none;
+  opacity: 1;
+}
+
+.location-map-name {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-size: 0.74rem;
+}
+
+.location-map-prefecture.is-large .location-map-name {
+  font-size: 0.82rem;
+}
+
+.location-map-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4em;
+  min-height: 1.4em;
+  padding: 0 0.28em;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--muted);
+  font-size: 0.64rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.location-map-prefecture.is-empty .location-map-count {
+  color: var(--soft);
+}
+
+.location-map-prefecture.current .location-map-count {
+  background: rgba(255, 255, 255, 0.24);
+  color: rgba(255, 255, 255, 0.84);
 }
 
 .location-list {
@@ -1180,6 +1286,27 @@ body[data-view="detail"] .header-detail-share-actions {
     width: 100%;
   }
 
+  .japan-map {
+    grid-template-rows: repeat(15, minmax(34px, auto));
+    gap: 3px;
+  }
+
+  .location-map-prefecture {
+    padding: 3px 2px;
+  }
+
+  .location-map-name {
+    font-size: 0.66rem;
+  }
+
+  .location-map-prefecture.is-large .location-map-name {
+    font-size: 0.72rem;
+  }
+
+  .location-map-count {
+    font-size: 0.56rem;
+  }
+
   .tile-grid {
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr));
     gap: 24px 14px;
@@ -1260,5 +1387,49 @@ body[data-view="detail"] .header-detail-share-actions {
 
   .lightbox-nav.next {
     right: 4px;
+  }
+}
+
+@media (max-width: 520px) {
+  .japan-map {
+    grid-template-rows: repeat(15, minmax(30px, auto));
+    gap: 2px;
+  }
+
+  .location-map-prefecture {
+    gap: 1px;
+    padding: 2px 1px;
+  }
+
+  .location-map-name {
+    font-size: 0.58rem;
+    line-height: 0.98;
+  }
+
+  .location-map-prefecture.is-large .location-map-name {
+    font-size: 0.62rem;
+  }
+
+  .location-map-count {
+    min-width: 1.2em;
+    min-height: 1.2em;
+    padding: 0 0.18em;
+    font-size: 0.5rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .japan-map {
+    grid-template-rows: repeat(15, minmax(28px, auto));
+  }
+
+  .location-map-name,
+  .location-map-prefecture.is-large .location-map-name {
+    font-size: 0.54rem;
+    line-height: 0.95;
+  }
+
+  .location-map-count {
+    display: none;
   }
 }

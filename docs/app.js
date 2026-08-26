@@ -54,20 +54,55 @@ const prefectures = [
   "沖縄県"
 ];
 const prefectureSet = new Set(prefectures);
-
-const regionDefinitions = [
-  { name: "\u5317\u6d77\u9053\u5730\u65b9", prefectures: ["\u5317\u6d77\u9053"] },
-  { name: "\u6771\u5317\u5730\u65b9", prefectures: ["\u9752\u68ee\u770c", "\u5ca9\u624b\u770c", "\u5bae\u57ce\u770c", "\u79cb\u7530\u770c", "\u5c71\u5f62\u770c", "\u798f\u5cf6\u770c"] },
-  { name: "\u95a2\u6771\u5730\u65b9", prefectures: ["\u8328\u57ce\u770c", "\u6803\u6728\u770c", "\u7fa4\u99ac\u770c", "\u57fc\u7389\u770c", "\u5343\u8449\u770c", "\u6771\u4eac\u90fd", "\u795e\u5948\u5ddd\u770c"] },
-  { name: "\u4e2d\u90e8\u5730\u65b9", prefectures: ["\u65b0\u6f5f\u770c", "\u5bcc\u5c71\u770c", "\u77f3\u5ddd\u770c", "\u798f\u4e95\u770c", "\u5c71\u68a8\u770c", "\u9577\u91ce\u770c", "\u5c90\u961c\u770c", "\u9759\u5ca1\u770c", "\u611b\u77e5\u770c"] },
-  { name: "\u8fd1\u757f\u5730\u65b9", prefectures: ["\u4e09\u91cd\u770c", "\u6ecb\u8cc0\u770c", "\u4eac\u90fd\u5e9c", "\u5927\u962a\u5e9c", "\u5175\u5eab\u770c", "\u5948\u826f\u770c", "\u548c\u6b4c\u5c71\u770c"] },
-  { name: "\u4e2d\u56fd\u5730\u65b9", prefectures: ["\u9ce5\u53d6\u770c", "\u5cf6\u6839\u770c", "\u5ca1\u5c71\u770c", "\u5e83\u5cf6\u770c", "\u5c71\u53e3\u770c"] },
-  { name: "\u56db\u56fd\u5730\u65b9", prefectures: ["\u5fb3\u5cf6\u770c", "\u9999\u5ddd\u770c", "\u611b\u5a9b\u770c", "\u9ad8\u77e5\u770c"] },
-  { name: "\u4e5d\u5dde\u30fb\u6c96\u7e04\u5730\u65b9", prefectures: ["\u798f\u5ca1\u770c", "\u4f50\u8cc0\u770c", "\u9577\u5d0e\u770c", "\u718a\u672c\u770c", "\u5927\u5206\u770c", "\u5bae\u5d0e\u770c", "\u9e7f\u5150\u5cf6\u770c", "\u6c96\u7e04\u770c"] }
+const prefectureMapPositions = [
+  { prefecture: "北海道", column: 12, row: 1, spanColumns: 2, spanRows: 2 },
+  { prefecture: "青森県", column: 12, row: 4, spanColumns: 2 },
+  { prefecture: "秋田県", column: 12, row: 5 },
+  { prefecture: "岩手県", column: 13, row: 5 },
+  { prefecture: "山形県", column: 12, row: 6 },
+  { prefecture: "宮城県", column: 13, row: 6 },
+  { prefecture: "新潟県", column: 11, row: 7, spanRows: 2 },
+  { prefecture: "福島県", column: 12, row: 7, spanColumns: 2 },
+  { prefecture: "石川県", column: 9, row: 8 },
+  { prefecture: "富山県", column: 10, row: 8 },
+  { prefecture: "栃木県", column: 12, row: 8 },
+  { prefecture: "茨城県", column: 13, row: 8 },
+  { prefecture: "山口県", column: 3, row: 9 },
+  { prefecture: "島根県", column: 4, row: 9 },
+  { prefecture: "鳥取県", column: 5, row: 9 },
+  { prefecture: "兵庫県", column: 6, row: 9, spanRows: 2 },
+  { prefecture: "京都府", column: 7, row: 9, spanRows: 2 },
+  { prefecture: "福井県", column: 8, row: 9 },
+  { prefecture: "岐阜県", column: 9, row: 9, spanRows: 2 },
+  { prefecture: "長野県", column: 10, row: 9, spanRows: 2 },
+  { prefecture: "群馬県", column: 11, row: 9 },
+  { prefecture: "埼玉県", column: 12, row: 9 },
+  { prefecture: "千葉県", column: 13, row: 9, spanRows: 2 },
+  { prefecture: "広島県", column: 4, row: 10 },
+  { prefecture: "岡山県", column: 5, row: 10 },
+  { prefecture: "滋賀県", column: 8, row: 10 },
+  { prefecture: "山梨県", column: 11, row: 10 },
+  { prefecture: "東京都", column: 12, row: 10 },
+  { prefecture: "佐賀県", column: 1, row: 11 },
+  { prefecture: "福岡県", column: 2, row: 11 },
+  { prefecture: "大分県", column: 3, row: 11 },
+  { prefecture: "大阪府", column: 7, row: 11 },
+  { prefecture: "奈良県", column: 8, row: 11 },
+  { prefecture: "愛知県", column: 9, row: 11 },
+  { prefecture: "静岡県", column: 10, row: 11, spanColumns: 2 },
+  { prefecture: "神奈川県", column: 12, row: 11 },
+  { prefecture: "長崎県", column: 1, row: 12 },
+  { prefecture: "熊本県", column: 2, row: 12 },
+  { prefecture: "宮崎県", column: 3, row: 12 },
+  { prefecture: "愛媛県", column: 5, row: 12 },
+  { prefecture: "香川県", column: 6, row: 12 },
+  { prefecture: "和歌山県", column: 8, row: 12, spanRows: 2 },
+  { prefecture: "三重県", column: 9, row: 12 },
+  { prefecture: "高知県", column: 5, row: 13 },
+  { prefecture: "徳島県", column: 6, row: 13 },
+  { prefecture: "鹿児島県", column: 2, row: 13, spanColumns: 2 },
+  { prefecture: "沖縄県", column: 1, row: 14 }
 ];
-const regionByPrefecture = new Map(
-  regionDefinitions.flatMap((region) => region.prefectures.map((prefecture) => [prefecture, region.name]))
-);
 
 
 const app = document.querySelector("#app");
@@ -131,12 +166,6 @@ function locationsHref() {
 function locationHref(location) {
   const url = new URL(locationsHref(), window.location.origin);
   url.searchParams.set("location", location);
-  return `${url.pathname}${url.search}`;
-}
-
-function regionHref(region) {
-  const url = new URL(locationsHref(), window.location.origin);
-  url.searchParams.set("region", region);
   return `${url.pathname}${url.search}`;
 }
 
@@ -693,18 +722,12 @@ function selectedLocationFromUrl() {
   return (params.get("location") || "").trim();
 }
 
-function selectedRegionFromUrl() {
-  const params = new URLSearchParams(window.location.search);
-  return (params.get("region") || "").trim();
-}
-
 function locationSearchEntries() {
   return entries.filter((entry) => !entry.fixed);
 }
 
 function createLocationCountData() {
   const prefectureCounts = new Map(prefectures.map((prefecture) => [prefecture, 0]));
-  const regionCounts = new Map(regionDefinitions.map((region) => [region.name, 0]));
   const countryCounts = new Map();
   let unknownCount = 0;
 
@@ -712,10 +735,6 @@ function createLocationCountData() {
     const location = locationFor(entry);
     if (prefectureSet.has(location)) {
       prefectureCounts.set(location, (prefectureCounts.get(location) || 0) + 1);
-      const region = regionByPrefecture.get(location);
-      if (region) {
-        regionCounts.set(region, (regionCounts.get(region) || 0) + 1);
-      }
     } else if (location === unknownLocationLabel) {
       unknownCount += 1;
     } else {
@@ -725,7 +744,6 @@ function createLocationCountData() {
 
   return {
     prefectures: prefectureCounts,
-    regions: regionCounts,
     countries: [...countryCounts.entries()].sort((a, b) => a[0].localeCompare(b[0], "ja")),
     unknown: unknownCount
   };
@@ -776,22 +794,74 @@ function createLocationGroup(title, items, selectedLocation, hrefFactory = locat
   return section;
 }
 
-function entriesForSelectedRegion(regionName) {
-  const region = regionDefinitions.find((item) => item.name === regionName);
-  if (!region) {
-    return [];
+function shortPrefectureName(prefecture) {
+  if (prefecture === "北海道") {
+    return prefecture;
+  }
+  return prefecture.replace(/[都府県]$/, "");
+}
+
+function createLocationMapPrefectureButton(mapItem, countData, selectedLocation) {
+  const { prefecture, column, row, spanColumns = 1, spanRows = 1 } = mapItem;
+  const count = countData.prefectures.get(prefecture) || 0;
+  const link = document.createElement("a");
+  link.className = [
+    "location-map-prefecture",
+    spanColumns > 1 || spanRows > 1 ? "is-large" : "",
+    count === 0 ? "is-empty" : "",
+    prefecture === selectedLocation ? "current" : ""
+  ].filter(Boolean).join(" ");
+  link.href = locationHref(prefecture);
+  link.dataset.nav = "";
+  link.style.gridColumn = `${column} / span ${spanColumns}`;
+  link.style.gridRow = `${row} / span ${spanRows}`;
+  link.title = `${prefecture} (${count}件)`;
+  link.setAttribute("aria-label", `${prefecture}の投稿 ${count}件`);
+  if (prefecture === selectedLocation) {
+    link.setAttribute("aria-current", "page");
   }
 
-  const regionPrefectures = new Set(region.prefectures);
-  return locationSearchEntries().filter((entry) => regionPrefectures.has(locationFor(entry)));
+  const name = document.createElement("span");
+  name.className = "location-map-name";
+  name.textContent = shortPrefectureName(prefecture);
+
+  const countText = document.createElement("span");
+  countText.className = "location-map-count";
+  countText.textContent = count;
+
+  link.append(name, countText);
+  return link;
+}
+
+function createLocationMap(countData, selectedLocation) {
+  const section = document.createElement("section");
+  section.className = "location-map-section";
+
+  const heading = document.createElement("h3");
+  heading.className = "location-section-title";
+  heading.textContent = "地図で検索";
+
+  const mapScroll = document.createElement("div");
+  mapScroll.className = "location-map-scroll";
+
+  const map = document.createElement("div");
+  map.className = "japan-map";
+  map.setAttribute("role", "group");
+  map.setAttribute("aria-label", "都道府県で検索");
+  map.append(...prefectureMapPositions.map((mapItem) => (
+    createLocationMapPrefectureButton(mapItem, countData, selectedLocation)
+  )));
+
+  mapScroll.append(map);
+  section.append(heading, mapScroll);
+  return section;
 }
 
 function renderLocationSearch() {
   document.body.dataset.view = "locations";
   setDetailHeaderShare(null);
   const selectedLocation = selectedLocationFromUrl();
-  const selectedRegion = selectedRegionFromUrl();
-  const selectedLabel = selectedRegion || selectedLocation;
+  const selectedLabel = selectedLocation;
   document.title = selectedLabel ? `${selectedLabel} - \u5834\u6240\u3067\u691c\u7d22 - ${siteTitle}` : `\u5834\u6240\u3067\u691c\u7d22 - ${siteTitle}`;
 
   const countData = createLocationCountData();
@@ -835,12 +905,9 @@ function renderLocationSearch() {
     filtersHidden = !filtersHidden;
     updateFilterVisibility();
   });
-  const regionItems = regionDefinitions.map((region) => [region.name, countData.regions.get(region.name) || 0]);
-  const prefectureItems = prefectures.map((prefecture) => [prefecture, countData.prefectures.get(prefecture) || 0]);
   const otherItems = [...countData.countries, [unknownLocationLabel, countData.unknown]];
   [
-    createLocationGroup("\u5730\u65b9\u3067\u691c\u7d22", regionItems, selectedRegion, regionHref),
-    createLocationGroup("\u90fd\u9053\u5e9c\u770c", prefectureItems, selectedLocation),
+    createLocationMap(countData, selectedLocation),
     createLocationGroup("\u6d77\u5916\u30fb\u4e0d\u660e", otherItems, selectedLocation)
   ].forEach((group) => {
     if (group) {
@@ -859,9 +926,7 @@ function renderLocationSearch() {
     resultsTitle.className = "location-results-title";
     resultsTitle.textContent = `${selectedLabel}\u306e\u6295\u7a3f`;
 
-    const matched = selectedRegion
-      ? entriesForSelectedRegion(selectedRegion)
-      : locationSearchEntries().filter((entry) => locationFor(entry) === selectedLocation);
+    const matched = locationSearchEntries().filter((entry) => locationFor(entry) === selectedLocation);
     const grid = document.createElement("div");
     grid.className = "tile-grid";
     if (matched.length > 0) {
