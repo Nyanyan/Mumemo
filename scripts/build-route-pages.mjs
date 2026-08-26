@@ -202,8 +202,8 @@ function homeMeta({ siteTitle, siteDescription, baseUrl, hasHomeOgpImage }) {
     type: "website",
     url: absoluteUrl(baseUrl, "/"),
     image,
-    imageWidth: hasHomeOgpImage ? 1200 : null,
-    imageHeight: hasHomeOgpImage ? 630 : null,
+    imageWidth: hasHomeOgpImage ? 1536 : null,
+    imageHeight: hasHomeOgpImage ? 1024 : null,
     twitterCard: hasHomeOgpImage ? "summary_large_image" : "summary"
   };
 }
