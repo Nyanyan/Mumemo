@@ -417,6 +417,15 @@ function locationFor(entry) {
   return location || unknownLocationLabel;
 }
 
+function displayLocationFor(entry) {
+  const location = locationFor(entry);
+  return entry.fixed && location === unknownLocationLabel ? "" : location;
+}
+
+function tileMetaFor(entry) {
+  return displayLocationFor(entry);
+}
+
 function appendLinkedText(parent, text) {
   const urlPattern = /<((?:https?:\/\/)[^\s<>|]+)(?:\|([^<>]*))?>|(https?:\/\/[^\s<>]+)/g;
   const trailingPunctuation = /[.,\u3001\u3002)\uFF09\]\uFF3D}>\u300D\u300F]+$/;
@@ -479,7 +488,15 @@ function createTile(entry) {
   summary.className = "tile-summary";
   summary.textContent = summarize(entry.body);
 
-  body.append(title, summary);
+  body.append(title);
+  const metaText = tileMetaFor(entry);
+  if (metaText) {
+    const meta = document.createElement("p");
+    meta.className = "tile-meta";
+    meta.textContent = metaText;
+    body.append(meta);
+  }
+  body.append(summary);
   tile.append(image, body);
   return tile;
 }
@@ -625,6 +642,7 @@ function renderLoadError() {
 
 function renderHome() {
   document.body.dataset.view = "home";
+  setDetailHeaderShare(null);
   document.title = siteTitle;
   const view = homeTemplate.content.cloneNode(true);
   app.replaceChildren(view);
@@ -770,6 +788,7 @@ function entriesForSelectedRegion(regionName) {
 
 function renderLocationSearch() {
   document.body.dataset.view = "locations";
+  setDetailHeaderShare(null);
   const selectedLocation = selectedLocationFromUrl();
   const selectedRegion = selectedRegionFromUrl();
   const selectedLabel = selectedRegion || selectedLocation;
@@ -921,9 +940,13 @@ function createPostedAt(entry) {
 }
 
 function createLocationMeta(entry) {
+  const location = displayLocationFor(entry);
+  if (!location) {
+    return null;
+  }
   const meta = document.createElement("p");
   meta.className = "detail-location";
-  meta.textContent = `場所: ${locationFor(entry)}`;
+  meta.textContent = `場所: ${location}`;
   return meta;
 }
 
@@ -1019,6 +1042,30 @@ function createShareActions(entry, modifier = "") {
   details.append(summary, menu);
   section.append(details);
   return section;
+}
+
+function setDetailHeaderShare(entry = null) {
+  const headerActions = document.querySelector(".site-header .header-actions");
+  if (!(headerActions instanceof HTMLElement)) {
+    return;
+  }
+
+  const homeShareMenu = headerActions.querySelector("#homeShareMenu");
+  if (homeShareMenu instanceof HTMLElement) {
+    homeShareMenu.hidden = true;
+  }
+  const homeShareButton = headerActions.querySelector(".home-share-button");
+  if (homeShareButton instanceof HTMLElement) {
+    homeShareButton.setAttribute("aria-expanded", "false");
+  }
+
+  headerActions.querySelectorAll(".header-detail-share-actions").forEach((share) => {
+    share.remove();
+  });
+
+  if (entry) {
+    headerActions.append(createShareActions(entry, "header-detail-share-actions"));
+  }
 }
 
 function shareHrefForTarget(target, shareUrl, shareText) {
@@ -1157,6 +1204,7 @@ function createRandomPostButton(currentEntry) {
 }
 function renderDetail(entry) {
   document.body.dataset.view = "detail";
+  setDetailHeaderShare(entry);
   document.title = `${entry.title} - ${siteTitle}`;
 
   const detail = document.createElement("article");
@@ -1170,41 +1218,49 @@ function renderDetail(entry) {
 
   const actions = document.createElement("div");
   actions.className = "detail-actions";
-  actions.append(back, createRandomPostButton(entry), createShareActions(entry, "detail-share-actions"));
+  actions.append(back, createRandomPostButton(entry));
 
-  const hero = document.createElement("div");
-  hero.className = "detail-hero";
+  const header = document.createElement("header");
+  header.className = "detail-header";
+
+  const title = document.createElement("h2");
+  title.className = "detail-title";
+  title.textContent = entry.title;
+
+  const meta = document.createElement("div");
+  meta.className = "detail-meta";
+  const locationMeta = createLocationMeta(entry);
+  if (locationMeta) {
+    meta.append(locationMeta);
+  }
+  const postedAt = createPostedAt(entry);
+  if (postedAt) {
+    meta.append(postedAt);
+  }
+
+  header.append(title, meta);
 
   const media = createDetailMedia(entry);
 
   const copy = document.createElement("div");
   copy.className = "detail-copy";
 
-  const title = document.createElement("h2");
-  title.className = "detail-title";
-  title.textContent = entry.title;
-
   const text = document.createElement("p");
   text.className = "detail-text";
   appendLinkedText(text, entry.body);
+  copy.append(text);
 
-  copy.append(title, text, createLocationMeta(entry));
-  const postedAt = createPostedAt(entry);
-  if (postedAt) {
-    copy.append(postedAt);
-  }
+  const body = document.createElement("div");
+  body.className = "detail-body";
+  body.append(copy, media);
 
-  const side = document.createElement("div");
-  side.className = "detail-side";
-  side.append(copy);
-
-  hero.append(media, side);
-  detail.append(actions, hero);
+  detail.append(actions, header, body);
   app.replaceChildren(detail);
 }
 
 function renderNotFound(slug) {
   document.body.dataset.view = "not-found";
+  setDetailHeaderShare(null);
   document.title = `メモが見つかりません - ${siteTitle}`;
 
   const section = document.createElement("section");
