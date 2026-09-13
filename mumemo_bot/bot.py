@@ -925,24 +925,56 @@ def create_app(config: BotConfig) -> App:
         client: Any,
         logger: Any,
     ) -> None:
-        title = modal_value(view, TITLE_BLOCK_ID).strip()
-        if not title:
-            ack(response_action="errors", errors={TITLE_BLOCK_ID: "タイトルを入力してください"})
-            return
-        ack()
-
         metadata = json.loads(str(view.get("private_metadata") or "{}"))
         memo_id = str(metadata.get("memo_id") or "")
         channel_id = str(metadata.get("channel_id") or config.slack_channel_id)
         message_ts = metadata.get("message_ts")
         user_id = str(body.get("user", {}).get("id") or "")
-        body_text = modal_value(view, BODY_BLOCK_ID)
-        location = modal_value(view, LOCATION_BLOCK_ID).strip()
-        primary_image_ref = modal_value(view, IMAGE_BLOCK_ID).strip()
-        image_order_lines = [line.strip() for line in modal_value(view, IMAGES_BLOCK_ID).splitlines()]
 
         try:
             current_memo = get_memo(config, memo_id)
+        except Exception as error:
+            logger.exception("Failed to reload Mumemo memo for modal submission")
+            ack(
+                response_action="errors",
+                errors={TITLE_BLOCK_ID: f"投稿を再取得できませんでした。編集画面を開き直してください: {error}"},
+            )
+            return
+
+        title = modal_value(view, TITLE_BLOCK_ID, default=current_memo.title).strip()
+        if not title:
+            title = current_memo.title.strip()
+        body_text = modal_value(view, BODY_BLOCK_ID, default=current_memo.body)
+        if not body_text.strip():
+            body_text = current_memo.body
+        validation_errors: dict[str, str] = {}
+        if not title:
+            validation_errors[TITLE_BLOCK_ID] = "タイトルを入力してください"
+        if not body_text.strip():
+            validation_errors[BODY_BLOCK_ID] = "本文を入力してください"
+        if validation_errors:
+            ack(response_action="errors", errors=validation_errors)
+            return
+        ack()
+
+        location = modal_value(
+            view,
+            LOCATION_BLOCK_ID,
+            default=current_memo.location,
+        ).strip()
+        primary_image_ref = modal_value(
+            view,
+            IMAGE_BLOCK_ID,
+            default=current_memo.image,
+        ).strip()
+        uploaded_file_values = modal_file_values(view, UPLOAD_IMAGES_BLOCK_ID)
+        image_order_lines = _image_order_lines_from_modal(
+            view,
+            current_memo.images,
+            preserve_when_empty=bool(uploaded_file_values),
+        )
+
+        try:
             images = _images_from_order_lines(
                 image_order_lines,
                 current_memo.images,
@@ -962,7 +994,7 @@ def create_app(config: BotConfig) -> App:
 
             uploaded_files = _uploaded_image_files_from_modal(
                 client,
-                modal_file_values(view, UPLOAD_IMAGES_BLOCK_ID),
+                uploaded_file_values,
             )
             if uploaded_files:
                 saved_images = download_images(
@@ -1413,6 +1445,23 @@ def _images_from_order_lines(
         if image_ref:
             ordered_images.append(image_ref)
     return _append_unique([], ordered_images)
+
+
+def _image_order_lines_from_modal(
+    view: dict[str, Any],
+    current_images: list[str],
+    *,
+    preserve_when_empty: bool,
+) -> list[str]:
+    current_order = "\n".join(
+        str(index) for index in range(1, len(current_images) + 1)
+    )
+    order_value = modal_value(view, IMAGES_BLOCK_ID, default=current_order)
+    if preserve_when_empty and not order_value.strip():
+        # The upload control is additive. Never interpret lost companion
+        # input state as a request to replace every existing image.
+        order_value = current_order
+    return [line.strip() for line in order_value.splitlines()]
 
 
 def _image_ref_from_modal_line(

@@ -424,6 +424,10 @@ def edit_modal_view(
         {
             "type": "input",
             "block_id": TITLE_BLOCK_ID,
+            # Slack clients can temporarily lose initial plain-text input state
+            # after files are selected. Validate this server-side so a visible
+            # initial value is not incorrectly rejected by the client.
+            "optional": True,
             "label": {"type": "plain_text", "text": "タイトル"},
             "element": {
                 "type": "plain_text_input",
@@ -434,6 +438,7 @@ def edit_modal_view(
         {
             "type": "input",
             "block_id": BODY_BLOCK_ID,
+            "optional": True,
             "label": {"type": "plain_text", "text": "本文"},
             "element": {
                 "type": "plain_text_input",
@@ -518,11 +523,17 @@ def edit_modal_view(
     }
 
 
-def modal_value(view: dict[str, Any], block_id: str) -> str:
+def modal_value(view: dict[str, Any], block_id: str, *, default: str = "") -> str:
     values = view.get("state", {}).get("values", {})
     block = values.get(block_id, {})
     action = block.get(VALUE_ACTION_ID, {})
-    return str(action.get("value") or "")
+    if (
+        not isinstance(action, dict)
+        or "value" not in action
+        or action.get("value") is None
+    ):
+        return default
+    return str(action["value"])
 
 
 def modal_file_values(view: dict[str, Any], block_id: str) -> list[Any]:
