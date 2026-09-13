@@ -416,7 +416,7 @@ def edit_modal_view(
         },
         ensure_ascii=False,
     )
-    image_reference = _image_reference_text(memo.images, site_base_url)
+    image_references = _image_reference_texts(memo.images, site_base_url)
     order_initial = _image_order_initial(memo.images)
     primary_initial = _primary_image_initial(memo.image, memo.images)
 
@@ -461,7 +461,7 @@ def edit_modal_view(
         },
     ]
 
-    if image_reference:
+    for image_reference in image_references:
         blocks.append(
             {
                 "type": "section",
@@ -591,14 +591,23 @@ def _image_file_id(image: Any) -> str:
     return str(getattr(image, "file_id", "") or "").strip()
 
 
-def _image_reference_text(images: list[str], site_base_url: str) -> str:
+def _image_reference_texts(images: list[str], site_base_url: str) -> list[str]:
     if not images:
-        return ""
+        return []
+
+    chunks: list[str] = []
     lines = ["*\u753b\u50cf\u4e00\u89a7*"]
     for index, image_url in enumerate(images, start=1):
         public_url = _public_site_url(site_base_url, image_url)
-        lines.append(f"<{_mrkdwn_url(public_url)}|\u753b\u50cf{index}>")
-    return _truncate("\n".join(lines), 2900)
+        image_line = f"<{_mrkdwn_url(public_url)}|\u753b\u50cf{index}>"
+        candidate = "\n".join([*lines, image_line])
+        if len(candidate) > 2900 and len(lines) > 1:
+            chunks.append("\n".join(lines))
+            lines = ["*\u753b\u50cf\u4e00\u89a7\uff08\u7d9a\u304d\uff09*", image_line]
+        else:
+            lines.append(image_line)
+    chunks.append("\n".join(lines))
+    return chunks
 
 
 def _image_order_initial(images: list[str]) -> str:
