@@ -7,6 +7,7 @@ import json
 
 
 APPROVE_MEMO_ACTION_ID = "mumemo_approve_post"
+ADD_REVIEW_IMAGES_ACTION_ID = "mumemo_add_review_images"
 OVERWRITE_REVIEW_POST_ACTION_ID = "mumemo_overwrite_review_post"
 OVERWRITE_EXISTING_MEMO_ACTION_ID = "mumemo_overwrite_existing_memo"
 PUBLISH_SEPARATE_MEMO_ACTION_ID = "mumemo_publish_separate_memo"
@@ -18,6 +19,7 @@ SELECT_REVIEW_THUMBNAIL_ACTION_ID = "mumemo_select_review_thumbnail"
 EDIT_MEMO_ACTION_ID = "mumemo_edit_memo"
 DELETE_MEMO_ACTION_ID = "mumemo_delete_memo"
 MEMO_EDIT_CALLBACK_ID = "mumemo_edit_modal"
+MEMO_REVIEW_IMAGES_CALLBACK_ID = "mumemo_review_images_modal"
 MEMO_REVIEW_URLS_CALLBACK_ID = "mumemo_review_urls_modal"
 MEMO_REVIEW_LOCATION_CALLBACK_ID = "mumemo_review_location_modal"
 
@@ -179,6 +181,14 @@ def review_blocks(
                     },
                 ]
             )
+        elements.append(
+            {
+                "type": "button",
+                "text": {"type": "plain_text", "text": "画像を追加"},
+                "action_id": ADD_REVIEW_IMAGES_ACTION_ID,
+                "value": value,
+            }
+        )
         thumbnail_options = _thumbnail_select_options(message_ts, images)
         if len(thumbnail_options) > 1:
             elements.append(
@@ -236,6 +246,32 @@ def review_blocks(
         for chunk in _chunks(elements, 5):
             blocks.append({"type": "actions", "elements": chunk})
     return blocks
+
+
+def review_images_modal_view(
+    *,
+    channel_id: str,
+    message_ts: str,
+    review_message_ts: str,
+) -> dict[str, Any]:
+    return {
+        "type": "modal",
+        "callback_id": MEMO_REVIEW_IMAGES_CALLBACK_ID,
+        "private_metadata": json.dumps(
+            {
+                "channel_id": channel_id,
+                "message_ts": message_ts,
+                "review_message_ts": review_message_ts,
+            },
+            ensure_ascii=False,
+        ),
+        "title": {"type": "plain_text", "text": "下書きに画像を追加"},
+        "submit": {"type": "plain_text", "text": "追加"},
+        "close": {"type": "plain_text", "text": "閉じる"},
+        "blocks": [
+            _image_upload_block("1回に10枚まで追加できます。続けて追加するには、この画面を開き直してください。"),
+        ],
+    }
 
 
 def review_urls_modal_view(
@@ -496,19 +532,7 @@ def edit_modal_view(
                     "initial_value": _input_initial(order_initial, 2900),
                 },
             },
-            {
-                "type": "input",
-                "block_id": UPLOAD_IMAGES_BLOCK_ID,
-                "optional": True,
-                "label": {"type": "plain_text", "text": "画像を追加"},
-                "hint": {"type": "plain_text", "text": "ここで選んだ画像は、画像の順序の末尾に追加されます。"},
-                "element": {
-                    "type": "file_input",
-                    "action_id": UPLOAD_IMAGES_ACTION_ID,
-                    "filetypes": ["jpg", "jpeg", "png", "gif", "webp"],
-                    "max_files": 10,
-                },
-            },
+            _image_upload_block("ここで選んだ画像は、画像の順序の末尾に追加されます。", optional=True),
         ]
     )
 
@@ -520,6 +544,22 @@ def edit_modal_view(
         "submit": {"type": "plain_text", "text": "保存"},
         "close": {"type": "plain_text", "text": "閉じる"},
         "blocks": blocks,
+    }
+
+
+def _image_upload_block(hint: str, *, optional: bool = False) -> dict[str, Any]:
+    return {
+        "type": "input",
+        "block_id": UPLOAD_IMAGES_BLOCK_ID,
+        "optional": optional,
+        "label": {"type": "plain_text", "text": "画像を追加"},
+        "hint": {"type": "plain_text", "text": hint},
+        "element": {
+            "type": "file_input",
+            "action_id": UPLOAD_IMAGES_ACTION_ID,
+            "filetypes": ["jpg", "jpeg", "png", "gif", "webp"],
+            "max_files": 10,
+        },
     }
 
 

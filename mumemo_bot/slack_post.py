@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any
 import re
 
@@ -72,6 +72,12 @@ class MumemoSlackPost:
             body=body,
             images=self.images,
         )
+
+    def with_added_images(self, images: list[SlackImageFile]) -> "MumemoSlackPost":
+        merged = {image.file_id: image for image in self.images}
+        for image in images:
+            merged.setdefault(image.file_id, image)
+        return replace(self, images=list(merged.values()))
 
     def with_thumbnail_image(self, file_id: str) -> "MumemoSlackPost":
         clean_file_id = str(file_id).strip()

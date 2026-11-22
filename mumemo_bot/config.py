@@ -29,6 +29,7 @@ class BotConfig:
     nominatim_user_agent: str = ""
     nominatim_email: str = ""
     nominatim_timeout_seconds: float = 10.0
+    review_image_draft_dir: Path = PROJECT_ROOT / ".mumemo-review-images"
 
     @property
     def slack_channel_label(self) -> str:

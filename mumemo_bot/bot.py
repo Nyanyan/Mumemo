@@ -1,4 +1,5 @@
-from threading import Lock
+from collections import Counter
+from threading import Condition, Lock
 from typing import Any
 import json
 import re
@@ -10,6 +11,7 @@ from slack_bolt.adapter.socket_mode import SocketModeHandler
 from mumemo_bot.config import BotConfig, PROJECT_ROOT, mask_secret
 from mumemo_bot.git_sync import GitSyncError, GitSyncResult, commit_and_push_site_changes
 from mumemo_bot.location import LocationInference, UNKNOWN_LOCATION, infer_location_detail, normalize_location
+from mumemo_bot.review_images import load_review_images, review_image_path, save_review_images
 from mumemo_bot.site_store import (
     MemoNotFoundError,
     ProtectedMemoError,
@@ -26,6 +28,7 @@ from mumemo_bot.site_store import (
 )
 from mumemo_bot.slack_post import MumemoSlackPost, SlackImageFile
 from mumemo_bot.slack_views import (
+    ADD_REVIEW_IMAGES_ACTION_ID,
     APPROVE_MEMO_ACTION_ID,
     BODY_BLOCK_ID,
     OVERWRITE_EXISTING_MEMO_ACTION_ID,
@@ -40,6 +43,7 @@ from mumemo_bot.slack_views import (
     LOCATION_BLOCK_ID,
     IMAGES_BLOCK_ID,
     MEMO_EDIT_CALLBACK_ID,
+    MEMO_REVIEW_IMAGES_CALLBACK_ID,
     MEMO_REVIEW_LOCATION_CALLBACK_ID,
     MEMO_REVIEW_URLS_CALLBACK_ID,
     RELOAD_REVIEW_ACTION_ID,
@@ -54,6 +58,7 @@ from mumemo_bot.slack_views import (
     modal_file_values,
     modal_value,
     review_blocks,
+    review_images_modal_view,
     review_location_modal_view,
     review_urls_modal_view,
 )
@@ -67,6 +72,9 @@ MANAGE_LIST_LIMIT = 15
 def create_app(config: BotConfig) -> App:
     app = App(token=config.slack_bot_token)
     state_lock = Lock()
+    review_update_lock = Lock()
+    review_lifecycle = Condition()
+    pending_image_uploads: Counter[tuple[str, str]] = Counter()
     seen_event_ids: set[str] = set()
     accepted_post_keys: set[tuple[str, str]] = set()
     handled_review_message_keys: set[tuple[str, str]] = set()
@@ -94,11 +102,19 @@ def create_app(config: BotConfig) -> App:
             accepted_post_keys.discard(key)
 
     def claim_review_message(key: tuple[str, str]) -> bool:
-        with state_lock:
+        with review_lifecycle:
+            review_lifecycle.wait_for(lambda: not pending_image_uploads[key])
             if key in handled_review_message_keys:
                 return False
             handled_review_message_keys.add(key)
+        with review_update_lock:
+            # Let any draft edit already being applied finish before closing the review.
             return True
+
+    def require_open_review(channel_id: str, review_message_ts: str) -> None:
+        with review_lifecycle:
+            if (channel_id, review_message_ts) in handled_review_message_keys:
+                raise ValueError("この下書きは処理済みです。最新の下書きを確認してください。")
 
     def remember_review_post(
         post: MumemoSlackPost,
@@ -130,14 +146,46 @@ def create_app(config: BotConfig) -> App:
             review_posts.pop((channel_id, message_ts), None)
             review_locations.pop((channel_id, message_ts), None)
 
+    def fetch_review_post(channel_id: str, message_ts: str, client: Any) -> MumemoSlackPost:
+        message = _fetch_original_message(client, channel_id, message_ts)
+        post = MumemoSlackPost.from_message(channel_id=channel_id, message=message)
+        path = review_image_path(config.review_image_draft_dir, channel_id, message_ts)
+        return post.with_added_images(load_review_images(path))
+
     def resolve_review_post(channel_id: str, message_ts: str, client: Any) -> MumemoSlackPost:
         post = get_review_post(channel_id, message_ts)
         if post is not None:
             return post
-        message = _fetch_original_message(client, channel_id, message_ts)
-        post = MumemoSlackPost.from_message(channel_id=channel_id, message=message)
-        remember_review_post(post)
-        return post
+        post = fetch_review_post(channel_id, message_ts, client)
+        with state_lock:
+            return review_posts.setdefault((channel_id, message_ts), post)
+
+    def refresh_open_review(
+        *,
+        client: Any,
+        review_message_ts: str,
+        post: MumemoSlackPost,
+        status_text: str,
+        location_detail: LocationInference,
+    ) -> None:
+        remember_review_post(post, location_detail)
+        _update_review_status(
+            client=client,
+            channel_id=post.channel_id,
+            review_message_ts=review_message_ts,
+            post=post,
+            status_text=status_text,
+            buttons_enabled=True,
+            title_conflict=find_title_conflict(config, post),
+            location_detail=location_detail,
+        )
+
+    def remove_review_images(channel_id: str, message_ts: str, logger: Any) -> None:
+        path = review_image_path(config.review_image_draft_dir, channel_id, message_ts)
+        try:
+            path.unlink(missing_ok=True)
+        except OSError:
+            logger.exception("Failed to remove Mumemo draft image metadata")
 
     def publish_review_post(
         *,
@@ -277,6 +325,7 @@ def create_app(config: BotConfig) -> App:
             location_detail=location_detail,
         )
         forget_review_post(channel_id, message_ts)
+        remove_review_images(channel_id, message_ts, logger)
         reply_text = _publish_reply_text(result)
         if git_status:
             reply_text = _append_status(reply_text, git_status)
@@ -515,6 +564,112 @@ def create_app(config: BotConfig) -> App:
             memo_id=memo_id,
         )
 
+    @app.action(ADD_REVIEW_IMAGES_ACTION_ID)
+    def handle_add_review_images(
+        ack: Any,
+        body: dict[str, Any],
+        client: Any,
+        logger: Any,
+    ) -> None:
+        ack()
+        value = decode_action_value(body["actions"][0])
+        channel_id = str(value["channel_id"])
+        message_ts = str(value["message_ts"])
+        review_message_ts = str(body.get("message", {}).get("ts") or "")
+        user_id = str(body.get("user", {}).get("id") or "")
+
+        try:
+            client.views_open(
+                trigger_id=body["trigger_id"],
+                view=review_images_modal_view(
+                    channel_id=channel_id,
+                    message_ts=message_ts,
+                    review_message_ts=review_message_ts,
+                ),
+            )
+        except Exception as error:
+            logger.exception("Failed to open Mumemo draft image upload modal")
+            _post_ephemeral(
+                client=client,
+                channel_id=channel_id,
+                user_id=user_id,
+                text=_short_status(f"画像追加画面を開けませんでした: {error}"),
+            )
+
+    @app.view(MEMO_REVIEW_IMAGES_CALLBACK_ID)
+    def handle_review_images_submission(
+        ack: Any,
+        body: dict[str, Any],
+        view: dict[str, Any],
+        client: Any,
+        logger: Any,
+    ) -> None:
+        metadata = json.loads(view["private_metadata"])
+        channel_id = str(metadata["channel_id"])
+        message_ts = str(metadata["message_ts"])
+        review_message_ts = str(metadata["review_message_ts"])
+        file_values = modal_file_values(view, UPLOAD_IMAGES_BLOCK_ID)
+        if not file_values:
+            ack(response_action="errors", errors={UPLOAD_IMAGES_BLOCK_ID: "画像を選択してください"})
+            return
+
+        review_key = (channel_id, review_message_ts)
+        with review_lifecycle:
+            if review_key in handled_review_message_keys:
+                ack(
+                    response_action="errors",
+                    errors={UPLOAD_IMAGES_BLOCK_ID: "この下書きは処理済みです。最新の下書きを確認してください。"},
+                )
+                return
+            pending_image_uploads[review_key] += 1
+
+        saved = False
+        try:
+            ack()
+            images = _uploaded_image_files_from_modal(client, file_values)
+            if len(images) != len(file_values):
+                raise ValueError("読み込めない画像があります。画像を選び直してください。")
+
+            with review_update_lock:
+                post = resolve_review_post(channel_id, message_ts, client)
+                location_detail = get_review_location(channel_id, message_ts)
+                if location_detail is None:
+                    location_detail = _infer_post_location(config, post)
+                updated_post = post.with_added_images(images)
+                path = review_image_path(config.review_image_draft_dir, channel_id, message_ts)
+                existing_ids = {image.file_id for image in post.images}
+                additions = [image for image in updated_post.images if image.file_id not in existing_ids]
+                if additions:
+                    save_review_images(path, load_review_images(path) + additions)
+                saved = True
+                refresh_open_review(
+                    client=client,
+                    review_message_ts=review_message_ts,
+                    post=updated_post,
+                    status_text=(
+                        f"画像を{len(additions)}枚追加しました。"
+                        if additions else "選んだ画像は追加済みです。"
+                    ),
+                    location_detail=location_detail,
+                )
+        except Exception as error:
+            logger.exception("Failed to add images to Mumemo draft")
+            _post_ephemeral(
+                client=client,
+                channel_id=channel_id,
+                user_id=str(body.get("user", {}).get("id") or ""),
+                text=_short_status(
+                    f"画像は保存済みです。下書きの表示を更新できませんでした: {error}"
+                    if saved else f"画像の追加に失敗しました: {error}"
+                ),
+            )
+        finally:
+            with review_lifecycle:
+                pending_image_uploads[review_key] -= 1
+                if not pending_image_uploads[review_key]:
+                    del pending_image_uploads[review_key]
+                    review_lifecycle.notify_all()
+
     @app.action(EDIT_REVIEW_URLS_ACTION_ID)
     def handle_edit_review_urls(
         ack: Any,
@@ -584,20 +739,21 @@ def create_app(config: BotConfig) -> App:
 
         ack()
         try:
-            location_detail = get_review_location(channel_id, message_ts)
-            if location_detail is None:
-                location_detail = _infer_post_location(config, updated_post)
-            remember_review_post(updated_post, location_detail)
-            _update_review_status(
-                client=client,
-                channel_id=channel_id,
-                review_message_ts=review_message_ts,
-                post=updated_post,
-                status_text="URLを反映しました。承認前に確認してください。",
-                buttons_enabled=True,
-                title_conflict=find_title_conflict(config, updated_post),
-                location_detail=location_detail,
-            )
+            with review_update_lock:
+                require_open_review(channel_id, review_message_ts)
+                current_post = resolve_review_post(channel_id, message_ts, client)
+                if current_post is not post:
+                    updated_post = current_post.with_urls(urls)
+                location_detail = get_review_location(channel_id, message_ts)
+                if location_detail is None:
+                    location_detail = _infer_post_location(config, updated_post)
+                refresh_open_review(
+                    client=client,
+                    review_message_ts=review_message_ts,
+                    post=updated_post,
+                    status_text="URLを反映しました。承認前に確認してください。",
+                    location_detail=location_detail,
+                )
         except Exception as error:
             logger.exception("Failed to update Mumemo URL review")
             _post_ephemeral(
@@ -666,23 +822,22 @@ def create_app(config: BotConfig) -> App:
 
         ack()
         try:
-            location_detail = LocationInference(
-                location=location,
-                source="manual",
-                matched=location,
-                query=post.title,
-            )
-            remember_review_post(post, location_detail)
-            _update_review_status(
-                client=client,
-                channel_id=channel_id,
-                review_message_ts=review_message_ts,
-                post=post,
-                status_text=f"場所を反映しました: {location}",
-                buttons_enabled=True,
-                title_conflict=find_title_conflict(config, post),
-                location_detail=location_detail,
-            )
+            with review_update_lock:
+                require_open_review(channel_id, review_message_ts)
+                post = resolve_review_post(channel_id, message_ts, client)
+                location_detail = LocationInference(
+                    location=location,
+                    source="manual",
+                    matched=location,
+                    query=post.title,
+                )
+                refresh_open_review(
+                    client=client,
+                    review_message_ts=review_message_ts,
+                    post=post,
+                    status_text=f"場所を反映しました: {location}",
+                    location_detail=location_detail,
+                )
         except Exception as error:
             logger.exception("Failed to update Mumemo location review")
             _post_ephemeral(
@@ -714,23 +869,20 @@ def create_app(config: BotConfig) -> App:
             message_ts, file_id = decode_thumbnail_select_value(
                 str(selected_option.get("value") or "")
             )
-            post = resolve_review_post(channel_id, message_ts, client)
-            updated_post = post.with_thumbnail_image(file_id)
-            location_detail = get_review_location(channel_id, message_ts)
-            if location_detail is None:
-                location_detail = _infer_post_location(config, updated_post)
-            remember_review_post(updated_post, location_detail)
-            selected_name = updated_post.images[0].name if updated_post.images else ""
-            _update_review_status(
-                client=client,
-                channel_id=channel_id,
-                review_message_ts=review_message_ts,
-                post=updated_post,
-                status_text=f"サムネイルを変更しました: {selected_name}",
-                buttons_enabled=True,
-                title_conflict=find_title_conflict(config, updated_post),
-                location_detail=location_detail,
-            )
+            with review_update_lock:
+                require_open_review(channel_id, review_message_ts)
+                post = resolve_review_post(channel_id, message_ts, client)
+                updated_post = post.with_thumbnail_image(file_id)
+                location_detail = get_review_location(channel_id, message_ts)
+                if location_detail is None:
+                    location_detail = _infer_post_location(config, updated_post)
+                refresh_open_review(
+                    client=client,
+                    review_message_ts=review_message_ts,
+                    post=updated_post,
+                    status_text=f"サムネイルを変更しました: {updated_post.images[0].name}",
+                    location_detail=location_detail,
+                )
         except Exception as error:
             logger.exception("Failed to update Mumemo thumbnail review")
             _post_ephemeral(
@@ -768,8 +920,7 @@ def create_app(config: BotConfig) -> App:
         post: MumemoSlackPost | None = None
         location_detail: LocationInference | None = None
         try:
-            message = _fetch_original_message(client, channel_id, message_ts)
-            post = MumemoSlackPost.from_message(channel_id=channel_id, message=message)
+            post = fetch_review_post(channel_id, message_ts, client)
             location_detail = _infer_post_location(config, post)
             remember_review_post(post, location_detail)
             _post_review_for_post(
@@ -812,6 +963,7 @@ def create_app(config: BotConfig) -> App:
         ack: Any,
         body: dict[str, Any],
         client: Any,
+        logger: Any,
     ) -> None:
         ack()
         action = body["actions"][0]
@@ -829,6 +981,7 @@ def create_app(config: BotConfig) -> App:
             review_message_ts=review_message_ts,
             status_text="Mumemo下書きを破棄しました。",
         )
+        remove_review_images(channel_id, message_ts, logger)
 
     @app.action(EDIT_MEMO_ACTION_ID)
     def handle_edit_memo(
