@@ -74,10 +74,13 @@ class MumemoSlackPost:
         )
 
     def with_added_images(self, images: list[SlackImageFile]) -> "MumemoSlackPost":
-        merged = {image.file_id: image for image in self.images}
+        merged = self.images.copy()
+        file_ids = {image.file_id for image in merged}
         for image in images:
-            merged.setdefault(image.file_id, image)
-        return replace(self, images=list(merged.values()))
+            if image.file_id not in file_ids:
+                merged.append(image)
+                file_ids.add(image.file_id)
+        return replace(self, images=merged)
 
     def with_thumbnail_image(self, file_id: str) -> "MumemoSlackPost":
         clean_file_id = str(file_id).strip()

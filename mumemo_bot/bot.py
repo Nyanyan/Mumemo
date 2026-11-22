@@ -637,8 +637,7 @@ def create_app(config: BotConfig) -> App:
                     location_detail = _infer_post_location(config, post)
                 updated_post = post.with_added_images(images)
                 path = review_image_path(config.review_image_draft_dir, channel_id, message_ts)
-                existing_ids = {image.file_id for image in post.images}
-                additions = [image for image in updated_post.images if image.file_id not in existing_ids]
+                additions = updated_post.images[len(post.images):]
                 if additions:
                     save_review_images(path, load_review_images(path) + additions)
                 saved = True
