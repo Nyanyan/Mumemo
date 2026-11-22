@@ -15,6 +15,46 @@
     "updatedAt": "2026-07-09"
   },
   {
+    "id": "slack-C0BDC3P774J-1795339098.696669",
+    "title": "箱根ジオミュージアム",
+    "body": "2026/11/22訪問\n\n大涌谷にある、火山関係中心の博物館。解説がとても丁寧でわかりやすく、展示も綺麗で見やすかった。100円とは思えない満足感であった。ただ、立地の良さも相まって、ここに辿り着く・ここから帰る交通では人が多くて大変であった。\n剥ぎ取り標本はその標本の見方や作り方が丁寧に書いてあった。箱根のカルデラ等のでき方、火山の種類などの解説、火山弾の実物、大涌谷で採取された硫黄の結晶などもあった。\n大涌谷では水を火山性ガスに通して温泉を作っているようで、その模型を使った解説があり、面白かった。また、この作り方をした(大涌谷の)温泉は酸性泉だそう。箱根には塩基性の温泉もあるよう(湧いている？)で、立地の違い等が解説されていた。大涌谷から各地へパイプラインで温泉を運んでいるそうで、その建設に関する展示や、パイプラインに温泉成分が蓄積した様子の展示があった。\nまた、昭和26年(？)に地滑りで被害が出たことがあったらしく、その時の目撃者の証言動画や、それを経て地滑りを防止すべく設置されたアンカーの展示もあった。さらに、2015年の噴火に関する展示、2019年の大雨に関する展示もあった。",
+    "location": "神奈川県",
+    "image": "/assets/posts/%E7%AE%B1%E6%A0%B9%E3%82%B8%E3%82%AA%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/display/F0CKWRZPWJ2-display.jpg",
+    "thumbnail": "/assets/posts/%E7%AE%B1%E6%A0%B9%E3%82%B8%E3%82%AA%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/thumbs/F0CKWRZPWJ2-thumb.jpg",
+    "source": {
+      "type": "slack",
+      "channel_id": "C0BDC3P774J",
+      "message_ts": "1795339098.696669",
+      "user_id": "U01997YCADN"
+    },
+    "postedAt": "2026-11-22",
+    "images": [
+      "/assets/posts/%E7%AE%B1%E6%A0%B9%E3%82%B8%E3%82%AA%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/display/F0CKWRZPWJ2-display.jpg",
+      "/assets/posts/%E7%AE%B1%E6%A0%B9%E3%82%B8%E3%82%AA%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/display/F0CKTG42BRT-display.jpg",
+      "/assets/posts/%E7%AE%B1%E6%A0%B9%E3%82%B8%E3%82%AA%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/display/F0CL2GAJL0L-display.jpg",
+      "/assets/posts/%E7%AE%B1%E6%A0%B9%E3%82%B8%E3%82%AA%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/display/F0CKYKKRL2E-display.jpg",
+      "/assets/posts/%E7%AE%B1%E6%A0%B9%E3%82%B8%E3%82%AA%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/display/F0CKTGGMC85-display.jpg",
+      "/assets/posts/%E7%AE%B1%E6%A0%B9%E3%82%B8%E3%82%AA%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/display/F0CLT6NFX96-display.jpg",
+      "/assets/posts/%E7%AE%B1%E6%A0%B9%E3%82%B8%E3%82%AA%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/display/F0CKTGHPWER-display.jpg",
+      "/assets/posts/%E7%AE%B1%E6%A0%B9%E3%82%B8%E3%82%AA%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/display/F0CKHE0PZM5-display.jpg",
+      "/assets/posts/%E7%AE%B1%E6%A0%B9%E3%82%B8%E3%82%AA%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/display/F0CKTGLVD29-display.jpg",
+      "/assets/posts/%E7%AE%B1%E6%A0%B9%E3%82%B8%E3%82%AA%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/display/F0CKHDU9AET-display.jpg"
+    ],
+    "originalImage": "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E7%AE%B1%E6%A0%B9%E3%82%B8%E3%82%AA%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/F0CKWRZPWJ2.jpg",
+    "originalImages": [
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E7%AE%B1%E6%A0%B9%E3%82%B8%E3%82%AA%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/F0CKWRZPWJ2.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E7%AE%B1%E6%A0%B9%E3%82%B8%E3%82%AA%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/F0CKTG42BRT.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E7%AE%B1%E6%A0%B9%E3%82%B8%E3%82%AA%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/F0CL2GAJL0L.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E7%AE%B1%E6%A0%B9%E3%82%B8%E3%82%AA%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/F0CKYKKRL2E.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E7%AE%B1%E6%A0%B9%E3%82%B8%E3%82%AA%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/F0CKTGGMC85.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E7%AE%B1%E6%A0%B9%E3%82%B8%E3%82%AA%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/F0CLT6NFX96.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E7%AE%B1%E6%A0%B9%E3%82%B8%E3%82%AA%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/F0CKTGHPWER.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E7%AE%B1%E6%A0%B9%E3%82%B8%E3%82%AA%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/F0CKHE0PZM5.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E7%AE%B1%E6%A0%B9%E3%82%B8%E3%82%AA%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/F0CKTGLVD29.jpg",
+      "https://raw.githubusercontent.com/Nyanyan/Mumemo/main/originals/%E7%AE%B1%E6%A0%B9%E3%82%B8%E3%82%AA%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0/F0CKHDU9AET.jpg"
+    ]
+  },
+  {
     "id": "slack-C0BDC3P774J-1791088742.656579",
     "title": "旧真壁郵便局",
     "body": "2026/10/03訪問\n\n昭和2年(1927年)の建築。もともと銀行として建てられ、何度か転用された後、昭和61年まで郵便局として使われた建物。石造りみたいな外観だが、鉄網コンクリート造らしい。\n時が止まったような雰囲気が漂う窓口だったが、日めくりカレンダーはきちんとめくられていて、そこが妙に面白かった。\n2階は何もない部屋が2つほどあったのだが、その中にぽつんと置かれた「真壁郵便局のはじまり」という文章が面白かった。「現郵便局長の曽祖父」という記述があったが、この文章が書かれたのがいつなのかよくわからなかった。「郵政省の前身」という記述があったので、2001年以前であることは推測されるが…。とにかく、\"地元の人が書いた\"という雰囲気が非常に強い文章で、大変好みであった。\nこの建物は2011年の東日本大震災で若干損傷したそうで、修復した際、あえて修復部分の色を周囲と少し変えたとの記述があった。帰り際に外壁を確認したら、確かによく見ると色が違う部分があり、修復された場所であるとわかった。",
